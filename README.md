@@ -88,11 +88,17 @@ curl -X POST https://centennialledger.com/api/ingest \
   -d '{ "articles": [ { "slug": "...", "headline": "...", ... } ] }'
 ```
 
-Response: `{ "received": n, "inserted": n, "skipped": n }`.
+Response: `{ "received": n, "inserted": n, "skipped": n, "imaged": n }`.
 
 **Append-only contract:** articles are keyed by `slug`. A slug that already
-exists is counted as `skipped` and the stored story is left untouched —
-never updated, never deleted. There is no update or delete endpoint.
+exists is counted as `skipped` and the stored story's text is left
+untouched — never updated, never deleted. There is no update or delete
+endpoint. There is exactly one narrow exception: if the stored article
+has **no image** and a re-sent article carries a valid `image`, the image
+alone is filled in (the item is then counted as `imaged`, not `skipped`).
+An image can be filled in only once — a re-send can never replace an
+image that is already stored, and no other field is ever changed this
+way.
 
 Article fields: `slug` (optional; derived from headline), `headline`
 (required), `dek`, `byline`, `publishedAt` (ISO), `section` (politics,

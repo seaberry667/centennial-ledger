@@ -9,6 +9,9 @@
  *
  * Articles are append-only from the outside: insertArticle() reports
  * 'skipped' for a slug that already exists and never updates or deletes.
+ * The single exception is backfillImageIfMissing(): an article's image
+ * may be filled in once, after the fact, when the stored article has
+ * none — no other field is ever changed by it.
  */
 
 const fs = require('fs');
@@ -221,6 +224,24 @@ class FileStore {
     return 'inserted';
   }
 
+  /**
+   * The one narrow exception to append-only: if an article with this
+   * slug exists and its stored image is null/empty, and the supplied
+   * image is a valid normalized image, set ONLY the image field and
+   * return true. Otherwise (no such article, image already present, or
+   * supplied image invalid) change nothing and return false.
+   */
+  async backfillImageIfMissing(slug, image) {
+    const img = normalizeImage(image);
+    if (!img) return false;
+    const existing = this.data.articles.find((a) => a.slug === slug);
+    if (!existing) return false;
+    if (existing.image && existing.image.url) return false;
+    existing.image = img;
+    this._save();
+    return true;
+  }
+
   async getArticle(slug) {
     return this.data.articles.find((a) => a.slug === slug) || null;
   }
@@ -359,6 +380,26 @@ class PgStore {
       ]
     );
     return res.rowCount > 0 ? 'inserted' : 'skipped';
+  }
+
+  /**
+   * Same contract as the file store's: fill in ONLY the image of an
+   * existing article whose stored image is null/empty (no 'url' or an
+   * empty one), given a valid normalized image. Returns true when a row
+   * was updated. The WHERE clause makes the check-and-set atomic, so a
+   * stored image is never overwritten.
+   */
+  async backfillImageIfMissing(slug, image) {
+    const img = normalizeImage(image);
+    if (!img) return false;
+    const res = await this.pool.query(
+      `UPDATE articles SET image = $2
+        WHERE slug = $1
+          AND (image IS NULL OR image->>'url' IS NULL OR image->>'url' = '')
+        RETURNING slug`,
+      [slug, JSON.stringify(img)]
+    );
+    return res.rowCount > 0;
   }
 
   async getArticle(slug) {

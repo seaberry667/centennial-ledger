@@ -13,7 +13,7 @@ const render = require('./render');
 
 const app = express();
 app.disable('x-powered-by');
-app.use(express.json({ limit: '5mb' }));
+app.use(express.json({ limit: '25mb' }));
 app.use(express.urlencoded({ extended: false }));
 
 let store;
@@ -43,8 +43,12 @@ app.get('/api/health', async (req, res) => {
  * POST /api/ingest
  * Header: x-ingest-secret must match INGEST_SECRET.
  * Body: a single article object, or { articles: [ ... ] }.
- * APPEND-ONLY: a slug that already exists is skipped, never updated.
- * Returns { received, inserted, skipped }.
+ * APPEND-ONLY: a slug that already exists is skipped; its text is never
+ * updated. One narrow exception: when the stored article has no image
+ * and the incoming one carries a valid image, the image alone is filled
+ * in and the item is counted as "imaged" instead of skipped.
+ * Returns { received, inserted, skipped, imaged }, where skipped counts
+ * items that were neither inserted nor imaged.
  */
 app.post('/api/ingest', async (req, res) => {
   const secret = process.env.INGEST_SECRET;
@@ -55,6 +59,7 @@ app.post('/api/ingest', async (req, res) => {
   const body = req.body || {};
   const items = Array.isArray(body) ? body : Array.isArray(body.articles) ? body.articles : [body];
   let inserted = 0;
+  let imaged = 0;
   let skipped = 0;
   for (const raw of items) {
     const article = normalizeArticle(raw);
@@ -63,10 +68,19 @@ app.post('/api/ingest', async (req, res) => {
       continue;
     }
     const result = await store.insertArticle(article);
-    if (result === 'inserted') inserted += 1;
-    else skipped += 1;
+    if (result === 'inserted') {
+      inserted += 1;
+      continue;
+    }
+    // Existing slug: the stored text stays untouched, but an image may
+    // be filled in once if the article live has none.
+    if (article.image && (await store.backfillImageIfMissing(article.slug, article.image))) {
+      imaged += 1;
+    } else {
+      skipped += 1;
+    }
   }
-  res.json({ received: items.length, inserted, skipped });
+  res.json({ received: items.length, inserted, skipped, imaged });
 });
 
 /* --------------------------- Public pages ------------------------- */
