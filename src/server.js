@@ -97,7 +97,7 @@ app.post('/api/ingest', async (req, res) => {
 
 app.get('/', async (req, res) => {
   // Fetch 14: the lead, a second feature, and up to 12 grid stories.
-  const articles = await store.listArticles({ limit: 14 });
+  const articles = await store.listArticles({ limit: 24 });
   const [lead, ...rest] = articles;
   // Second feature: the most recent story from a different section
   // than the lead's, shown directly under the lead in the same

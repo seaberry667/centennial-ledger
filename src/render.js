@@ -531,16 +531,25 @@ nav.main li.nav-search{margin-left:auto;display:flex;align-items:center}
 .rail-row-text h4{font-family:'Playfair Display',Georgia,serif;font-size:1.02rem;line-height:1.28;margin:.15rem 0 .3rem}
 .rail-row-text h4 a{text-decoration:none}
 .rail-row-text h4 a:hover{text-decoration:underline}
-/* Homepage two-column layout under the features: section-grouped card
-   grids in the main column; story rows, the briefing signup and
-   Trending in a sticky 320px right rail. */
-.home-layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:2.2rem;align-items:start;margin-top:1.6rem}
-.home-rail{position:sticky;top:1rem}
+/* Homepage two-column layout from the top of the page, matching the
+   dev version: the lead and second feature run in the main column
+   with the rail beside them from the same height, and the section-
+   grouped card grids continue in the main column below the
+   features. Three grid areas carry this: features and grids stack
+   in column 1 while the rail (story rows, the briefing signup and
+   Trending) spans both rows in a sticky 320px column 2. On narrow
+   screens the grid collapses to one column and the areas stack in
+   markup order: features, rail, grids. */
+.home-layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:0 2.2rem;align-items:start}
+.home-features{grid-column:1;grid-row:1}
+.home-grids{grid-column:1;grid-row:2;margin-top:.4rem}
+.home-rail{grid-column:2;grid-row:1 / span 2;position:sticky;top:1rem}
 .home-rail .briefing{margin:0 0 1.2rem}
 .home-rail .ad-slot{margin:0 0 1.2rem}
 @media (max-width:900px){
   .home-layout{grid-template-columns:1fr}
-  .home-rail{position:static}
+  .home-features,.home-grids{grid-column:auto;grid-row:auto}
+  .home-rail{grid-column:auto;grid-row:auto;position:static}
 }
 .latest-heading{font-family:'Playfair Display',Georgia,serif;font-size:1.9rem;margin:.2rem 0 1rem}
 .section-group{margin-bottom:1.8rem}
@@ -876,29 +885,31 @@ function homePage({ lead, second, latest, briefingThanks }) {
 
   let body = leaderboardAdSlot();
   if (lead) {
-    body += featureStory(lead);
+    // Two-column front page from the top, matching the dev version:
+    // the lead opens the main column and the rail starts beside it
+    // at the same height; the second feature and the "Latest from
+    // Colorado" card grids continue down the main column. The lead
+    // and second feature were pulled out of `latest` by the route,
+    // so nothing repeats in the grids or the rail rows. Trending
+    // takes the five most recent stories site-wide, features
+    // included.
+    const trendingPool = [lead, second].concat(latest).filter(Boolean).slice(0, 5);
+    let features = featureStory(lead);
     // Second feature, directly under the lead in the same format,
     // from a different section (selected by the home route). Absent
     // when no different-section story exists.
-    if (second) body += featureStory(second);
-  } else {
-    body += '<section class="lead-story"><h1 class="headline">Colorado news, reported plainly.</h1><p class="dek">New stories are on the way.</p></section>';
-  }
-
-  if (lead) {
-    // Two-column front page under the features: "Latest from
-    // Colorado" card grids grouped by section in the main column;
-    // story rows, the briefing signup and Trending in the right
-    // rail. The lead and second feature were pulled out of
-    // `latest` by the route, so nothing repeats in the grids.
-    // Trending takes the five most recent stories site-wide,
-    // features included.
-    const trendingPool = [lead, second].concat(latest).filter(Boolean).slice(0, 5);
+    if (second) features += featureStory(second);
+    // The rail rows take the five most recent of `latest`; the
+    // grids below are grouped from what remains, so no story
+    // appears twice on the front page: features, rail rows and
+    // grids are all disjoint.
+    const railRows = latest.slice(0, 5);
+    const gridPool = latest.slice(railRows.length);
     let main = '';
-    if (latest.length) {
+    if (gridPool.length) {
       main += '<h2 class="latest-heading">Latest from Colorado</h2>';
       const grouped = new Map();
-      for (const a of latest) {
+      for (const a of gridPool) {
         if (!grouped.has(a.section)) grouped.set(a.section, []);
         grouped.get(a.section).push(a);
       }
@@ -923,18 +934,23 @@ function homePage({ lead, second, latest, briefingThanks }) {
     // rows first (the lead and second feature are already out of
     // `latest`), then the briefing signup, then Trending. The
     // homepage's ad presence is the leaderboard under the nav, so
-    // the rail carries no ad slot.
-    const railRows = latest.slice(0, 5);
+    // the rail carries no ad slot. In the markup the rail follows
+    // the features and precedes the grids, so on narrow screens —
+    // where the layout grid collapses to one column — the page
+    // stacks in reading order: features, rail, grids.
     body +=
-      '<div class="home-layout"><div class="home-main">' + main + '</div>' +
+      '<div class="home-layout"><div class="home-features">' + features + '</div>' +
       '<aside class="home-rail" aria-label="Sidebar">' +
       (railRows.length
         ? '<section class="rail-latest" aria-label="Latest stories">' +
           railRows.map(railStoryRow).join('') + '</section>'
         : '') +
       briefingBox(briefingThanks) + trendingRailBox(trendingPool) +
-      '</aside></div>';
+      '</aside>' +
+      (main ? '<div class="home-grids">' + main + '</div>' : '') +
+      '</div>';
   } else {
+    body += '<section class="lead-story"><h1 class="headline">Colorado news, reported plainly.</h1><p class="dek">New stories are on the way.</p></section>';
     body += briefingBox(briefingThanks);
   }
 
