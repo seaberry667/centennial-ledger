@@ -418,6 +418,46 @@ article.full figure.art-figure{max-width:880px;margin-left:auto;margin-right:aut
 @media (max-width:680px){
   .lead-story figure.lead-figure{float:none;width:auto;max-width:none;margin:1rem 0 .3rem}
 }
+/* Restyle pass, matching the newsroom dress: the navy top bar carries
+   the paper's line on the left and the date line on the right, and the
+   account links live at the right end of the nav. */
+.topbar .brand-line{font-style:italic;font-family:Georgia,serif}
+nav.main li.nav-push{margin-left:auto}
+nav.main a.btn-subscribe{padding:.25rem .75rem}
+/* Homepage two-column layout under the features: section-grouped card
+   grids in the main column; the briefing signup, one advertisement
+   and Trending in a sticky 300px right rail. */
+.home-layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:2.2rem;align-items:start;margin-top:1.6rem}
+.home-rail{position:sticky;top:1rem}
+.home-rail .briefing{margin:0 0 1.2rem}
+.home-rail .ad-slot{margin:0 0 1.2rem}
+@media (max-width:900px){
+  .home-layout{grid-template-columns:1fr}
+  .home-rail{position:static}
+}
+.latest-heading{font-family:'Playfair Display',Georgia,serif;font-size:1.9rem;margin:.2rem 0 1rem}
+.section-group{margin-bottom:1.8rem}
+.section-group h3{font-family:'Playfair Display',Georgia,serif;font-size:1.45rem;margin:0 0 .8rem;padding-bottom:.3rem;border-bottom:2px solid var(--ink)}
+.section-group h3 a{text-decoration:none}
+/* Article page: the plate and the Why It Matters box stack in one
+   right-floated column and the opening text wraps around them — the
+   same float treatment as the homepage lead — so the box sits
+   directly under the illustration caption. The full plate shows (no
+   16:9 crop) inside the float, as article plates always have. */
+.article-body::after{content:"";display:block;clear:both}
+.article-float{float:right;width:44%;max-width:460px;margin:.4rem 0 1rem 1.6rem}
+article.full .article-float figure.art-figure{margin:0}
+.article-float .why{margin:.7rem 0 0}
+@media (max-width:680px){
+  .article-float{float:none;width:auto;max-width:none;margin:1rem 0}
+}
+.sources-block{clear:both;border-top:1px solid var(--rule);margin-top:1.8rem;padding-top:.8rem}
+.sources-block h2{font-family:'Playfair Display',Georgia,serif;font-size:1.3rem;margin:.1rem 0 .4rem}
+/* Topic-cluster hub box: the last element on article, section and
+   Local region pages. */
+.hub-box{border:1px solid var(--rule);border-top:3px solid var(--ink);background:#f7f3e8;padding:1rem 1.2rem;margin-top:2rem}
+.hub-box h2{font-family:'Playfair Display',Georgia,serif;font-size:1.35rem;margin:.1rem 0 .4rem}
+.hub-box p{margin:.2rem 0;color:#444}
 `;
 
 function layout({ title, description, path, ogType = 'website', ogImage = '', articleMeta = null, jsonLd = [], activeNav = '', body }) {
@@ -450,7 +490,9 @@ function layout({ title, description, path, ogType = 'website', ogImage = '', ar
         ? '<li class="has-dropdown">' + link + localDropdown + '</li>'
         : '<li>' + link + '</li>';
     }).join('') +
-    '<li><a href="/search" aria-label="Search">&#128269;</a></li>';
+    '<li class="nav-push"><a href="/search">Search</a></li>' +
+    '<li><a href="/signin">Sign In</a></li>' +
+    '<li><a class="btn-subscribe" href="/subscribe">Subscribe</a></li>';
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -476,9 +518,8 @@ ${adsense}
 </head>
 <body>
 <div class="topbar">
+  <span class="brand-line">Colorado Political News, Reporting, and Analysis</span>
   <span>${esc(fmtDate(new Date().toISOString()))} &middot; Denver, Colorado &middot; Fair, 54&deg;F</span>
-  <span class="center">Colorado Political News, Reporting, and Analysis</span>
-  <span><a href="/signin">Sign In</a> &nbsp; <a class="btn-subscribe" href="/subscribe">Subscribe</a></span>
 </div>
 <header class="masthead">
   <div class="masthead-inner">
@@ -506,15 +547,37 @@ ${body}
 </html>`;
 }
 
+/** Reading time in whole minutes, from the story's own text. */
+function readTimeMinutes(a) {
+  let words = 0;
+  const count = (s) => {
+    if (s) words += String(s).trim().split(/\s+/).filter(Boolean).length;
+  };
+  if (a) {
+    count(a.dek);
+    count(a.whyItMatters);
+    for (const s of a.sections || []) {
+      count(s.lead);
+      for (const p of s.paragraphs || []) count(p);
+    }
+  }
+  return Math.max(1, Math.round(words / 200));
+}
+
+/**
+ * Story card, one dress everywhere (homepage groups, section grids,
+ * More-in grids, search results): 16:9 plate thumbnail, red category
+ * label, headline, date and read time. No byline and no source line
+ * on cards — those live on the article page (owner's standing rule).
+ */
 function articleCard(a) {
   return (
     '<div class="card">' +
     articleFigure(a) +
     '<div class="kicker">' + esc(a.topicLabel || sectionName(a.section)) + '</div>' +
     '<h3><a href="/article/' + esc(a.slug) + '">' + esc(a.headline) + '</a></h3>' +
-    (a.dek ? '<p>' + esc(a.dek) + '</p>' : '') +
     '<div class="meta">' + esc(fmtDateShort(a.publishedAt)) +
-    (a.region ? ' &middot; ' + esc(a.region) : '') + '</div>' +
+    ' &middot; ' + readTimeMinutes(a) + ' min read</div>' +
     '</div>'
   );
 }
@@ -629,6 +692,50 @@ const REGION_META = {
     'San Luis Valley local news: Alamosa and Monte Vista, county commissions, water fights, farm news and school boards, with the sources linked. Read the latest.',
 };
 
+/**
+ * Topic-cluster hub box: the section's hub title and description,
+ * reusing the per-section copy written for the SEO pass (SECTION_META,
+ * and the Local hub's own meta copy). Rendered as the LAST element on
+ * article, section and Local pages.
+ */
+const LOCAL_HUB = {
+  title: 'Colorado local news hub: counties, cities, sheriffs, schools',
+  description:
+    'Colorado local news from all eight regions: county commissions, city councils, sheriffs and school boards, with the original sources linked. Read the latest stories from every part of the state, or pick a region above.',
+};
+
+function hubBox(section) {
+  let title;
+  let text;
+  if (section === 'local') {
+    title = LOCAL_HUB.title;
+    text = LOCAL_HUB.description;
+  } else if (SECTION_META[section]) {
+    title = SECTION_META[section].title.replace(' news:', ' news hub:');
+    text = SECTION_META[section].description;
+  } else {
+    title = 'Colorado ' + sectionName(section).toLowerCase() + ' news hub';
+    text =
+      'Colorado ' + sectionName(section).toLowerCase() +
+      ' news reported with the facts first and the original sources linked, from communities across the state.';
+  }
+  return (
+    '<aside class="hub-box"><h2>' + esc(title) + '</h2><p>' + esc(text) + '</p></aside>'
+  );
+}
+
+/** Region variant of the hub box for Local region pages. */
+function regionHubBox(region) {
+  const title = region.name + ' local news hub: counties, cities and schools';
+  const text =
+    REGION_META[region.slug] ||
+    'Local news from ' + region.name +
+      ', Colorado: county commissions, city councils, sheriffs and school boards, with the original sources linked. Read the latest.';
+  return (
+    '<aside class="hub-box"><h2>' + esc(title) + '</h2><p>' + esc(text) + '</p></aside>'
+  );
+}
+
 function homePage({ lead, second, latest, briefingThanks }) {
   const jsonLd = [
     {
@@ -663,14 +770,48 @@ function homePage({ lead, second, latest, briefingThanks }) {
     body += '<section class="lead-story"><h1 class="headline">Colorado news, reported plainly.</h1><p class="dek">New stories are on the way.</p></section>';
   }
 
-  body += briefingBox(briefingThanks);
-  body += adSlot('home-top');
-
-  if (latest.length) {
-    body += '<h2 style="font-family:\'Playfair Display\',Georgia,serif">Latest from Colorado</h2><div class="grid">' +
-      latest.map(articleCard).join('') + '</div>';
+  if (lead) {
+    // Two-column front page under the features: "Latest from
+    // Colorado" card grids grouped by section in the main column;
+    // the briefing signup, one advertisement and Trending in the
+    // right rail. The lead and second feature were pulled out of
+    // `latest` by the route, so nothing repeats in the grids.
+    // Trending takes the five most recent stories site-wide,
+    // features included.
+    const trendingPool = [lead, second].concat(latest).filter(Boolean).slice(0, 5);
+    let main = '';
+    if (latest.length) {
+      main += '<h2 class="latest-heading">Latest from Colorado</h2>';
+      const grouped = new Map();
+      for (const a of latest) {
+        if (!grouped.has(a.section)) grouped.set(a.section, []);
+        grouped.get(a.section).push(a);
+      }
+      for (const s of SECTIONS) {
+        const items = grouped.get(s.slug);
+        if (!items || !items.length) continue;
+        grouped.delete(s.slug);
+        main +=
+          '<section class="section-group"><h3><a href="/section/' + s.slug + '">' +
+          s.name + '</a></h3><div class="grid">' +
+          items.map(articleCard).join('') + '</div></section>';
+      }
+      // A section outside SECTIONS still shows, ungrouped, rather
+      // than vanishing from the front page.
+      const leftovers = [];
+      for (const items of grouped.values()) leftovers.push(...items);
+      if (leftovers.length) {
+        main += '<div class="grid">' + leftovers.map(articleCard).join('') + '</div>';
+      }
+    }
+    body +=
+      '<div class="home-layout"><div class="home-main">' + main + '</div>' +
+      '<aside class="home-rail" aria-label="Sidebar">' +
+      briefingBox(briefingThanks) + adSlot('home-rail') + trendingRailBox(trendingPool) +
+      '</aside></div>';
+  } else {
+    body += briefingBox(briefingThanks);
   }
-  body += adSlot('home-bottom');
 
   return layout({
     title: fitTitle('Colorado politics, taxes, energy, schools and local news', 70),
@@ -704,20 +845,19 @@ function sectionPage({ section, articles }) {
       })),
     },
   ];
-  const body =
-    '<div class="kicker">' + esc(name) + '</div>' +
-    '<h1 class="headline" style="font-size:2.4rem">' + esc(name) + '</h1>' +
-    adSlot('section-top') +
-    (articles.length
-      ? '<div class="grid">' + articles.map(articleCard).join('') + '</div>'
-      : '<p>No stories in this section yet. Check back after the next edition.</p>') +
-    briefingBox(false);
-
   const meta = SECTION_META[section] || {
     title: 'Colorado ' + name.toLowerCase() + ' news: state coverage and analysis',
     description:
       'Colorado ' + name.toLowerCase() + ' news reported with the facts first and the original sources linked, from communities across the state. Read the latest stories here.',
   };
+  const body =
+    '<div class="kicker">' + esc(name) + '</div>' +
+    '<h1 class="headline" style="font-size:2.4rem">' + esc(name) + '</h1>' +
+    '<p class="dek">' + esc(meta.description) + '</p>' +
+    (articles.length
+      ? '<div class="grid">' + articles.map(articleCard).join('') + '</div>'
+      : '<p>No stories in this section yet. Check back after the next edition.</p>') +
+    hubBox(section);
   return layout({
     title: fitTitle(meta.title, 70),
     description: fitDescription(meta.description),
@@ -770,11 +910,10 @@ function localHubPage({ articles }) {
     '<h1 class="headline" style="font-size:2.4rem">Local</h1>' +
     '<p class="dek">County commissions, city councils, sheriffs, and school boards, from every part of Colorado. Pick a part of the state, or browse the latest local stories below.</p>' +
     regionNavList('') +
-    adSlot('section-top') +
     (articles.length
       ? '<div class="grid">' + articles.map(articleCard).join('') + '</div>'
       : '<p>No local stories yet. Check back after the next edition.</p>') +
-    briefingBox(false);
+    hubBox('local');
 
   return layout({
     title: fitTitle('Colorado local news: counties, cities and school boards', 70),
@@ -797,11 +936,10 @@ function localRegionPage({ region, articles }) {
     '<div class="kicker">Local &middot; ' + esc(region.name) + '</div>' +
     '<h1 class="headline" style="font-size:2.4rem">' + esc(region.name) + '</h1>' +
     regionNavList(region.slug) +
-    adSlot('section-top') +
     (articles.length
       ? '<div class="grid">' + articles.map(articleCard).join('') + '</div>'
       : '<p>No local stories from ' + esc(region.name) + ' yet. Check back after the next edition.</p>') +
-    briefingBox(false);
+    regionHubBox(region);
 
   return layout({
     title: fitTitle(region.name + ' local news: counties, cities and school boards', 70),
@@ -860,39 +998,53 @@ function articlePage(a, related, trending) {
     '<h1>' + esc(a.headline) + '</h1>' +
     (a.dek ? '<p class="dek">' + esc(a.dek) + '</p>' : '') +
     '<div class="byline">' + esc(a.byline) + ' &middot; ' + esc(fmtDate(a.publishedAt)) +
-    '</div>';
+    ' &middot; ' + readTimeMinutes(a) + ' min read</div>';
 
-  body += articleFigure(a);
-  body += adSlot('article-top');
-
-  for (const s of a.sections) {
+  const whyBox = a.whyItMatters
+    ? '<div class="why"><h2>Why it matters</h2><p>' + esc(a.whyItMatters) + '</p></div>'
+    : '';
+  const hasImage = !!(a.image && a.image.url);
+  body += '<div class="article-body">';
+  if (hasImage) {
+    // The plate (image + caption) and the Why It Matters box stack
+    // in one right-floated column and the opening text wraps around
+    // them — the same float treatment as the homepage lead — so the
+    // box sits directly under the illustration caption.
+    body += '<div class="article-float">' + articleFigure(a) + whyBox + '</div>';
+  }
+  a.sections.forEach((s, i) => {
     if (s.heading) body += '<h2>' + esc(s.heading) + '</h2>';
     if (s.lead) body += '<p class="lead">' + esc(s.lead) + '</p>';
     for (const p of s.paragraphs) body += '<p>' + esc(p) + '</p>';
-  }
+    // With no plate to sit under, the box follows the opening section.
+    if (!hasImage && i === 0) body += whyBox;
+  });
+  if (!hasImage && !a.sections.length) body += whyBox;
 
-  if (a.whyItMatters) {
-    body += '<div class="why"><h2>Why it matters</h2><p>' + esc(a.whyItMatters) + '</p></div>';
-  }
-
-  if (a.sourceUrl) {
+  // Sources block: whatever source data the stored article carries
+  // (the live store keeps one primary source per story).
+  if (a.sourceUrl || a.sourceName) {
     body +=
-      '<p class="source">Source: <a href="' + esc(a.sourceUrl) + '" rel="noopener" target="_blank">' +
-      esc(a.sourceName || a.sourceUrl) + '</a></p>';
+      '<section class="sources-block"><h2>Sources</h2><p class="source">' +
+      (a.sourceUrl
+        ? '<a href="' + esc(a.sourceUrl) + '" rel="noopener" target="_blank">' +
+          esc(a.sourceName || a.sourceUrl) + '</a>'
+        : esc(a.sourceName)) +
+      '</p></section>';
   }
-  body += '</article>';
+  body += '</div></article>';
   body +=
     '<aside class="article-rail" aria-label="Sidebar">' +
     railAdSlot() + railAdSlot() + railAdSlot() +
     trendingRailBox(trending) +
     '</aside></div>';
-  body += adSlot('article-bottom');
 
   if (related && related.length) {
     body += '<h2 style="font-family:\'Playfair Display\',Georgia,serif">More in ' + esc(sectionName(a.section)) +
       '</h2><div class="grid">' + related.map(articleCard).join('') + '</div>';
   }
-  body += briefingBox(false);
+  // The topic-cluster hub box is the last element on the page.
+  body += hubBox(a.section);
 
   return layout({
     title,
