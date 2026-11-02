@@ -193,30 +193,39 @@ function imageAbsUrl(url) {
  * Framed engraving figure, or '' when the article has no image. The
  * image and its caption stay together in the one figure block. An
  * optional extra class lets the homepage lead float the same block;
- * with no extra class the output is exactly as it has always been.
+ * with no extra class and no options the output is exactly as it has
+ * always been.
+ *
+ * Card components pass opts { noCaption: true, link: true }: cards
+ * carry NO caption (captions live only on full article pages and the
+ * two homepage features), and the whole figure is wrapped in a link
+ * to the article so the image clicks through like the headline does.
  */
-function articleFigure(a, extraClass) {
+function articleFigure(a, extraClass, opts) {
   if (!a || !a.image || !a.image.url) return '';
-  const cap = a.image.caption
+  const o = opts || {};
+  const cap = !o.noCaption && a.image.caption
     ? '<figcaption>' + esc(a.image.caption) + '</figcaption>'
     : '';
-  return (
+  const fig =
     '<figure class="art-figure' + (extraClass ? ' ' + extraClass : '') + '"><img src="' + esc(a.image.url) + '" alt="' +
-    esc(a.image.alt || '') + '" loading="lazy">' + cap + '</figure>'
-  );
+    esc(a.image.alt || '') + '" loading="lazy">' + cap + '</figure>';
+  return o.link
+    ? '<a class="art-link" href="/article/' + esc(a.slug) + '" aria-label="' + esc(a.headline) + '">' + fig + '</a>'
+    : fig;
 }
 
 /**
- * Homepage lead excerpt: the opening of the story itself — the first
- * body section's lead paragraph plus body paragraphs, up to three text
- * blocks in total — so the front page gives readers a real read of the
- * lead story, not just its headline and dek. The excerpt is then
- * shortened by roughly ten rendered lines (about 100–130 words) off
- * the tail: whole blocks are dropped from the end so it always stops
- * at a clean paragraph boundary, never mid-sentence. The lead block
- * itself is always kept, so a short story simply shows its opening
- * block with the tail blocks removed. Returns '' when the story has
- * no body text (the caller then falls back to headline/dek/figure).
+ * Homepage feature excerpt: the opening of the story itself — the
+ * first body section's lead paragraph plus its body paragraphs, taken
+ * as whole blocks until the excerpt reaches roughly 200–220 words —
+ * so the front page gives readers a real read of the story, not just
+ * its headline and dek. Whole blocks only: the excerpt always stops
+ * at a clean paragraph boundary, never mid-sentence, so the last
+ * block kept is the one that carries the total to the target. The
+ * lead block itself is always kept, so a short story simply shows
+ * whatever opening it has. Returns '' when the story has no body
+ * text (the caller then falls back to headline/dek/figure).
  */
 function leadExcerpt(a) {
   const first = a && Array.isArray(a.sections) ? a.sections[0] : null;
@@ -224,20 +233,18 @@ function leadExcerpt(a) {
   const texts = [];
   if (first.lead) texts.push({ cls: 'lead', text: first.lead });
   for (const p of first.paragraphs || []) {
-    if (texts.length >= 3) break;
+    if (texts.length >= 8) break;
     texts.push({ cls: '', text: p });
   }
   if (!texts.length) return '';
   const wordCount = (s) => String(s || '').trim().split(/\s+/).filter(Boolean).length;
-  const total = texts.reduce((n, b) => n + wordCount(b.text), 0);
-  const budget = total - 115; // drop ~100–130 words (about ten lines) off the tail
+  const TARGET = 210; // words: about 200–220 once the crossing block lands
   const kept = [];
   let used = 0;
   for (const b of texts) {
-    const w = wordCount(b.text);
-    if (kept.length && used + w > budget) break;
+    if (kept.length && used >= TARGET) break;
     kept.push(b);
-    used += w;
+    used += wordCount(b.text);
   }
   return kept
     .map((b) => '<p' + (b.cls ? ' class="' + b.cls + '"' : '') + '>' + esc(b.text) + '</p>')
@@ -400,7 +407,7 @@ a{color:inherit}
 .tagline{display:flex;align-items:center;gap:.9rem;font-style:italic;font-size:1.15rem;margin-top:.7rem}
 .tagline::before,.tagline::after{content:"";flex:1 1 0;height:3px;background:var(--red)}
 nav.main{background:#fff;border-top:1px solid var(--rule);border-bottom:2px solid var(--ink)}
-nav.main ul{display:flex;justify-content:center;flex-wrap:wrap;gap:.2rem 1.4rem;list-style:none;margin:0;padding:.55rem 1rem}
+nav.main ul{display:flex;justify-content:center;flex-wrap:wrap;gap:.2rem 1.4rem;list-style:none;margin:0 auto;padding:.55rem 1rem;max-width:1360px}
 nav.main a{text-decoration:none;font-size:1.02rem;letter-spacing:.02em;font-weight:bold;display:inline-block;padding:.28rem .65rem;border-radius:3px}
 nav.main a.active{background:var(--red);color:#fff}
 /* Local dropdown: hover/focus menu on desktop. On mobile it renders as an
@@ -579,12 +586,13 @@ nav.main li.nav-search{margin-left:auto;display:flex;align-items:center}
 .rail-row-text h4 a:hover{text-decoration:underline}
 /* Homepage two-column layout from the top of the page, matching the
    dev version: the lead and second feature run in the main column
-   with the rail beside them from the same height (three story rows,
-   the briefing signup, Trending, a rectangle ad). Below the columns,
-   full width, come one row of three "Latest from Colorado" cards
-   and the topic cluster hub box. On narrow screens the layout
+   with the rail beside them from the same height (one story row per
+   news section, the briefing signup, Trending, a rectangle ad).
+   Below the columns, full width, come the editorial strip (when an
+   Opinion piece exists), one row of three "Latest from Colorado"
+   cards and the topic cluster hub box. On narrow screens the layout
    collapses to one column and the page stacks in markup order:
-   features, rail, Latest row, hub box. */
+   features, rail, strip, Latest row, hub box. */
 .home-layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:0 2.2rem;align-items:start}
 .home-features{grid-column:1;grid-row:1}
 .home-rail{grid-column:2;grid-row:1;position:sticky;top:1rem}
@@ -611,6 +619,18 @@ nav.main li.nav-search{margin-left:auto;display:flex;align-items:center}
 .latest-card p{color:#444;font-size:.95rem;margin:.3rem 0}
 .latest-card figure.art-figure{margin:0 0 .55rem}
 .latest-card figure.art-figure img{aspect-ratio:16/9;object-fit:cover}
+/* Card art link: the anchor wrapping a card's figure (the image
+   clicks through to the article, like the headline). */
+a.art-link{display:block;text-decoration:none}
+/* Editorial strip: a full-width cream band below the homepage
+   columns and above Latest from Colorado, promoting the newest
+   Opinion piece. Rendered only when an Opinion article exists in
+   the store. */
+.editorial-strip{display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap;background:#faf5e4;border:1px solid var(--rule);padding:.85rem 1.2rem;margin-top:1.8rem}
+.editorial-strip .editorial-label{color:var(--red);font-family:Arial,Helvetica,sans-serif;font-size:.75rem;font-weight:bold;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap}
+.editorial-strip .editorial-headline{font-family:'Playfair Display',Georgia,serif;font-weight:bold;font-size:1.12rem;line-height:1.3;flex:1;min-width:220px}
+.editorial-strip .editorial-link{color:var(--red);font-family:Arial,Helvetica,sans-serif;font-weight:bold;font-size:.9rem;text-decoration:none;white-space:nowrap}
+.editorial-strip .editorial-link:hover{text-decoration:underline}
 /* Rectangle ad slot for the homepage rail, in the leaderboard's
    house dress (the label/title/line rules below are shared with
    .ad-leaderboard). */
@@ -758,11 +778,13 @@ function readTimeMinutes(a) {
  * More-in grids, search results): 16:9 plate thumbnail, red category
  * label, headline, date and read time. No byline and no source line
  * on cards — those live on the article page (owner's standing rule).
+ * No image caption on cards either (captions live on article pages
+ * and the homepage features), and the thumbnail links to the article.
  */
 function articleCard(a) {
   return (
     '<div class="card">' +
-    articleFigure(a) +
+    articleFigure(a, '', { noCaption: true, link: true }) +
     '<div class="kicker">' + esc(a.topicLabel || sectionName(a.section)) + '</div>' +
     '<h3><a href="/article/' + esc(a.slug) + '">' + esc(a.headline) + '</a></h3>' +
     '<div class="meta">' + esc(fmtDateShort(a.publishedAt)) +
@@ -788,19 +810,25 @@ function sourceCount(a) {
 /**
  * The briefing box's roundup paragraph, auto-built from the day's
  * top stories: one plain sentence per story, drawn from its dek
- * (the headline when a story has no dek), capped at six stories.
- * It stands in for the newsroom's hand-written briefing text.
- * Returns '' when there are no stories to draw from.
+ * (the headline when a story has no dek). Kept compact by design:
+ * at most three stories woven in and at most about 100 words in
+ * total, so the homepage panel stays short. It stands in for the
+ * newsroom's hand-written briefing text. Returns '' when there are
+ * no stories to draw from.
  */
 function briefingRoundup(stories) {
-  const pool = (stories || []).filter(Boolean).slice(0, 6);
+  const pool = (stories || []).filter(Boolean).slice(0, 3);
   const sentences = [];
+  let words = 0;
   for (const a of pool) {
     let t = String(a.dek || '').replace(/\s+/g, ' ').trim();
     if (!t) t = String(a.headline || '').replace(/\s+/g, ' ').trim();
     if (!t) continue;
     if (!/[.!?]["']?$/.test(t)) t += '.';
+    const w = t.split(/\s+/).filter(Boolean).length;
+    if (sentences.length && words + w > 100) break;
     sentences.push(esc(t));
+    words += w;
   }
   return sentences.join(' ');
 }
@@ -837,7 +865,7 @@ function latestCard(a) {
   const excerpt = cardExcerpt(a);
   return (
     '<div class="latest-card">' +
-    articleFigure(a) +
+    articleFigure(a, '', { noCaption: true, link: true }) +
     '<div class="kicker">' + esc(sectionName(a.section)) + '</div>' +
     '<h3><a href="/article/' + esc(a.slug) + '">' + esc(a.headline) + '</a></h3>' +
     (excerpt ? '<p>' + esc(excerpt) + '</p>' : '') +
@@ -1063,7 +1091,26 @@ function homeHubBox() {
   );
 }
 
-function homePage({ lead, second, latest, briefingThanks }) {
+/**
+ * The "From Our Editorial Desk" strip: a full-width cream band below
+ * the homepage columns and above Latest from Colorado, promoting
+ * the newest Opinion piece — red small-caps label, the headline as
+ * "Editorial: <headline>" in bold serif, and the read-on link at the
+ * right. Rendered only when the store holds an Opinion article; the
+ * home route passes the latest one, or null and the strip is absent.
+ */
+function editorialStrip(opinion) {
+  if (!opinion) return '';
+  return (
+    '<section class="editorial-strip">' +
+    '<span class="editorial-label">From Our Editorial Desk</span>' +
+    '<span class="editorial-headline">Editorial: ' + esc(opinion.headline) + '</span>' +
+    '<a class="editorial-link" href="/article/' + esc(opinion.slug) + '">Read the Editorial &rarr;</a>' +
+    '</section>'
+  );
+}
+
+function homePage({ lead, second, latest, railTop, opinion, briefingThanks }) {
   const jsonLd = [
     {
       '@context': 'https://schema.org',
@@ -1090,32 +1137,39 @@ function homePage({ lead, second, latest, briefingThanks }) {
   if (lead) {
     // Two-column front page from the top, matching the dev version:
     // the lead opens the main column and the rail starts beside it
-    // at the same height; below the columns, full width, one row of
+    // at the same height; below the columns, full width, come the
+    // editorial strip (when an Opinion piece exists), one row of
     // three "Latest from Colorado" cards and the topic cluster hub
-    // box close the page. The lead and second feature were pulled
-    // out of `latest` by the route, so nothing repeats in the rail
-    // rows or the Latest row. Trending takes the five most recent
-    // stories site-wide, features included.
+    // box. The lead and second feature were pulled out of `latest`
+    // by the route, so nothing repeats in the rail rows or the
+    // Latest row. Trending takes the five most recent stories
+    // site-wide, features included.
     const trendingPool = [lead, second].concat(latest).filter(Boolean).slice(0, 5);
     let features = featureStory(lead);
     // Second feature, directly under the lead in the same format,
     // from a different section (selected by the home route). Absent
     // when no different-section story exists.
     if (second) features += featureStory(second);
-    // The rail rows take the three most recent of `latest`; the
-    // "Latest from Colorado" row below the columns takes the next
-    // three, so no story appears twice on the front page: features,
-    // rail rows and Latest cards are all disjoint.
-    const railRows = latest.slice(0, 3);
-    const latestRow = latest.slice(3, 6);
-    // Rail, dev pattern: three thumbnail story rows first (the lead
-    // and second feature are already out of `latest`), then the
-    // briefing signup with its roundup of the day's stories, then
-    // Trending, then a rectangle ad slot. In the markup the rail
-    // follows the features inside the two-column layout, so on
-    // narrow screens — where the layout collapses to one column —
-    // the page stacks in reading order: features, rail, Latest row,
-    // hub box.
+    // The rail rows are the latest story from each of the five
+    // news sections, in section order, picked by the home route
+    // (features excluded there); without railTop the rail falls
+    // back to the three most recent of `latest`. The "Latest from
+    // Colorado" row below the columns takes the next three stories
+    // of `latest` after the rail rows are excluded, so no story
+    // appears twice on the front page: features, rail rows and
+    // Latest cards are all disjoint.
+    const railRows = (Array.isArray(railTop) ? railTop : latest.slice(0, 3))
+      .filter(Boolean)
+      .slice(0, 5);
+    const railSlugs = new Set(railRows.map((a) => a.slug));
+    const latestRow = latest.filter((a) => !railSlugs.has(a.slug)).slice(0, 3);
+    // Rail, dev pattern: the per-section story rows first, then
+    // the briefing signup with its roundup of the day's stories,
+    // then Trending, then a rectangle ad slot. In the markup the
+    // rail follows the features inside the two-column layout, so
+    // on narrow screens — where the layout collapses to one
+    // column — the page stacks in reading order: features, rail,
+    // editorial strip, Latest row, hub box.
     body +=
       '<div class="home-layout"><div class="home-features">' + features + '</div>' +
       '<aside class="home-rail" aria-label="Sidebar">' +
@@ -1127,9 +1181,11 @@ function homePage({ lead, second, latest, briefingThanks }) {
       trendingRailBox(trendingPool) +
       rectangleAdSlot() +
       '</aside></div>';
-    // Below the columns, full width: one row of three Latest cards,
+    // Below the columns, full width: the editorial strip when an
+    // Opinion piece exists, then one row of three Latest cards,
     // then the topic cluster hub box as the last content element,
     // then the Save buttons' inline script.
+    body += editorialStrip(opinion);
     if (latestRow.length) {
       body +=
         '<section class="latest-home"><h2 class="latest-home-heading">Latest from Colorado</h2>' +

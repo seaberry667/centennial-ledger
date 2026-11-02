@@ -96,7 +96,8 @@ app.post('/api/ingest', async (req, res) => {
 /* --------------------------- Public pages ------------------------- */
 
 app.get('/', async (req, res) => {
-  // Fetch 14: the lead, a second feature, and up to 12 grid stories.
+  // Fetch 24: the lead, a second feature, and the pool the Latest
+  // row and Trending draw from.
   const articles = await store.listArticles({ limit: 24 });
   const [lead, ...rest] = articles;
   // Second feature: the most recent story from a different section
@@ -110,11 +111,32 @@ app.get('/', async (req, res) => {
     const idx = rest.findIndex((a) => a.section !== lead.section);
     if (idx >= 0) second = rest.splice(idx, 1)[0];
   }
+  // Rail rows: the latest story from each of the five news
+  // sections, in section order. A section whose latest story is one
+  // of the two features contributes its next story instead, so no
+  // story appears twice on the front page; a section with no other
+  // story simply has no row.
+  const featureSlugs = new Set(
+    [lead, second].filter(Boolean).map((a) => a.slug)
+  );
+  const railTop = [];
+  for (const slug of ['politics', 'rights', 'taxes', 'energy', 'schools']) {
+    const inSection = await store.listArticles({ section: slug, limit: 3 });
+    const pick = inSection.find((a) => !featureSlugs.has(a.slug));
+    if (pick) railTop.push(pick);
+  }
+  // The newest Opinion piece feeds the "From Our Editorial Desk"
+  // strip; null while the store holds none, and the strip is then
+  // absent from the page.
+  const opinion =
+    (await store.listArticles({ section: 'opinion', limit: 1 }))[0] || null;
   res.type('html').send(
     render.homePage({
       lead: lead || null,
       second,
       latest: rest.slice(0, 12),
+      railTop,
+      opinion,
       briefingThanks: req.query.briefing === 'thanks',
     })
   );
