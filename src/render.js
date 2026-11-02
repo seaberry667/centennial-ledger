@@ -329,6 +329,30 @@ function leaderboardAdSlot() {
 }
 
 /**
+ * Rectangle ad slot for the bottom of the homepage rail, under
+ * Trending, in the leaderboard's house dress. A real AdSense unit
+ * when ADSENSE_PUBLISHER_ID is set (same mechanism as the other
+ * slots), the labeled house placeholder otherwise.
+ */
+function rectangleAdSlot() {
+  const pub = process.env.ADSENSE_PUBLISHER_ID;
+  if (pub) {
+    return (
+      '<div class="ad-slot ad-rectangle"><ins class="adsbygoogle" style="display:block" ' +
+      'data-ad-client="' + esc(pub) + '" data-ad-slot="0000000000" ' +
+      'data-ad-format="rectangle" data-full-width-responsive="false"></ins></div>'
+    );
+  }
+  return (
+    '<div class="ad-rectangle" aria-label="Advertisement">' +
+    '<div class="ad-label">Advertisement &middot; Rectangle 300&times;250</div>' +
+    '<div class="ad-house-title">Reach Colorado readers</div>' +
+    '<div class="ad-house-line">House ad. Add your AdSense Publisher ID in Monetization and this slot serves Google ads automatically.</div>' +
+    '</div>'
+  );
+}
+
+/**
  * One homepage rail story row, dev pattern: a small plate thumbnail
  * on the left (house border treatment, no caption), then the section
  * kicker, the headline as a link, and the read time. No byline and
@@ -412,6 +436,15 @@ h2.headline,h1.headline{font-family:'Playfair Display',Georgia,serif;line-height
 .briefing form{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.6rem}
 .briefing input[type=email]{flex:1;min-width:220px;padding:.55rem;font-size:1rem;border:1px solid #999}
 .briefing button{background:var(--red);color:#fff;border:0;padding:.55rem 1.1rem;font-size:1rem;cursor:pointer}
+/* Briefing box, dev structure: red-caps header, big serif title,
+   tagline, the day's roundup paragraph, attribution, form, note. */
+.briefing .briefing-kicker{color:var(--red);font-family:Arial,Helvetica,sans-serif;font-size:.75rem;font-weight:bold;letter-spacing:.14em;text-transform:uppercase}
+.briefing .briefing-kicker::before{content:"";display:inline-block;width:.55em;height:.55em;background:#e5a3a7;margin-right:.55em}
+.briefing .briefing-title{font-family:'Playfair Display',Georgia,serif;font-size:1.75rem;line-height:1.15;margin:.35rem 0 .5rem}
+.briefing .briefing-tag{margin:0 0 .6rem}
+.briefing .briefing-roundup{color:#555;font-size:.92rem;margin:0 0 .5rem}
+.briefing .briefing-by{font-family:Arial,Helvetica,sans-serif;font-size:.8rem;color:#777;margin:0}
+.briefing .briefing-note{font-style:italic;color:#555;font-size:.92rem;margin:.55rem 0 0}
 .ad-slot{margin:1.2rem 0;text-align:center}
 .ad-placeholder{border:1px dashed #bbb;color:#999;font-family:Arial,Helvetica,sans-serif;font-size:.75rem;text-transform:uppercase;letter-spacing:.15em;padding:1.4rem 0}
 article.full h1{font-family:'Playfair Display',Georgia,serif;font-size:clamp(1.9rem,4.5vw,3rem);line-height:1.12;margin:.4rem 0}
@@ -427,9 +460,11 @@ article.full p.lead{font-size:1.15rem}
 .tier{border:1px solid var(--rule);background:#fff;padding:1.2rem;text-align:center}
 .tier .price{font-size:2rem;font-family:'Playfair Display',Georgia,serif}
 .tier button,.tier a.btn{display:inline-block;background:var(--red);color:#fff;text-decoration:none;border:0;padding:.6rem 1.3rem;font-size:1rem;cursor:pointer;margin-top:.6rem}
-footer{background:var(--navy);color:#cfc9b8;padding:1.6rem 1rem;font-family:Arial,Helvetica,sans-serif;font-size:.85rem}
-footer a{color:#fff}
-footer .cols{max-width:1360px;margin:0 auto;display:flex;gap:2rem;flex-wrap:wrap;justify-content:space-between}
+footer{background:#fff;color:#3d3d3d;border-top:1px solid var(--rule);padding:1.3rem 1rem 1.8rem;font-family:Georgia,'Times New Roman',serif;font-size:.92rem;margin-top:1rem}
+footer .footer-inner{max-width:1360px;margin:0 auto}
+footer .footer-inner p{margin:.3rem 0}
+footer .footer-links{font-family:Arial,Helvetica,sans-serif;font-size:.8rem;color:#8a8474;margin-top:.7rem}
+footer .footer-links a{color:#555}
 .searchbox{display:flex;gap:.5rem;margin:1rem 0}
 .searchbox input{flex:1;padding:.55rem;font-size:1rem}
 .searchbox button{background:var(--navy);color:#fff;border:0;padding:.55rem 1.1rem;cursor:pointer}
@@ -489,12 +524,23 @@ article.full figure.art-figure{max-width:880px;margin-left:auto;margin-right:aut
    keeps the house treatment (pure white figure, thin solid black
    border on the image, grayscale) and the homepage's 16:9 plate crop. */
 .lead-story .lead-body::after{content:"";display:block;clear:both}
-.lead-story figure.lead-figure{float:right;width:44%;max-width:460px;margin:.4rem 0 1rem 1.6rem}
+.lead-story figure.lead-figure{float:right;width:55%;max-width:540px;margin:.4rem 0 1rem 1.6rem}
 .lead-story .lead-body p{font-size:1.05rem;margin:.7rem 0}
 .lead-story .lead-body p.lead{font-size:1.14rem}
-.lead-story .continue-reading{font-family:Arial,Helvetica,sans-serif;font-size:.92rem;font-weight:bold}
-.lead-story .continue-reading a{color:var(--red);text-decoration:none}
-.lead-story .continue-reading a:hover{text-decoration:underline}
+/* Feature close, dev dress: a solid red read-on button and
+   a white outlined Save button (a per-slug localStorage flag, wired
+   by the small inline script the homepage appends), then the WHY IT
+   MATTERS box — cream, thick red left border, small-caps label —
+   and a tiny grey sources line under it. */
+.feature-actions{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1rem}
+.btn-read{display:inline-block;background:var(--red);color:#fff;text-decoration:none;font-family:Arial,Helvetica,sans-serif;font-weight:bold;font-size:.92rem;padding:.55rem 1.15rem;border-radius:3px}
+.btn-read:hover{background:#8f181d}
+.btn-save{background:#fff;border:1px solid #b9b2a0;color:var(--ink);font-family:Arial,Helvetica,sans-serif;font-weight:bold;font-size:.92rem;padding:.55rem 1rem;border-radius:3px;cursor:pointer}
+.btn-save.saved{background:#fbeeee;border-color:var(--red);color:var(--red)}
+.why-feature{border-left:5px solid var(--red);background:#f7f3e8;padding:.85rem 1.1rem;margin-top:1rem}
+.why-feature .why-label{font-family:Arial,Helvetica,sans-serif;font-size:.78rem;font-weight:bold;letter-spacing:.14em;text-transform:uppercase;margin-bottom:.35rem}
+.why-feature p{margin:0;font-size:1rem}
+.feature-sources{font-family:Arial,Helvetica,sans-serif;font-size:.78rem;color:#8a8474;margin:.45rem 0 0}
 /* Narrow screens: the float drops and the plate stacks full width
    above the story text, so no text column gets squeezed. */
 @media (max-width:680px){
@@ -516,9 +562,9 @@ nav.main li.nav-search{margin-left:auto;display:flex;align-items:center}
 }
 /* Homepage leaderboard: full-width cream band directly under the nav. */
 .ad-leaderboard{background:#faf5e4;border:1px solid var(--rule);text-align:center;padding:.9rem 1rem 1rem;margin-bottom:1.4rem}
-.ad-leaderboard .ad-label{font-family:Arial,Helvetica,sans-serif;font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;color:#8a8474}
-.ad-leaderboard .ad-house-title{font-family:'Playfair Display',Georgia,serif;font-size:1.35rem;margin:.35rem 0 .2rem;color:#333}
-.ad-leaderboard .ad-house-line{font-family:Arial,Helvetica,sans-serif;font-size:.8rem;color:#777}
+.ad-leaderboard .ad-label,.ad-rectangle .ad-label{font-family:Arial,Helvetica,sans-serif;font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;color:#8a8474}
+.ad-leaderboard .ad-house-title,.ad-rectangle .ad-house-title{font-family:'Playfair Display',Georgia,serif;font-size:1.35rem;margin:.35rem 0 .2rem;color:#333}
+.ad-leaderboard .ad-house-line,.ad-rectangle .ad-house-line{font-family:Arial,Helvetica,sans-serif;font-size:.8rem;color:#777}
 .ad-slot.ad-leaderboard{margin:0 0 1.4rem;background:#faf5e4;border:1px solid var(--rule);padding:.4rem}
 /* Homepage rail story rows: thumbnail at left, kicker / headline /
    read time at right, a hairline between rows. */
@@ -533,28 +579,44 @@ nav.main li.nav-search{margin-left:auto;display:flex;align-items:center}
 .rail-row-text h4 a:hover{text-decoration:underline}
 /* Homepage two-column layout from the top of the page, matching the
    dev version: the lead and second feature run in the main column
-   with the rail beside them from the same height, and the section-
-   grouped card grids continue in the main column below the
-   features. Three grid areas carry this: features and grids stack
-   in column 1 while the rail (story rows, the briefing signup and
-   Trending) spans both rows in a sticky 320px column 2. On narrow
-   screens the grid collapses to one column and the areas stack in
-   markup order: features, rail, grids. */
+   with the rail beside them from the same height (three story rows,
+   the briefing signup, Trending, a rectangle ad). Below the columns,
+   full width, come one row of three "Latest from Colorado" cards
+   and the topic cluster hub box. On narrow screens the layout
+   collapses to one column and the page stacks in markup order:
+   features, rail, Latest row, hub box. */
 .home-layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:0 2.2rem;align-items:start}
 .home-features{grid-column:1;grid-row:1}
-.home-grids{grid-column:1;grid-row:2;margin-top:.4rem}
-.home-rail{grid-column:2;grid-row:1 / span 2;position:sticky;top:1rem}
+.home-rail{grid-column:2;grid-row:1;position:sticky;top:1rem}
 .home-rail .briefing{margin:0 0 1.2rem}
 .home-rail .ad-slot{margin:0 0 1.2rem}
 @media (max-width:900px){
   .home-layout{grid-template-columns:1fr}
-  .home-features,.home-grids{grid-column:auto;grid-row:auto}
+  .home-features{grid-column:auto;grid-row:auto}
   .home-rail{grid-column:auto;grid-row:auto;position:static}
 }
-.latest-heading{font-family:'Playfair Display',Georgia,serif;font-size:1.9rem;margin:.2rem 0 1rem}
-.section-group{margin-bottom:1.8rem}
-.section-group h3{font-family:'Playfair Display',Georgia,serif;font-size:1.45rem;margin:0 0 .8rem;padding-bottom:.3rem;border-bottom:2px solid var(--ink)}
-.section-group h3 a{text-decoration:none}
+/* Latest from Colorado: small-caps heading with a red rule running
+   right from it, then exactly one row of three cards (framed plate,
+   red kicker, headline, short excerpt, read time; no top rule and
+   no date, as in dev). */
+.latest-home{margin-top:1.8rem}
+.latest-home-heading{display:flex;align-items:center;gap:1rem;font-family:Arial,Helvetica,sans-serif;font-size:.95rem;font-weight:bold;letter-spacing:.14em;text-transform:uppercase;margin:0 0 1rem}
+.latest-home-heading::after{content:"";flex:1;height:2px;background:var(--red)}
+.latest-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.4rem}
+@media (max-width:900px){
+  .latest-grid{grid-template-columns:1fr}
+}
+.latest-card h3{font-family:'Playfair Display',Georgia,serif;margin:.25rem 0;line-height:1.25;font-size:1.18rem}
+.latest-card h3 a{text-decoration:none}
+.latest-card p{color:#444;font-size:.95rem;margin:.3rem 0}
+.latest-card figure.art-figure{margin:0 0 .55rem}
+.latest-card figure.art-figure img{aspect-ratio:16/9;object-fit:cover}
+/* Rectangle ad slot for the homepage rail, in the leaderboard's
+   house dress (the label/title/line rules below are shared with
+   .ad-leaderboard). */
+.ad-rectangle{background:#faf5e4;border:1px solid var(--rule);text-align:center;padding:1rem;display:flex;flex-direction:column;justify-content:center;min-height:250px}
+.ad-slot.ad-rectangle{margin:0;background:#faf5e4;border:1px solid var(--rule);padding:.4rem;display:block;min-height:0}
+.home-rail .ad-rectangle{margin-top:1.2rem}
 /* Article page: the plate and the Why It Matters box stack in one
    right-floated column and the opening text wraps around them — the
    same float treatment as the homepage lead — so the box sits
@@ -574,6 +636,8 @@ article.full .article-float figure.art-figure{margin:0}
 .hub-box{border:1px solid var(--rule);border-top:3px solid var(--ink);background:#f7f3e8;padding:1rem 1.2rem;margin-top:2rem}
 .hub-box h2{font-family:'Playfair Display',Georgia,serif;font-size:1.35rem;margin:.1rem 0 .4rem}
 .hub-box p{margin:.2rem 0;color:#444}
+.hub-box .hub-label{color:var(--red);font-family:Arial,Helvetica,sans-serif;font-size:.75rem;font-weight:bold;letter-spacing:.14em;text-transform:uppercase;margin-bottom:.3rem}
+.hub-box .hub-keywords{font-family:Arial,Helvetica,sans-serif;font-size:.82rem;color:#8a8474}
 `;
 
 function layout({ title, description, path, ogType = 'website', ogImage = '', articleMeta = null, jsonLd = [], activeNav = '', body }) {
@@ -656,15 +720,16 @@ ${adsense}
 ${body}
 </main>
 <footer>
-  <div class="cols">
-    <div><strong>${SITE_NAME}</strong><br>${TAGLINE}<br>Denver, Colorado</div>
-    <div>
+  <div class="footer-inner">
+    <p><strong>${SITE_NAME}</strong> &mdash; Independent, Colorado-first. Stories are AI-written from linked government &amp; news sources and labeled as such; always check the original source for full context. Not affiliated with any party or campaign.</p>
+    <p>Denver &middot; Fort Collins &middot; Colorado Springs &middot; Grand Junction &mdash; covering the Capitol and all 64 counties.</p>
+    <p class="footer-links">
       <a href="/subscribe">Subscribe</a> &middot;
       <a href="/privacy">Privacy Policy</a> &middot;
       <a href="/terms">Terms of Use</a> &middot;
-      <a href="/search">Search</a>
-    </div>
-    <div>&copy; ${new Date().getFullYear()} ${SITE_NAME}. All rights reserved.</div>
+      <a href="/search">Search</a> &middot;
+      &copy; ${new Date().getFullYear()} ${SITE_NAME}. All rights reserved.
+    </p>
   </div>
 </footer>
 </body>
@@ -706,31 +771,133 @@ function articleCard(a) {
   );
 }
 
-function briefingBox(thanks) {
+/**
+ * The number of sources actually stored on an article. The live
+ * store keeps one primary source per story (sourceName/sourceUrl),
+ * so the count is 1 when a source is stored and 0 when none is; a
+ * stored sources list, if one ever appears, is counted as-is. The
+ * homepage feature line reports this number truthfully — it is
+ * never dressed up.
+ */
+function sourceCount(a) {
+  if (!a) return 0;
+  if (Array.isArray(a.sources) && a.sources.length) return a.sources.length;
+  return a.sourceUrl || a.sourceName ? 1 : 0;
+}
+
+/**
+ * The briefing box's roundup paragraph, auto-built from the day's
+ * top stories: one plain sentence per story, drawn from its dek
+ * (the headline when a story has no dek), capped at six stories.
+ * It stands in for the newsroom's hand-written briefing text.
+ * Returns '' when there are no stories to draw from.
+ */
+function briefingRoundup(stories) {
+  const pool = (stories || []).filter(Boolean).slice(0, 6);
+  const sentences = [];
+  for (const a of pool) {
+    let t = String(a.dek || '').replace(/\s+/g, ' ').trim();
+    if (!t) t = String(a.headline || '').replace(/\s+/g, ' ').trim();
+    if (!t) continue;
+    if (!/[.!?]["']?$/.test(t)) t += '.';
+    sentences.push(esc(t));
+  }
+  return sentences.join(' ');
+}
+
+/**
+ * The Colorado Briefing signup box, in the dev version's structure:
+ * red-caps header, big serif title, tagline, the day's roundup
+ * paragraph with its News Desk attribution (only when the caller
+ * passes the day's stories — the homepage does; the subscribe and
+ * checkout pages have no story pool and get the box without it),
+ * the email form, and the Monday-Friday note.
+ */
+/** Short card excerpt for the homepage Latest row: the dek, or the
+ *  opening section's lead when there is no dek, trimmed at a word
+ *  boundary with an ellipsis when it runs long. */
+function cardExcerpt(a) {
+  let t = String((a && a.dek) || '').replace(/\s+/g, ' ').trim();
+  if (!t && a && Array.isArray(a.sections) && a.sections[0]) {
+    t = String(a.sections[0].lead || '').replace(/\s+/g, ' ').trim();
+  }
+  if (t.length <= 170) return t;
+  const cut = t.slice(0, 170);
+  const ls = cut.lastIndexOf(' ');
+  return (ls > 60 ? cut.slice(0, ls) : cut).trim() + '...';
+}
+
+/**
+ * Card for the homepage "Latest from Colorado" row, dev dress:
+ * framed plate on top, red section kicker, serif headline, a short
+ * excerpt, and the read time — no date, no top rule (unlike the
+ * section-grid card), no byline or source line.
+ */
+function latestCard(a) {
+  const excerpt = cardExcerpt(a);
   return (
-    '<section class="briefing"><h2>The Colorado Briefing</h2>' +
-    '<p>The Colorado Daily Briefing arrives Monday through Friday with the stories that matter across the state.</p>' +
+    '<div class="latest-card">' +
+    articleFigure(a) +
+    '<div class="kicker">' + esc(sectionName(a.section)) + '</div>' +
+    '<h3><a href="/article/' + esc(a.slug) + '">' + esc(a.headline) + '</a></h3>' +
+    (excerpt ? '<p>' + esc(excerpt) + '</p>' : '') +
+    '<div class="meta">' + readTimeMinutes(a) + ' min read</div>' +
+    '</div>'
+  );
+}
+
+function briefingBox(thanks, stories) {
+  const roundup = briefingRoundup(stories);
+  return (
+    '<section class="briefing">' +
+    '<div class="briefing-kicker">The Colorado Briefing</div>' +
+    '<h2 class="briefing-title">The Colorado Daily Briefing</h2>' +
+    '<p class="briefing-tag">A smart, concise roundup of the day\'s top Colorado news, plus what to watch next across the state.</p>' +
+    (roundup
+      ? '<p class="briefing-roundup">' + roundup + '</p><p class="briefing-by">News Desk</p>'
+      : '') +
     (thanks
       ? '<p><strong>Thank you. You are on the list.</strong></p>'
-      : '<form method="post" action="/briefing"><input type="email" name="email" required placeholder="Your email address" aria-label="Email address"><button type="submit">Sign Up Free</button></form>') +
+      : '<form method="post" action="/briefing"><input type="email" name="email" required placeholder="Your email address" aria-label="Email address"><button type="submit">Subscribe</button></form>') +
+    '<p class="briefing-note">Get the briefing in your inbox, Monday-Friday.</p>' +
     '</section>'
   );
 }
 
 /**
+ * Inline script for the homepage features' Save buttons: a per-slug
+ * flag in localStorage ("cl-saved:<slug>"), no accounts involved.
+ * The button label and pressed state reflect the stored flag on
+ * load and after every click.
+ */
+const SAVE_SCRIPT =
+  '<script>(function(){' +
+  'var KEY="cl-saved:";' +
+  'function paint(b){var s=false;try{s=!!localStorage.getItem(KEY+b.getAttribute("data-save-slug"));}catch(e){}' +
+  'b.classList.toggle("saved",s);b.setAttribute("aria-pressed",s?"true":"false");' +
+  'b.textContent=s?"📌 Saved":"📌 Save";}' +
+  'var bs=document.querySelectorAll("[data-save-slug]");' +
+  'for(var i=0;i<bs.length;i++){(function(b){paint(b);' +
+  'b.addEventListener("click",function(){var slug=b.getAttribute("data-save-slug");' +
+  'try{if(localStorage.getItem(KEY+slug)){localStorage.removeItem(KEY+slug);}else{localStorage.setItem(KEY+slug,"1");}}catch(e){}' +
+  'paint(b);});})(bs[i]);}' +
+  '})();</script>';
+
+/**
  * One homepage feature block: the full lead treatment for a story —
  * kicker, headline, dek, byline, then the story's opening text with
- * the plate floated beside it and a Continue reading close, or the
- * plain figure when the story has no body text to excerpt. Used for
- * the lead story and for the second feature directly under it (drawn
- * from a different section by the home route), so both features share
- * one format.
+ * the plate floated beside it (or the plain figure when the story
+ * has no body text to excerpt), closing with the Read Full Story and
+ * Save buttons, the WHY IT MATTERS box and the sources line. Used
+ * for the lead story and for the second feature directly under it
+ * (drawn from a different section by the home route), so both
+ * features share one format.
  */
 function featureStory(a) {
   const excerpt = leadExcerpt(a);
   let s =
     '<section class="lead-story"><div class="kicker">' +
-    esc(a.topicLabel || sectionName(a.section)) + ' &middot; ' + esc(sectionName(a.section)) +
+    esc(sectionName(a.section)) +
     '</div><h1 class="headline" style="font-size:clamp(2rem,5vw,3.4rem)"><a style="text-decoration:none" href="/article/' +
     esc(a.slug) + '">' + esc(a.headline) + '</a></h1>' +
     (a.dek ? '<p class="dek">' + esc(a.dek) + '</p>' : '') +
@@ -741,11 +908,30 @@ function featureStory(a) {
     // text wraps around it. With no image the excerpt runs full
     // width; with no body text we skip this block entirely and use
     // the plain figure below, exactly as the homepage always did.
-    s +=
-      '<div class="lead-body">' + articleFigure(a, 'lead-figure') + excerpt +
-      '<p class="continue-reading"><a href="/article/' + esc(a.slug) + '">Continue reading &rarr;</a></p></div>';
+    s += '<div class="lead-body">' + articleFigure(a, 'lead-figure') + excerpt + '</div>';
   } else {
     s += articleFigure(a);
+  }
+  // Dev close: a solid red Read Full Story button and an outlined
+  // Save button (per-slug localStorage flag; the homepage appends
+  // the SAVE_SCRIPT that wires it), then the WHY IT MATTERS box in
+  // its homepage dress and the tiny sources line under it, which
+  // reports the article's actual stored source count.
+  s +=
+    '<div class="feature-actions"><a class="btn-read" href="/article/' + esc(a.slug) +
+    '">Read Full Story &rarr;</a>' +
+    '<button type="button" class="btn-save" data-save-slug="' + esc(a.slug) +
+    '" aria-pressed="false">📌 Save</button></div>';
+  if (a.whyItMatters) {
+    s +=
+      '<div class="why-feature"><div class="why-label">Why It Matters</div><p>' +
+      esc(a.whyItMatters) + '</p></div>';
+    const n = sourceCount(a);
+    if (n > 0) {
+      s +=
+        '<p class="feature-sources">' + n + (n === 1 ? ' source' : ' sources') +
+        ', linked in the story</p>';
+    }
   }
   s += '</section>';
   return s;
@@ -860,6 +1046,23 @@ function regionHubBox(region) {
   );
 }
 
+/**
+ * Homepage topic cluster hub box: the last content element on the
+ * front page, in the hub-box pattern of the section hubs — red-caps
+ * label, serif hub title, the cluster paragraph, and the small grey
+ * cluster-keywords line.
+ */
+function homeHubBox() {
+  return (
+    '<aside class="hub-box">' +
+    '<div class="hub-label">Topic Cluster Hub</div>' +
+    '<h2>Colorado news hub: politics, taxes, rights, energy, schools and local news</h2>' +
+    '<p>Start with the primary cluster, Colorado politics news, then follow the supporting clusters underneath it: Taxpayer\'s Bill of Rights refunds and property taxes, gun rights and court rulings, oil and gas and electric bills, school boards and closures, and county and city decisions in all eight regions. Each cluster takes up the problem readers actually search, from why a tax bill went up to when a refund arrives, in plain words with the sources linked.</p>' +
+    '<p class="hub-keywords">Cluster keywords: Colorado politics news, Colorado legislature, Colorado tax refund, Colorado gun rights, Colorado schools. Stories in this section link back to this hub and sideways to related stories in the same cluster.</p>' +
+    '</aside>'
+  );
+}
+
 function homePage({ lead, second, latest, briefingThanks }) {
   const jsonLd = [
     {
@@ -887,57 +1090,32 @@ function homePage({ lead, second, latest, briefingThanks }) {
   if (lead) {
     // Two-column front page from the top, matching the dev version:
     // the lead opens the main column and the rail starts beside it
-    // at the same height; the second feature and the "Latest from
-    // Colorado" card grids continue down the main column. The lead
-    // and second feature were pulled out of `latest` by the route,
-    // so nothing repeats in the grids or the rail rows. Trending
-    // takes the five most recent stories site-wide, features
-    // included.
+    // at the same height; below the columns, full width, one row of
+    // three "Latest from Colorado" cards and the topic cluster hub
+    // box close the page. The lead and second feature were pulled
+    // out of `latest` by the route, so nothing repeats in the rail
+    // rows or the Latest row. Trending takes the five most recent
+    // stories site-wide, features included.
     const trendingPool = [lead, second].concat(latest).filter(Boolean).slice(0, 5);
     let features = featureStory(lead);
     // Second feature, directly under the lead in the same format,
     // from a different section (selected by the home route). Absent
     // when no different-section story exists.
     if (second) features += featureStory(second);
-    // The rail rows take the five most recent of `latest`; the
-    // grids below are grouped from what remains, so no story
-    // appears twice on the front page: features, rail rows and
-    // grids are all disjoint.
-    const railRows = latest.slice(0, 5);
-    const gridPool = latest.slice(railRows.length);
-    let main = '';
-    if (gridPool.length) {
-      main += '<h2 class="latest-heading">Latest from Colorado</h2>';
-      const grouped = new Map();
-      for (const a of gridPool) {
-        if (!grouped.has(a.section)) grouped.set(a.section, []);
-        grouped.get(a.section).push(a);
-      }
-      for (const s of SECTIONS) {
-        const items = grouped.get(s.slug);
-        if (!items || !items.length) continue;
-        grouped.delete(s.slug);
-        main +=
-          '<section class="section-group"><h3><a href="/section/' + s.slug + '">' +
-          s.name + '</a></h3><div class="grid">' +
-          items.map(articleCard).join('') + '</div></section>';
-      }
-      // A section outside SECTIONS still shows, ungrouped, rather
-      // than vanishing from the front page.
-      const leftovers = [];
-      for (const items of grouped.values()) leftovers.push(...items);
-      if (leftovers.length) {
-        main += '<div class="grid">' + leftovers.map(articleCard).join('') + '</div>';
-      }
-    }
-    // Rail, dev pattern: the five most recent stories as thumbnail
-    // rows first (the lead and second feature are already out of
-    // `latest`), then the briefing signup, then Trending. The
-    // homepage's ad presence is the leaderboard under the nav, so
-    // the rail carries no ad slot. In the markup the rail follows
-    // the features and precedes the grids, so on narrow screens —
-    // where the layout grid collapses to one column — the page
-    // stacks in reading order: features, rail, grids.
+    // The rail rows take the three most recent of `latest`; the
+    // "Latest from Colorado" row below the columns takes the next
+    // three, so no story appears twice on the front page: features,
+    // rail rows and Latest cards are all disjoint.
+    const railRows = latest.slice(0, 3);
+    const latestRow = latest.slice(3, 6);
+    // Rail, dev pattern: three thumbnail story rows first (the lead
+    // and second feature are already out of `latest`), then the
+    // briefing signup with its roundup of the day's stories, then
+    // Trending, then a rectangle ad slot. In the markup the rail
+    // follows the features inside the two-column layout, so on
+    // narrow screens — where the layout collapses to one column —
+    // the page stacks in reading order: features, rail, Latest row,
+    // hub box.
     body +=
       '<div class="home-layout"><div class="home-features">' + features + '</div>' +
       '<aside class="home-rail" aria-label="Sidebar">' +
@@ -945,10 +1123,20 @@ function homePage({ lead, second, latest, briefingThanks }) {
         ? '<section class="rail-latest" aria-label="Latest stories">' +
           railRows.map(railStoryRow).join('') + '</section>'
         : '') +
-      briefingBox(briefingThanks) + trendingRailBox(trendingPool) +
-      '</aside>' +
-      (main ? '<div class="home-grids">' + main + '</div>' : '') +
-      '</div>';
+      briefingBox(briefingThanks, [lead, second].concat(latest)) +
+      trendingRailBox(trendingPool) +
+      rectangleAdSlot() +
+      '</aside></div>';
+    // Below the columns, full width: one row of three Latest cards,
+    // then the topic cluster hub box as the last content element,
+    // then the Save buttons' inline script.
+    if (latestRow.length) {
+      body +=
+        '<section class="latest-home"><h2 class="latest-home-heading">Latest from Colorado</h2>' +
+        '<div class="latest-grid">' + latestRow.map(latestCard).join('') + '</div></section>';
+    }
+    body += homeHubBox();
+    body += SAVE_SCRIPT;
   } else {
     body += '<section class="lead-story"><h1 class="headline">Colorado news, reported plainly.</h1><p class="dek">New stories are on the way.</p></section>';
     body += briefingBox(briefingThanks);
