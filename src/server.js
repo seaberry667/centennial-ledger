@@ -8,6 +8,7 @@
  */
 
 const express = require('express');
+const path = require('path');
 const { createStore, SECTIONS, REGIONS, normalizeArticle } = require('./store');
 const render = require('./render');
 
@@ -15,6 +16,15 @@ const app = express();
 app.disable('x-powered-by');
 app.use(express.json({ limit: '25mb' }));
 app.use(express.urlencoded({ extended: false }));
+
+// Static brand assets (the masthead artwork) from public/, cached
+// for a week: these files change only with a redesign. Registered
+// before the store-ready middleware so images serve immediately.
+app.use(
+  express.static(path.join(__dirname, '..', 'public'), {
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  })
+);
 
 let store;
 const ready = createStore().then((s) => {

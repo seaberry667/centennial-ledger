@@ -1,8 +1,9 @@
 'use strict';
 /**
  * Server-rendered HTML for The Centennial Ledger live site.
- * Broadsheet styling: navy top bar, blackletter masthead, red rules,
- * serif headlines. All SEO (titles, meta, canonical, OG/Twitter, JSON-LD)
+ * Broadsheet styling: navy top bar, the drawn masthead artwork,
+ * red rules, serif headlines. All SEO (titles, meta, canonical,
+ * OG/Twitter, JSON-LD)
  * is centralized in layout().
  */
 
@@ -53,6 +54,42 @@ function fmtDateShort(iso) {
   } catch {
     return '';
   }
+}
+
+/**
+ * Byline stamp for features and article pages: the story's date AND
+ * time in Mountain Time, uppercase, e.g. "NOV 1, 11:32 AM MT".
+ * Assembled from format parts so the shape is exact.
+ */
+function fmtBylineStamp(iso) {
+  try {
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/Denver',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    }).formatToParts(new Date(iso));
+    const get = (t) => (parts.find((p) => p.type === t) || {}).value || '';
+    return (
+      get('month') + ' ' + get('day') + ', ' + get('hour') + ':' +
+      get('minute') + ' ' + get('dayPeriod') + ' MT'
+    ).toUpperCase();
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * Full byline line for features and article pages, pipe-separated
+ * as in dev: byline, read time, then the date-and-time stamp.
+ */
+function bylineLine(a) {
+  return (
+    esc(a.byline) + ' | ' + readTimeMinutes(a) + ' min read | ' +
+    esc(fmtBylineStamp(a.publishedAt))
+  );
 }
 
 /** Title tags: aim for ~70 chars, trimmed at a word boundary. */
@@ -267,36 +304,81 @@ function trendingRailBox(items) {
   );
 }
 
+/**
+ * Homepage leaderboard slot, directly under the nav: a full-width
+ * cream band. A real AdSense unit when ADSENSE_PUBLISHER_ID is set
+ * (same mechanism as adSlot), the house leaderboard placeholder
+ * otherwise, dressed as in dev.
+ */
+function leaderboardAdSlot() {
+  const pub = process.env.ADSENSE_PUBLISHER_ID;
+  if (pub) {
+    return (
+      '<div class="ad-slot ad-leaderboard"><ins class="adsbygoogle" style="display:block" ' +
+      'data-ad-client="' + esc(pub) + '" data-ad-slot="0000000000" ' +
+      'data-ad-format="horizontal" data-full-width-responsive="true"></ins></div>'
+    );
+  }
+  return (
+    '<div class="ad-leaderboard" aria-label="Advertisement">' +
+    '<div class="ad-label">Advertisement &middot; Leaderboard 728&times;90</div>' +
+    '<div class="ad-house-title">Reach Colorado readers</div>' +
+    '<div class="ad-house-line">House ad. Add your AdSense Publisher ID in Monetization and this slot serves Google ads automatically.</div>' +
+    '</div>'
+  );
+}
+
+/**
+ * One homepage rail story row, dev pattern: a small plate thumbnail
+ * on the left (house border treatment, no caption), then the section
+ * kicker, the headline as a link, and the read time. No byline and
+ * no source line, as on cards.
+ */
+function railStoryRow(a) {
+  const thumb =
+    a.image && a.image.url
+      ? '<a class="rail-thumb" href="/article/' + esc(a.slug) + '"><img src="' + esc(a.image.url) +
+        '" alt="' + esc(a.image.alt || '') + '" loading="lazy"></a>'
+      : '';
+  return (
+    '<div class="rail-row">' + thumb +
+    '<div class="rail-row-text"><div class="kicker">' + esc(sectionName(a.section)) + '</div>' +
+    '<h4><a href="/article/' + esc(a.slug) + '">' + esc(a.headline) + '</a></h4>' +
+    '<div class="meta">' + readTimeMinutes(a) + ' min read</div></div></div>'
+  );
+}
+
 const CSS = `
 :root{--navy:#0d2137;--red:#b01e24;--ink:#1a1a1a;--paper:#ffffff;--rule:#d8d2c4}
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);font-family:Georgia,'Times New Roman',serif;line-height:1.55}
 a{color:inherit}
-.topbar{background:var(--navy);color:#e8e4d8;font-family:Arial,Helvetica,sans-serif;font-size:.8rem;padding:.45rem 1rem;display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap}
-.topbar .center{font-style:italic;font-family:Georgia,serif}
+.topbar{background:var(--navy);color:#e8e4d8;font-family:Arial,Helvetica,sans-serif;font-size:.8rem;padding:.45rem 1rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.topbar .center{font-style:italic;font-family:Georgia,serif;flex:1;text-align:center}
+.topbar .topbar-left{letter-spacing:.05em;font-weight:bold;white-space:nowrap}
+.topbar .topbar-right{display:flex;align-items:center;gap:.9rem;white-space:nowrap}
 .topbar a{color:#fff;text-decoration:none}
 .btn-subscribe{background:var(--red);color:#fff!important;padding:.3rem .8rem;border-radius:3px;font-weight:bold}
 .masthead{text-align:center;padding:1.4rem 1rem .6rem;background:#fff}
 /* Shrink-to-fit wrapper: its width is the rendered width of the logo
    (the widest child), and the tagline row below spans 100% of it, so the
    red rules flanking the tagline end exactly at the logo's edges at
-   every viewport width, desktop (75% masthead scale) and mobile alike. */
+   every viewport width, desktop and mobile alike. */
 .masthead-inner{display:inline-block;max-width:100%;vertical-align:top}
-.masthead h1{font-family:'UnifrakturMaguntia','Old English Text MT',serif;font-size:clamp(2.4rem,7vw,4.6rem);margin:0;font-weight:400}
-.masthead h1 a{text-decoration:none}
-/* Desktop masthead runs at 75% of its original size (each clamp term
-   scaled by 0.75: 2.4rem->1.8rem, 7vw->5.25vw, 4.6rem->3.45rem). The
-   base rule above still governs phones, and the max-width:680px mobile
-   query below is unchanged, so the mobile masthead keeps its old size. */
-@media (min-width:681px){
-  .masthead h1{font-size:clamp(1.8rem,5.25vw,3.45rem)}
-}
+/* Logo lockup: the owner's exact masthead artwork (script "The"
+   over engraved capitals), served as /masthead.webp with a PNG
+   fallback. It displays at 600px on desktop inside the
+   shrink-to-fit wrapper, so the tagline rules below end exactly
+   at the image's edges; on narrow screens it scales down with
+   the wrapper. The full-size original lives in assets-src/. */
+.logo-lockup a{display:block;text-decoration:none}
+.logo-lockup img{display:block;width:600px;max-width:100%;height:auto}
 .tagline{display:flex;align-items:center;gap:.9rem;font-style:italic;font-size:1.15rem;margin-top:.7rem}
 .tagline::before,.tagline::after{content:"";flex:1 1 0;height:3px;background:var(--red)}
 nav.main{background:#fff;border-top:1px solid var(--rule);border-bottom:2px solid var(--ink)}
 nav.main ul{display:flex;justify-content:center;flex-wrap:wrap;gap:.2rem 1.4rem;list-style:none;margin:0;padding:.55rem 1rem}
-nav.main a{text-decoration:none;font-size:1.02rem;letter-spacing:.02em}
-nav.main a.active{color:var(--red);font-weight:bold}
+nav.main a{text-decoration:none;font-size:1.02rem;letter-spacing:.02em;font-weight:bold;display:inline-block;padding:.28rem .65rem;border-radius:3px}
+nav.main a.active{background:var(--red);color:#fff}
 /* Local dropdown: hover/focus menu on desktop. On mobile it renders as an
    expanded indented sub-list inside the nav (see media query below). */
 nav.main li.has-dropdown{position:relative}
@@ -313,7 +395,7 @@ nav.main ul.dropdown a:hover{background:#f3efe3}
   nav.main ul.dropdown{display:flex;position:static;transform:none;border:0;border-top:1px solid var(--rule);box-shadow:none;min-width:0;padding:.35rem 0 .15rem;margin-top:.3rem}
   nav.main ul.dropdown a{font-size:.92rem;padding:.22rem .4rem}
 }
-.wrap{max-width:1180px;margin:0 auto;padding:1.2rem 1rem 3rem}
+.wrap{max-width:1360px;margin:0 auto;padding:1.2rem 1rem 3rem}
 .kicker{color:var(--red);text-transform:uppercase;font-family:Arial,Helvetica,sans-serif;font-size:.75rem;font-weight:bold;letter-spacing:.08em}
 h2.headline,h1.headline{font-family:'Playfair Display',Georgia,serif;line-height:1.15;margin:.3rem 0}
 .dek{font-size:1.15rem;color:#444;font-style:italic}
@@ -347,7 +429,7 @@ article.full p.lead{font-size:1.15rem}
 .tier button,.tier a.btn{display:inline-block;background:var(--red);color:#fff;text-decoration:none;border:0;padding:.6rem 1.3rem;font-size:1rem;cursor:pointer;margin-top:.6rem}
 footer{background:var(--navy);color:#cfc9b8;padding:1.6rem 1rem;font-family:Arial,Helvetica,sans-serif;font-size:.85rem}
 footer a{color:#fff}
-footer .cols{max-width:1180px;margin:0 auto;display:flex;gap:2rem;flex-wrap:wrap;justify-content:space-between}
+footer .cols{max-width:1360px;margin:0 auto;display:flex;gap:2rem;flex-wrap:wrap;justify-content:space-between}
 .searchbox{display:flex;gap:.5rem;margin:1rem 0}
 .searchbox input{flex:1;padding:.55rem;font-size:1rem}
 .searchbox button{background:var(--navy);color:#fff;border:0;padding:.55rem 1.1rem;cursor:pointer}
@@ -377,7 +459,7 @@ article.full figure.art-figure{max-width:880px;margin-left:auto;margin-right:aut
    AdSense units. The rail is sticky on desktop so the ads stay in view
    while the story scrolls; on narrower screens the layout collapses to
    a single column and the rail stacks below the article body. */
-.article-layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:2.2rem;align-items:start}
+.article-layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:2.2rem;align-items:start}
 .article-rail{position:sticky;top:1rem}
 .article-rail .ad-slot{margin:0 0 1.2rem;text-align:center}
 .article-rail .ad-slot:last-child{margin-bottom:0}
@@ -418,16 +500,41 @@ article.full figure.art-figure{max-width:880px;margin-left:auto;margin-right:aut
 @media (max-width:680px){
   .lead-story figure.lead-figure{float:none;width:auto;max-width:none;margin:1rem 0 .3rem}
 }
-/* Restyle pass, matching the newsroom dress: the navy top bar carries
-   the paper's line on the left and the date line on the right, and the
-   account links live at the right end of the nav. */
-.topbar .brand-line{font-style:italic;font-family:Georgia,serif}
-nav.main li.nav-push{margin-left:auto}
-nav.main a.btn-subscribe{padding:.25rem .75rem}
+/* Second restyle pass, copying the dev version's dress: the navy
+   top bar runs date/city/weather on the left, the paper's line
+   centered, and Sign In / Subscribe on the right. The nav's right
+   end carries the search box; the current section's nav item is a
+   filled red button (see nav.main a.active above). */
+nav.main li.nav-search{margin-left:auto;display:flex;align-items:center}
+.nav-search-form{display:flex;align-items:center;gap:.35rem}
+.nav-search-form input[type=search]{padding:.38rem .6rem;border:1px solid #b9b2a0;border-radius:3px;font-size:.95rem;font-family:Georgia,serif;width:190px;background:#fff}
+.nav-search-form button{background:none;border:0;cursor:pointer;color:#555;padding:.15rem;display:flex;align-items:center}
+@media (max-width:760px){
+  .nav-search-form input[type=search]{width:130px}
+  .topbar .topbar-left{white-space:normal}
+  .topbar .center{flex-basis:100%;order:3;text-align:center}
+}
+/* Homepage leaderboard: full-width cream band directly under the nav. */
+.ad-leaderboard{background:#faf5e4;border:1px solid var(--rule);text-align:center;padding:.9rem 1rem 1rem;margin-bottom:1.4rem}
+.ad-leaderboard .ad-label{font-family:Arial,Helvetica,sans-serif;font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;color:#8a8474}
+.ad-leaderboard .ad-house-title{font-family:'Playfair Display',Georgia,serif;font-size:1.35rem;margin:.35rem 0 .2rem;color:#333}
+.ad-leaderboard .ad-house-line{font-family:Arial,Helvetica,sans-serif;font-size:.8rem;color:#777}
+.ad-slot.ad-leaderboard{margin:0 0 1.4rem;background:#faf5e4;border:1px solid var(--rule);padding:.4rem}
+/* Homepage rail story rows: thumbnail at left, kicker / headline /
+   read time at right, a hairline between rows. */
+.rail-latest{margin-bottom:1.4rem}
+.rail-row{display:flex;gap:.85rem;padding:.75rem 0;border-bottom:1px solid var(--rule)}
+.rail-row:first-child{padding-top:0}
+.rail-row:last-child{border-bottom:0;padding-bottom:0}
+.rail-thumb{flex:0 0 110px}
+.rail-thumb img{display:block;width:110px;height:74px;object-fit:cover;border:1px solid #000;filter:grayscale(1) contrast(1.06);background:#fff}
+.rail-row-text h4{font-family:'Playfair Display',Georgia,serif;font-size:1.02rem;line-height:1.28;margin:.15rem 0 .3rem}
+.rail-row-text h4 a{text-decoration:none}
+.rail-row-text h4 a:hover{text-decoration:underline}
 /* Homepage two-column layout under the features: section-grouped card
-   grids in the main column; the briefing signup, one advertisement
-   and Trending in a sticky 300px right rail. */
-.home-layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:2.2rem;align-items:start;margin-top:1.6rem}
+   grids in the main column; story rows, the briefing signup and
+   Trending in a sticky 320px right rail. */
+.home-layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:2.2rem;align-items:start;margin-top:1.6rem}
 .home-rail{position:sticky;top:1rem}
 .home-rail .briefing{margin:0 0 1.2rem}
 .home-rail .ad-slot{margin:0 0 1.2rem}
@@ -481,7 +588,7 @@ function layout({ title, description, path, ogType = 'website', ogImage = '', ar
     REGIONS.map((r) => '<li><a href="/local/' + r.slug + '">' + r.name + '</a></li>').join('') +
     '</ul>';
   const navItems =
-    '<li><a href="/">Home</a></li>' +
+    '<li><a href="/"' + (activeNav === 'home' ? ' class="active"' : '') + '>Home</a></li>' +
     SECTIONS.map((s) => {
       const link =
         '<a href="/section/' + s.slug + '"' +
@@ -490,9 +597,12 @@ function layout({ title, description, path, ogType = 'website', ogImage = '', ar
         ? '<li class="has-dropdown">' + link + localDropdown + '</li>'
         : '<li>' + link + '</li>';
     }).join('') +
-    '<li class="nav-push"><a href="/search">Search</a></li>' +
-    '<li><a href="/signin">Sign In</a></li>' +
-    '<li><a class="btn-subscribe" href="/subscribe">Subscribe</a></li>';
+    // Search box at the right end of the nav row, as in dev: a GET
+    // form on the existing /search route, which reads ?q=.
+    '<li class="nav-search"><form class="nav-search-form" method="get" action="/search" role="search">' +
+    '<input type="search" name="q" placeholder="Search..." aria-label="Search stories">' +
+    '<button type="submit" aria-label="Search"><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><line x1="15.5" y1="15.5" x2="21" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>' +
+    '</form></li>';
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -511,20 +621,25 @@ ${articleTags}${ogImage ? '<meta property="og:image" content="' + esc(ogImage) +
 ${ogImage ? '<meta name="twitter:image" content="' + esc(ogImage) + '">\n' : ''}<meta name="twitter:title" content="${esc(title)}">
 <meta name="twitter:description" content="${esc(description)}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700;900&family=UnifrakturMaguntia&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700;900&display=swap" rel="stylesheet">
 <style>${CSS}</style>
 ${ld}
 ${adsense}
 </head>
 <body>
 <div class="topbar">
-  <span class="brand-line">Colorado Political News, Reporting, and Analysis</span>
-  <span>${esc(fmtDate(new Date().toISOString()))} &middot; Denver, Colorado &middot; Fair, 54&deg;F</span>
+  <span class="topbar-left">${esc(fmtDate(new Date().toISOString()).toUpperCase())} | DENVER, COLORADO &nbsp; 54&deg; &middot; Fair</span>
+  <span class="center">Colorado Political News, Reporting, and Analysis</span>
+  <span class="topbar-right"><a href="/signin">Sign In</a><a class="btn-subscribe" href="/subscribe">Subscribe</a></span>
 </div>
 <header class="masthead">
   <div class="masthead-inner">
-    <h1><a href="/">${SITE_NAME}</a></h1>
-    <div class="tagline">${TAGLINE}</div>
+    <!-- Logo lockup: the owner's exact masthead artwork (WebP with
+         a PNG fallback). The tagline rules key off the wrapper
+         width, so they end exactly at the image's edges at every
+         viewport width. -->
+    <div class="logo-lockup"><a href="/" aria-label="${SITE_NAME}"><picture><source srcset="/masthead.webp" type="image/webp"><img src="/masthead.png" alt="The Centennial Ledger" width="1200" height="300"></picture></a></div>
+    <div class="tagline">${TAGLINE}.</div>
   </div>
 </header>
 <nav class="main"><ul>${navItems}</ul></nav>
@@ -610,7 +725,7 @@ function featureStory(a) {
     '</div><h1 class="headline" style="font-size:clamp(2rem,5vw,3.4rem)"><a style="text-decoration:none" href="/article/' +
     esc(a.slug) + '">' + esc(a.headline) + '</a></h1>' +
     (a.dek ? '<p class="dek">' + esc(a.dek) + '</p>' : '') +
-    '<div class="byline">' + esc(a.byline) + ' &middot; ' + esc(fmtDateShort(a.publishedAt)) + '</div>';
+    '<div class="byline">' + bylineLine(a) + '</div>';
   if (excerpt) {
     // Classic newspaper float: the plate (image + caption as one
     // block) floats beside the story's opening paragraphs and the
@@ -759,7 +874,7 @@ function homePage({ lead, second, latest, briefingThanks }) {
     },
   ];
 
-  let body = '';
+  let body = leaderboardAdSlot();
   if (lead) {
     body += featureStory(lead);
     // Second feature, directly under the lead in the same format,
@@ -773,8 +888,8 @@ function homePage({ lead, second, latest, briefingThanks }) {
   if (lead) {
     // Two-column front page under the features: "Latest from
     // Colorado" card grids grouped by section in the main column;
-    // the briefing signup, one advertisement and Trending in the
-    // right rail. The lead and second feature were pulled out of
+    // story rows, the briefing signup and Trending in the right
+    // rail. The lead and second feature were pulled out of
     // `latest` by the route, so nothing repeats in the grids.
     // Trending takes the five most recent stories site-wide,
     // features included.
@@ -804,10 +919,20 @@ function homePage({ lead, second, latest, briefingThanks }) {
         main += '<div class="grid">' + leftovers.map(articleCard).join('') + '</div>';
       }
     }
+    // Rail, dev pattern: the five most recent stories as thumbnail
+    // rows first (the lead and second feature are already out of
+    // `latest`), then the briefing signup, then Trending. The
+    // homepage's ad presence is the leaderboard under the nav, so
+    // the rail carries no ad slot.
+    const railRows = latest.slice(0, 5);
     body +=
       '<div class="home-layout"><div class="home-main">' + main + '</div>' +
       '<aside class="home-rail" aria-label="Sidebar">' +
-      briefingBox(briefingThanks) + adSlot('home-rail') + trendingRailBox(trendingPool) +
+      (railRows.length
+        ? '<section class="rail-latest" aria-label="Latest stories">' +
+          railRows.map(railStoryRow).join('') + '</section>'
+        : '') +
+      briefingBox(briefingThanks) + trendingRailBox(trendingPool) +
       '</aside></div>';
   } else {
     body += briefingBox(briefingThanks);
@@ -820,6 +945,7 @@ function homePage({ lead, second, latest, briefingThanks }) {
     ),
     path: '/',
     jsonLd,
+    activeNav: 'home',
     body,
   });
 }
@@ -997,8 +1123,7 @@ function articlePage(a, related, trending) {
     (a.region ? ' &middot; ' + esc(a.region) : '') + '</div>' +
     '<h1>' + esc(a.headline) + '</h1>' +
     (a.dek ? '<p class="dek">' + esc(a.dek) + '</p>' : '') +
-    '<div class="byline">' + esc(a.byline) + ' &middot; ' + esc(fmtDate(a.publishedAt)) +
-    ' &middot; ' + readTimeMinutes(a) + ' min read</div>';
+    '<div class="byline">' + bylineLine(a) + '</div>';
 
   const whyBox = a.whyItMatters
     ? '<div class="why"><h2>Why it matters</h2><p>' + esc(a.whyItMatters) + '</p></div>'
