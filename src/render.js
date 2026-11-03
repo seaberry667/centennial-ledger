@@ -427,7 +427,7 @@ a{color:inherit}
 .masthead{text-align:center;padding:1.1rem 1rem .4rem;background:#fff}
 .masthead-banner a{display:inline-block;text-decoration:none}
 .masthead-banner img{display:block;width:990px;max-width:100%;height:auto;margin:0 auto}
-.tagline{display:flex;align-items:center;gap:.9rem;font-style:italic;font-size:1.15rem;max-width:600px;margin:.55rem auto 0}
+.tagline{display:flex;align-items:center;gap:.9rem;font-style:italic;font-size:1.15rem;max-width:600px;margin:0 auto;line-height:1}
 .tagline::before,.tagline::after{content:"";flex:1 1 0;height:2px;background:var(--color-red)}
 /* ---------- Navigation: white, thin double black rules, serif labels ---------- */
 nav.main{background:#fff;border-top:4px double var(--color-text);border-bottom:4px double var(--color-text);position:relative}
@@ -774,7 +774,7 @@ ${adsense}
        image (WebP with a PNG fallback), centered on white. Below
        it, the tagline flanked by short red rules. -->
   <div class="masthead-banner"><a href="/" aria-label="${SITE_NAME}"><picture><source srcset="/masthead-banner.webp" type="image/webp"><img src="/masthead-banner.png" alt="The Centennial Ledger" width="990" height="101"></picture></a></div>
-  <div class="tagline">${TAGLINE}.</div>
+  <div class="tagline">${TAGLINE}</div>
 </header>
 <nav class="main"><button class="nav-toggle" type="button" aria-expanded="false" aria-controls="main-nav-list">Menu <svg class="nav-toggle-caret" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button><ul class="nav-list" id="main-nav-list">${navItems}</ul></nav>
 <main class="wrap">
