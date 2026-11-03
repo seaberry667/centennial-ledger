@@ -608,15 +608,20 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
    generated from the paragraph's actual first letter. */
 .dropcap::first-letter{font-family:var(--font-headline);font-weight:700;font-size:3.4em;line-height:.82;float:left;color:var(--color-red);margin:.05em .12em 0 0}
 .feature-actions{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1rem}
-.btn-read{display:inline-block;background:var(--color-red);color:#fff;text-decoration:none;font-family:var(--font-ui);font-weight:bold;font-size:.92rem;padding:.55rem 1.15rem;border-radius:3px}
+/* Action buttons (Read Full Story, Save, Share) carry the
+   navigation's typography — the serif body font at 1rem, weight
+   600, with the nav's letter spacing (owner instruction,
+   2026-11-03). Their fills stay: red for the primary action,
+   bordered white for the secondary ones. */
+.btn-read{display:inline-block;background:var(--color-red);color:#fff;text-decoration:none;font-family:var(--font-body);font-weight:600;font-size:1rem;letter-spacing:.02em;padding:.55rem 1.15rem;border-radius:3px}
 .btn-read:hover{background:#7d181e}
-.btn-save{background:#fff;border:1px solid #b9b2a0;color:var(--color-text);font-family:var(--font-ui);font-weight:bold;font-size:.92rem;padding:.55rem 1rem;border-radius:3px;cursor:pointer}
+.btn-save{background:#fff;border:1px solid #b9b2a0;color:var(--color-text);font-family:var(--font-body);font-weight:600;font-size:1rem;letter-spacing:.02em;padding:.55rem 1rem;border-radius:3px;cursor:pointer}
 .btn-save.saved{background:#fbeeee;border-color:var(--color-red);color:var(--color-red)}
-.btn-share{background:#fff;border:1px solid #b9b2a0;color:var(--color-text);font-family:var(--font-ui);font-weight:bold;font-size:.92rem;padding:.55rem 1rem;border-radius:3px;cursor:pointer}
+.btn-share{background:#fff;border:1px solid #b9b2a0;color:var(--color-text);font-family:var(--font-body);font-weight:600;font-size:1rem;letter-spacing:.02em;padding:.55rem 1rem;border-radius:3px;cursor:pointer}
 .share-wrap{position:relative;display:inline-block}
 .share-menu{position:absolute;left:0;top:calc(100% + 6px);z-index:60;display:block;min-width:215px;background:#fff;border:1px solid #b9b2a0;border-radius:4px;box-shadow:0 8px 22px rgba(16,36,56,.18);padding:.35rem 0}
 .share-menu[hidden]{display:none}
-.share-menu a,.share-menu button{display:block;width:100%;box-sizing:border-box;text-align:left;background:none;border:0;padding:.5rem .9rem;font-family:var(--font-ui);font-size:.92rem;color:var(--color-text);text-decoration:none;cursor:pointer}
+.share-menu a,.share-menu button{display:block;width:100%;box-sizing:border-box;text-align:left;background:none;border:0;padding:.5rem .9rem;font-family:var(--font-body);font-weight:600;font-size:1rem;letter-spacing:.02em;color:var(--color-text);text-decoration:none;cursor:pointer}
 .share-menu a:hover,.share-menu button:hover{background:var(--color-ivory)}
 .why-feature{border-left:4px solid var(--color-red);background:var(--color-ivory);padding:16px 18px;margin-top:1rem}
 .why-feature .why-label{font-family:var(--font-ui);color:var(--color-red);font-size:.78rem;font-weight:bold;letter-spacing:.14em;text-transform:uppercase;margin-bottom:.35rem}
