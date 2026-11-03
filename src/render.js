@@ -696,7 +696,6 @@ footer::before{content:"";position:absolute;top:-8px;left:0;right:0;height:1px;b
 .footer-stay-text{font-style:italic;margin:.2rem 0 .8rem;color:#333}
 .btn-signup{display:inline-block;border:1.5px solid var(--color-red);color:var(--color-red);text-decoration:none;font-family:var(--font-ui);font-weight:bold;font-size:.9rem;padding:.45rem 1.1rem;background:#fff}
 .btn-signup:hover{background:var(--color-red);color:#fff}
-.footer-disclosure{margin:1.6rem 0 .4rem;color:#555;font-size:.88rem}
 .footer-bar{background:var(--color-navy);color:#e8e4d8;margin-top:1.2rem}
 .footer-bar-inner{max-width:1200px;margin:0 auto;padding:.65rem 24px;display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;font-family:var(--font-ui);font-size:.8rem}
 .footer-bar a{color:#e8e4d8;text-decoration:none}
@@ -802,7 +801,7 @@ ${body}
     <div class="footer-grid">
       <div class="footer-col footer-brand">
         <picture><source srcset="/footer-logo.webp" type="image/webp"><img src="/footer-logo.png" alt="The Centennial Ledger" width="285" height="140"></picture>
-        <p>Covering the Capitol and all 64 counties.</p>
+        <p>The Centennial Ledger covers the Capitol and all 64 counties. Independent, Colorado-first. Stories are largely AI-written from linked government &amp; news sources; always check the original source for full context. Not affiliated with any party or campaign.</p>
       </div>
       <nav class="footer-col" aria-label="Sections">
         <h3>Sections</h3>
@@ -836,7 +835,6 @@ ${body}
         <a class="btn-signup" href="/subscribe">Sign Up &rarr;</a>
       </div>
     </div>
-    <p class="footer-disclosure"><strong>${SITE_NAME}</strong> &mdash; Independent, Colorado-first. Stories are AI-written from linked government &amp; news sources and labeled as such; always check the original source for full context. Not affiliated with any party or campaign.</p>
   </div>
   <div class="footer-bar">
     <div class="footer-bar-inner">
