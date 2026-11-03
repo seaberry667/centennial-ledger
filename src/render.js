@@ -362,7 +362,7 @@ function localStatewideBox(items) {
     list
       .map(
         (a, i) =>
-          '<li><span class="trend-num">' + (i + 1) + '</span>' +
+          '<li><img class="trend-icon" src="/quatrefoil.png" alt="">' +
           '<a href="/article/' + esc(a.slug) + '">' + esc(a.headline) + '</a></li>'
       )
       .join('') +
@@ -652,9 +652,10 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 .rail-row-text h4 a{text-decoration:none}
 .rail-row-text h4 a:hover{text-decoration:underline}
 /* Local & Statewide sidebar box (replaces the old trending box):
-   the most recent Local stories, newest first, numbered 1-8 with
-   red circular markers. The numbers are chronological order, not a
-   popularity ranking. */
+   the most recent Local stories, newest first, each marked with
+   the owner's maroon quatrefoil icon (owner instruction,
+   2026-11-02; the rows were previously numbered 1-8 in red
+   circles). Order is chronological, not a popularity ranking. */
 .local-statewide{padding-top:.7rem;margin-bottom:1.2rem}
 .local-statewide h2{font-family:var(--font-ui);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--color-red);margin:0 0 .2rem;display:flex;align-items:center;gap:.7rem}
 .local-statewide h2::after{content:"";flex:1;height:1px;background:var(--color-gold)}
@@ -663,7 +664,7 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 .local-statewide ol{list-style:none;margin:0;padding:0}
 .local-statewide li{display:flex;gap:.65rem;align-items:flex-start;padding:.5rem 0;border-bottom:1px solid var(--color-border)}
 .local-statewide li:last-child{border-bottom:0;padding-bottom:0}
-.local-statewide .trend-num{flex:0 0 auto;width:1.6rem;height:1.6rem;border-radius:50%;background:var(--color-red);color:#fff;font-family:var(--font-ui);font-weight:bold;font-size:.9rem;line-height:1.6rem;text-align:center;margin-top:.1rem}
+.local-statewide .trend-icon{flex:0 0 auto;width:1.25rem;height:1.25rem;margin-top:.15rem}
 .local-statewide a{text-decoration:none;font-family:var(--font-headline);font-size:1.06rem;line-height:1.3}
 .local-statewide a:hover{text-decoration:underline}
 /* Editorial strip: a full-width ivory band below the homepage
