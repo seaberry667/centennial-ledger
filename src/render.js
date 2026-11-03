@@ -733,6 +733,7 @@ article.full figure.article-hero{margin:1.1rem 0}
 .searchbox input{flex:1;padding:.55rem;font-size:1rem;font-family:var(--font-body)}
 .searchbox button{background:var(--color-navy);color:#fff;border:0;padding:.55rem 1.1rem;cursor:pointer;font-family:var(--font-ui)}
 .static-page{max-width:760px}
+.static-page.about-page{max-width:920px;margin-left:auto;margin-right:auto}
 .static-page h1{font-family:var(--font-headline)}
 .static-page h2{font-family:var(--font-headline);margin:1.6em 0 .5em}
 .static-page ul{margin:0 0 1em;padding-left:1.4em}
@@ -1937,7 +1938,7 @@ function aboutPage() {
       'The Centennial Ledger is an independent Colorado digital newspaper covering politics, rights, taxes, energy, schools and local news in all 64 counties.'
     ),
     path: '/about',
-    body: '<div class="static-page"><h1>About The Centennial Ledger</h1>' + content + '</div>',
+    body: '<div class="static-page about-page"><h1>About The Centennial Ledger</h1>' + content + '</div>',
   });
 }
 
