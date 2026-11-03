@@ -299,7 +299,7 @@ function shareImageUrl(a) {
   // plates itself at /img/<slug> (see the route in server.js), and
   // the share image points there (owner instruction, 2026-11-02:
   // fix the site so link posts carry the illustration).
-  return siteUrl() + '/img/' + a.slug;
+  return siteUrl() + '/img/' + a.slug + '.png';
 }
 
 function adSlot(label) {

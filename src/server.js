@@ -9,6 +9,7 @@
 
 const express = require('express');
 const path = require('path');
+const sharp = require('sharp');
 const { createStore, SECTIONS, REGIONS, normalizeArticle } = require('./store');
 const render = require('./render');
 
@@ -189,9 +190,18 @@ app.get('/local/:region', async (req, res) => {
 /* Article plate images at a real URL, so social platforms can fetch
    them for link previews (og:image points here). Plates are stored
    inline as data URIs; this decodes and serves the bytes. An article
-   whose image is already an http(s) URL redirects to it. */
+   whose image is already an http(s) URL redirects to it. Stored
+   plates arrive as WebP, which Facebook's preview crawler will not
+   process, so anything that is not already PNG/JPEG/GIF is converted
+   to PNG on first request (falling back to a quality JPEG if the
+   PNG is unexpectedly huge) and cached in memory. */
+const shareImageCache = new Map();
 app.get('/img/:slug', async (req, res) => {
-  const article = await store.getArticle(req.params.slug);
+  // Accept an optional .png/.jpg suffix: a conventional image
+  // filename is the safest shape for scrapers, and the suffix also
+  // gives format changes a fresh URL for their caches.
+  const slug = req.params.slug.replace(/\.(png|jpe?g)$/i, '');
+  const article = await store.getArticle(slug);
   if (!article || !article.image || !article.image.url) {
     return res.status(404).type('text').send('Not found');
   }
@@ -199,15 +209,38 @@ app.get('/img/:slug', async (req, res) => {
   if (/^https?:\/\//i.test(url)) return res.redirect(302, url);
   const m = /^data:([^;,]+)?(;base64)?,([\s\S]*)$/.exec(url);
   if (!m) return res.status(404).type('text').send('Not found');
-  const type = m[1] || 'application/octet-stream';
-  if (!/^image\//i.test(type)) {
+  const storedType = (m[1] || '').toLowerCase();
+  if (!/^image\//.test(storedType)) {
     return res.status(404).type('text').send('Not found');
   }
-  const buf = m[2]
+  const raw = m[2]
     ? Buffer.from(m[3], 'base64')
     : Buffer.from(decodeURIComponent(m[3]));
+  let out = shareImageCache.get(slug);
+  if (!out) {
+    if (['image/png', 'image/jpeg', 'image/gif'].includes(storedType)) {
+      out = { type: storedType, buf: raw };
+    } else {
+      try {
+        let buf = await sharp(raw).png().toBuffer();
+        let type = 'image/png';
+        if (buf.length > 4500000) {
+          buf = await sharp(raw).jpeg({ quality: 90 }).toBuffer();
+          type = 'image/jpeg';
+        }
+        out = { type, buf };
+      } catch (err) {
+        console.error('Image conversion failed for', slug, err);
+        return res.status(502).type('text').send('Image unavailable');
+      }
+    }
+    shareImageCache.set(slug, out);
+    if (shareImageCache.size > 16) {
+      shareImageCache.delete(shareImageCache.keys().next().value);
+    }
+  }
   res.set('Cache-Control', 'public, max-age=86400');
-  return res.type(type).send(buf);
+  return res.type(out.type).send(out.buf);
 });
 
 app.get('/article/:slug', async (req, res) => {
