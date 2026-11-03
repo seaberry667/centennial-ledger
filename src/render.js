@@ -613,10 +613,14 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 /* Editorial strip: a full-width ivory band below the homepage
    columns and above Latest from Colorado, promoting the newest
    Opinion piece. Rendered only when an Opinion article exists. */
-.editorial-strip{display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap;background:var(--color-ivory);border:1px solid var(--color-border);padding:.85rem 1.2rem;margin-top:1.8rem}
+.editorial-strip{display:flex;align-items:flex-start;gap:1.2rem;flex-wrap:wrap;background:var(--color-ivory);border:1px solid var(--color-border);padding:1rem 1.2rem;margin-top:1.8rem}
+.editorial-strip figure.art-figure{flex:0 0 240px;margin:0}
+.editorial-strip figure.art-figure img{aspect-ratio:16/9;object-fit:cover}
+.editorial-strip .editorial-text{flex:1;min-width:220px}
 .editorial-strip .editorial-label{color:var(--color-red);font-family:var(--font-ui);font-size:.75rem;font-weight:bold;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap}
-.editorial-strip .editorial-headline{font-family:var(--font-headline);font-weight:bold;font-size:1.12rem;line-height:1.3;flex:1;min-width:220px}
-.editorial-strip .editorial-link{color:var(--color-red);font-family:var(--font-ui);font-weight:bold;font-size:.9rem;text-decoration:none;white-space:nowrap}
+.editorial-strip .editorial-headline{display:block;font-family:var(--font-headline);font-weight:bold;font-size:1.2rem;line-height:1.3;margin-top:.3rem}
+.editorial-strip .editorial-excerpt{font-size:1rem;line-height:1.5;color:#333;margin:.45rem 0 0}
+.editorial-strip .editorial-link{color:var(--color-red);font-family:var(--font-ui);font-weight:bold;font-size:.9rem;text-decoration:none;white-space:nowrap;align-self:center}
 .editorial-strip .editorial-link:hover{text-decoration:underline}
 /* Latest from Colorado: heading with a gold rule, then one row of
    three cards (framed plate, red category, serif headline, short
@@ -1206,19 +1210,50 @@ function exploreBox() {
 }
 
 /**
+ * Teaser text for the Editorial Desk strip: the opening of the piece
+ * itself — its first section's lead plus up to two body paragraphs —
+ * trimmed at a word boundary to about 340 characters with an
+ * ellipsis, so the strip gives readers a real taste of the argument,
+ * not just the headline. Falls back to the dek when the piece has no
+ * body sections. Returns '' when there is no text at all.
+ */
+function stripExcerpt(a) {
+  const first = a && Array.isArray(a.sections) ? a.sections[0] : null;
+  const parts = [];
+  if (first && first.lead) parts.push(first.lead);
+  if (first && Array.isArray(first.paragraphs)) {
+    for (const p of first.paragraphs.slice(0, 2)) parts.push(p);
+  }
+  if (!parts.length && a && a.dek) parts.push(a.dek);
+  const t = parts.join(' ').replace(/\s+/g, ' ').trim();
+  if (t.length <= 340) return t;
+  const cut = t.slice(0, 340);
+  const ls = cut.lastIndexOf(' ');
+  return (ls > 200 ? cut.slice(0, ls) : cut).trim() + '...';
+}
+
+/**
  * The "From Our Editorial Desk" strip: a full-width cream band below
  * the homepage columns and above Latest from Colorado, promoting
- * the newest Opinion piece — red small-caps label, the headline as
- * "Editorial: <headline>" in bold serif, and the read-on link at the
- * right. Rendered only when the store holds an Opinion article; the
- * home route passes the latest one, or null and the strip is absent.
+ * the newest Opinion piece — the piece's framed plate at the left,
+ * then the red small-caps label, the headline as "Editorial:
+ * <headline>" in bold serif and a short excerpt from the piece, with
+ * the read-on link at the right (owner instruction, 2026-11-02: the
+ * strip carries the image and more of the article's text). Rendered
+ * only when the store holds an Opinion article; the home route
+ * passes the latest one, or null and the strip is absent.
  */
 function editorialStrip(opinion) {
   if (!opinion) return '';
+  const excerpt = stripExcerpt(opinion);
   return (
     '<section class="editorial-strip">' +
+    articleFigure(opinion, '', { noCaption: true, link: true }) +
+    '<div class="editorial-text">' +
     '<span class="editorial-label">From Our Editorial Desk</span>' +
     '<span class="editorial-headline">Editorial: ' + esc(opinion.headline) + '</span>' +
+    (excerpt ? '<p class="editorial-excerpt">' + inline(excerpt) + '</p>' : '') +
+    '</div>' +
     '<a class="editorial-link" href="/article/' + esc(opinion.slug) + '">Read the Editorial &rarr;</a>' +
     '</section>'
   );

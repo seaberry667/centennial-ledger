@@ -106,18 +106,27 @@ app.get('/', async (req, res) => {
   const articles = (await store.listArticles({ limit: 32 })).filter(
     (a) => a.section !== 'satire'
   );
-  const [lead, ...rest] = articles;
-  // Second feature: the most recent story from a different section
-  // than the lead's, shown directly under the lead in the same
-  // format. It is pulled out of the grid pool so it never appears
-  // twice on the front page. Null when every other story shares the
-  // lead's section (the homepage then renders the single lead,
-  // exactly as before).
+  // The two featured spots (lead and second feature) are news only:
+  // Opinion pieces never take them (owner instruction, 2026-11-02).
+  // Opinion reaches the homepage through the Editorial Desk strip
+  // below, and Satire is already filtered out of the pool above. The
+  // lead is the newest news story; the second feature is the most
+  // recent news story from a different section than the lead's,
+  // shown directly under the lead in the same format. Both are
+  // pulled out of the shared pool so no story appears twice on the
+  // front page. The second feature is null when every other news
+  // story shares the lead's section (the homepage then renders the
+  // single lead, exactly as before).
+  const newsPool = articles.filter((a) => a.section !== 'opinion');
+  const lead = newsPool[0] || null;
   let second = null;
   if (lead) {
-    const idx = rest.findIndex((a) => a.section !== lead.section);
-    if (idx >= 0) second = rest.splice(idx, 1)[0];
+    second = newsPool.find((a) => a.section !== lead.section) || null;
   }
+  const featuredSlugs = new Set(
+    [lead, second].filter(Boolean).map((a) => a.slug)
+  );
+  const rest = articles.filter((a) => !featuredSlugs.has(a.slug));
   // Rail rows (redesign spec 3.6): five supporting stories — the
   // latest story from each of Politics, Rights, Taxes, Energy and
   // Schools, in that section order, excluding the two features. A
