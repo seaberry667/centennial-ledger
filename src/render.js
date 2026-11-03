@@ -561,7 +561,7 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 .card figure.art-figure img{aspect-ratio:16/9;object-fit:cover}
 /* ---------- Briefing signup panel ---------- */
 .briefing{background:var(--color-ivory);border:1px solid var(--color-gold);padding:18px;margin:1.4rem 0}
-.briefing .briefing-kicker{color:var(--color-red);font-family:var(--font-ui);font-size:.75rem;font-weight:bold;letter-spacing:.14em;text-transform:uppercase}
+.briefing .briefing-kicker{color:var(--color-red);font-family:var(--font-ui);font-size:.82rem;font-weight:bold;letter-spacing:.14em;text-transform:uppercase}
 .briefing .briefing-title{font-family:var(--font-headline);font-weight:700;font-size:1.75rem;line-height:1.15;margin:.35rem 0 .5rem}
 .briefing .briefing-tag{margin:0 0 .8rem;font-style:italic}
 .briefing form{display:flex;flex-direction:column;gap:.5rem;margin-top:.6rem}
@@ -624,7 +624,7 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 .share-menu a,.share-menu button{display:block;width:100%;box-sizing:border-box;text-align:left;background:none;border:0;padding:.5rem .9rem;font-family:var(--font-body);font-weight:600;font-size:1rem;letter-spacing:.02em;color:var(--color-text);text-decoration:none;cursor:pointer}
 .share-menu a:hover,.share-menu button:hover{background:var(--color-ivory)}
 .why-feature{border-left:4px solid var(--color-red);background:var(--color-ivory);padding:16px 18px;margin-top:1rem}
-.why-feature .why-label{font-family:var(--font-ui);color:var(--color-red);font-size:.78rem;font-weight:bold;letter-spacing:.14em;text-transform:uppercase;margin-bottom:.35rem}
+.why-feature .why-label{font-family:var(--font-ui);color:var(--color-red);font-size:.82rem;font-weight:bold;letter-spacing:.14em;text-transform:uppercase;margin-bottom:.35rem}
 .why-feature p{margin:0;font-size:1.03rem}
 /* Satire pieces (owner instruction, 2026-11-02): a satire page is
    only the comic and the owner's long caption — no headline, no
@@ -686,7 +686,7 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 .editorial-strip figure.art-figure{flex:0 0 240px;margin:0}
 .editorial-strip figure.art-figure img{aspect-ratio:16/9;object-fit:cover;border:1px solid #000}
 .editorial-strip .editorial-text{flex:1;min-width:220px}
-.editorial-strip .editorial-label{color:var(--color-red);font-family:var(--font-ui);font-size:.75rem;font-weight:bold;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap}
+.editorial-strip .editorial-label{color:var(--color-red);font-family:var(--font-ui);font-size:.82rem;font-weight:bold;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap}
 .editorial-strip .editorial-headline{display:block;font-family:var(--font-headline);font-weight:700;font-size:2.3rem;line-height:1.12;margin:0 0 .9rem}
 .editorial-strip .editorial-excerpt{margin-top:.45rem}
 .editorial-strip .editorial-excerpt p{font-size:1.14rem;margin:0 0 .8em}
@@ -726,7 +726,7 @@ article.full p{font-size:1.15rem;line-height:1.6;margin:0 0 .8em}
 article.full p.lead{font-size:1.15rem}
 article.full figure.article-hero{margin:1.1rem 0}
 .why{border-left:4px solid var(--color-red);background:var(--color-ivory);padding:20px;margin:24px 0}
-.why .why-label{font-family:var(--font-ui);color:var(--color-red);font-size:.8rem;font-weight:bold;letter-spacing:.14em;text-transform:uppercase;margin-bottom:.4rem}
+.why .why-label{font-family:var(--font-ui);color:var(--color-red);font-size:.82rem;font-weight:bold;letter-spacing:.14em;text-transform:uppercase;margin-bottom:.4rem}
 .why p{margin:0 0 .6em;font-size:1.06rem}
 .why p:last-child{margin-bottom:0}
 /* Sources list: the article's own serif, a step smaller than the
@@ -759,7 +759,7 @@ footer::before{content:"";position:absolute;top:-8px;left:0;right:0;height:1px;b
 .footer-grid{display:grid;grid-template-columns:1.3fr 1fr 1fr .8fr 1.2fr;gap:1.8rem}
 .footer-brand img{display:block;max-width:230px;width:100%;height:auto}
 .footer-brand p{margin:.7rem 0 0;color:#555;font-size:.9rem}
-.footer-col h3{color:var(--color-red);font-family:var(--font-ui);font-size:.75rem;font-weight:bold;letter-spacing:.14em;text-transform:uppercase;margin:.1rem 0 .6rem}
+.footer-col h3{color:var(--color-red);font-family:var(--font-ui);font-size:.82rem;font-weight:bold;letter-spacing:.14em;text-transform:uppercase;margin:.1rem 0 .6rem}
 .footer-col ul{list-style:none;margin:0;padding:0}
 .footer-col li{margin:.28rem 0}
 .footer-col a{text-decoration:none}
