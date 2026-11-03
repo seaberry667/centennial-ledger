@@ -724,7 +724,9 @@ article.full figure.article-hero{margin:1.1rem 0}
 .why .why-label{font-family:var(--font-ui);color:var(--color-red);font-size:.8rem;font-weight:bold;letter-spacing:.14em;text-transform:uppercase;margin-bottom:.4rem}
 .why p{margin:0 0 .6em;font-size:1.06rem}
 .why p:last-child{margin-bottom:0}
-.source{font-family:var(--font-ui);font-size:.9rem;color:#555}
+/* Sources list: the article's own serif, a step smaller than the
+   article body text (owner instruction, 2026-11-03). */
+.source{font-family:var(--font-body);font-size:1rem;color:#555}
 .breadcrumb{font-family:var(--font-ui);font-size:.8rem;color:#666;margin-bottom:.5rem}
 .breadcrumb a{color:#666}
 .sources-block{border-top:1px solid var(--color-border);margin-top:1.8rem;padding-top:.8rem}
