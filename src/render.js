@@ -1468,8 +1468,9 @@ function sectionPage({ section, articles }) {
     section === 'satire'
       ? '<div class="satire-list">' + articles.map(satireListItem).join('') + '</div>'
       : '<div class="grid">' + articles.map(articleCard).join('') + '</div>';
+  // No small red section-name label above the title (owner
+  // instruction, 2026-11-03): the H1 alone heads the page.
   const body =
-    '<div class="kicker">' + esc(name) + '</div>' +
     '<h1 class="headline" style="font-size:2.4rem">' + esc(name) + '</h1>' +
     (articles.length
       ? listing
@@ -1522,8 +1523,8 @@ function collectionJsonLd(name, path, articles) {
 
 /** The Local section hub: all Local stories plus the parts-of-the-state list. */
 function localHubPage({ articles }) {
+  // Same no-kicker rule as the section pages (owner, 2026-11-03).
   const body =
-    '<div class="kicker">Local</div>' +
     '<h1 class="headline" style="font-size:2.4rem">Local</h1>' +
     regionNavList('') +
     (articles.length
@@ -1549,7 +1550,6 @@ function localRegionPage({ region, articles }) {
   const body =
     '<div class="breadcrumb"><a href="/">Home</a> &rsaquo; <a href="/section/local">Local</a> &rsaquo; ' +
     esc(region.name) + '</div>' +
-    '<div class="kicker">Local &middot; ' + esc(region.name) + '</div>' +
     '<h1 class="headline" style="font-size:2.4rem">' + esc(region.name) + '</h1>' +
     regionNavList(region.slug) +
     (articles.length
