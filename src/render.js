@@ -398,10 +398,9 @@ function rectangleAdSlot() {
 
 /**
  * One homepage rail story row: a small plate thumbnail on the left
- * (its frame keeps its size and border; the engraving inside is
- * zoomed slightly, per the design addendum), then the red uppercase
- * category label, the headline as a link, and the read time. No
- * byline and no source line, as on cards.
+ * (no border; the engraving shows at its natural edges), then the
+ * red uppercase category label and the headline as a link. No
+ * byline, no read time and no source line, as on cards.
  */
 function railStoryRow(a) {
   const thumb =
@@ -414,7 +413,7 @@ function railStoryRow(a) {
     '<div class="rail-row-text">' +
     '<div class="kicker">' + esc(sectionName(a.section)) + '</div>' +
     '<h4><a href="/article/' + esc(a.slug) + '">' + esc(a.headline) + '</a></h4>' +
-    '<div class="meta">' + readTimeMinutes(a) + ' min read</div></div></div>'
+    '</div></div>'
   );
 }
 
@@ -600,15 +599,14 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 /* Gold filigree divider between the two homepage features only. */
 .feature-divider{text-align:center;margin:1.6rem 0 .4rem}
 .feature-divider img{max-width:100%;height:auto}
-/* Homepage rail story rows: thumbnail left (slightly zoomed inside
-   its unchanged frame, per the design addendum), red category label,
-   serif headline, read time. */
+/* Homepage rail story rows: thumbnail left (no outline, engraving at
+   its natural edges), red category label, serif headline. */
 .rail-latest{margin-bottom:1.4rem}
 .rail-row{display:flex;gap:.85rem;padding:.75rem 0;border-bottom:1px solid var(--color-border)}
 .rail-row:first-child{padding-top:0}
 .rail-row:last-child{border-bottom:0;padding-bottom:0}
-.rail-thumb{flex:0 0 85px;width:85px;height:60px;overflow:hidden;border:1px solid #000;background:#fff}
-.rail-thumb img{display:block;width:100%;height:100%;object-fit:cover;object-position:center;transform:scale(1.12);transform-origin:center;filter:grayscale(1) contrast(1.06);background:#fff}
+.rail-thumb{flex:0 0 100px;width:100px;height:70px;overflow:hidden;background:#fff}
+.rail-thumb img{display:block;width:100%;height:100%;object-fit:cover;object-position:center;filter:grayscale(1) contrast(1.06);background:#fff}
 .rail-row-text h4{font-family:var(--font-headline);font-size:1.03rem;line-height:1.28;margin:.15rem 0 .3rem}
 .rail-row-text h4 a{text-decoration:none}
 .rail-row-text h4 a:hover{text-decoration:underline}
