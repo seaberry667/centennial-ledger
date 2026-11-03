@@ -677,9 +677,8 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 .editorial-strip .editorial-text{flex:1;min-width:220px}
 .editorial-strip .editorial-label{color:var(--color-red);font-family:var(--font-ui);font-size:.75rem;font-weight:bold;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap}
 .editorial-strip .editorial-headline{display:block;font-family:var(--font-headline);font-weight:700;font-size:2.3rem;line-height:1.12;margin:0 0 .9rem}
-.editorial-strip .editorial-excerpt{font-size:1rem;line-height:1.5;color:#333;margin:.45rem 0 0}
-.editorial-strip .editorial-link{color:var(--color-red);font-family:var(--font-ui);font-weight:bold;font-size:.9rem;text-decoration:none;white-space:nowrap;align-self:center}
-.editorial-strip .editorial-link:hover{text-decoration:underline}
+.editorial-strip .editorial-excerpt{margin-top:.45rem}
+.editorial-strip .editorial-excerpt p{font-size:1.14rem;margin:0 0 .8em}
 /* Latest from Colorado: heading with a gold rule, then one row of
    three cards (framed plate, red category, serif headline, short
    excerpt, muted metadata). No shadows, no rounded corners. */
@@ -1232,42 +1231,20 @@ function regionHubBox(region) {
 }
 
 /**
- * Teaser text for the Editorial Desk strip: the opening of the piece
- * itself — its first section's lead plus up to two body paragraphs —
- * trimmed at a word boundary to about 340 characters with an
- * ellipsis, so the strip gives readers a real taste of the argument,
- * not just the headline. Falls back to the dek when the piece has no
- * body sections. Returns '' when there is no text at all.
- */
-function stripExcerpt(a) {
-  const first = a && Array.isArray(a.sections) ? a.sections[0] : null;
-  const parts = [];
-  if (first && first.lead) parts.push(first.lead);
-  if (first && Array.isArray(first.paragraphs)) {
-    for (const p of first.paragraphs.slice(0, 2)) parts.push(p);
-  }
-  if (!parts.length && a && a.dek) parts.push(a.dek);
-  const t = parts.join(' ').replace(/\s+/g, ' ').trim();
-  if (t.length <= 340) return t;
-  const cut = t.slice(0, 340);
-  const ls = cut.lastIndexOf(' ');
-  return (ls > 200 ? cut.slice(0, ls) : cut).trim() + '...';
-}
-
-/**
  * The "From Our Editorial Desk" strip: a full-width cream band below
  * the homepage columns and above Latest from Colorado, promoting
- * the newest Opinion piece — the piece's framed plate at the left,
- * then the red small-caps label, the headline as "Editorial:
- * <headline>" in bold serif and a short excerpt from the piece, with
- * the read-on link at the right (owner instruction, 2026-11-02: the
- * strip carries the image and more of the article's text). Rendered
- * only when the store holds an Opinion article; the home route
- * passes the latest one, or null and the strip is absent.
+ * the newest Opinion piece — the headline as "Editorial:
+ * <headline>" across the top of the box, then the piece's framed
+ * plate at the left and the red small-caps label with the piece's
+ * opening at the features' 180-word excerpt length and type size,
+ * plus the same Read Full Story and Save buttons the features
+ * carry (owner instruction, 2026-11-03). Rendered only when the
+ * store holds an Opinion article; the home route passes the
+ * latest one, or null and the strip is absent.
  */
 function editorialStrip(opinion) {
   if (!opinion) return '';
-  const excerpt = stripExcerpt(opinion);
+  const excerpt = leadExcerpt(opinion);
   return (
     '<section class="editorial-strip">' +
     // The headline runs across the top of the box, above the
@@ -1278,9 +1255,12 @@ function editorialStrip(opinion) {
     articleFigure(opinion, '', { noCaption: true, link: true }) +
     '<div class="editorial-text">' +
     '<span class="editorial-label">From Our Editorial Desk</span>' +
-    (excerpt ? '<p class="editorial-excerpt">' + inline(excerpt) + '</p>' : '') +
+    (excerpt ? '<div class="editorial-excerpt">' + excerpt + '</div>' : '') +
+    '<div class="feature-actions"><a class="btn-read" href="/article/' + esc(opinion.slug) +
+    '">Read Full Story &rarr;</a>' +
+    '<button type="button" class="btn-save" data-save-slug="' + esc(opinion.slug) +
+    '" aria-pressed="false">📌 Save</button></div>' +
     '</div>' +
-    '<a class="editorial-link" href="/article/' + esc(opinion.slug) + '">Read the Editorial &rarr;</a>' +
     '</div>' +
     '</section>'
   );
