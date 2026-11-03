@@ -427,7 +427,7 @@ a{color:inherit}
 .masthead{text-align:center;padding:1.1rem 1rem .4rem;background:#fff}
 .masthead-banner a{display:inline-block;text-decoration:none}
 .masthead-banner img{display:block;width:990px;max-width:100%;height:auto;margin:0 auto}
-.tagline{display:flex;align-items:center;gap:.9rem;font-style:italic;font-size:1.15rem;max-width:600px;margin:0 auto;line-height:1}
+.tagline{display:flex;align-items:center;gap:.9rem;font-style:italic;font-size:1.15rem;max-width:600px;margin:-.65rem auto 0;line-height:1;position:relative}
 .tagline::before,.tagline::after{content:"";flex:1 1 0;height:2px;background:var(--color-red)}
 /* ---------- Navigation: white, thin double black rules, serif labels ---------- */
 nav.main{background:#fff;border-top:4px double var(--color-text);border-bottom:4px double var(--color-text);position:relative}
