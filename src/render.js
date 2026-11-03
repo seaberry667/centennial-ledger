@@ -905,6 +905,7 @@ ${body}
         <ul>
           <li><a href="/about">About Us</a></li>
           <li><a href="/subscribe">Subscribe</a></li>
+          <li><a href="https://www.facebook.com/profile.php?id=61595978079628" target="_blank" rel="noopener">Facebook</a></li>
         </ul>
       </nav>
       <div class="footer-col footer-stay">
