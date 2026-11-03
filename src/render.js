@@ -549,7 +549,7 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 .feature-intro{margin-top:1rem}
 .feature-intro::after{content:"";display:block;clear:both}
 .feature-intro figure.art-figure{float:right;width:52%;margin:.15rem 0 1rem 1.6rem}
-.feature-intro .feature-excerpt p{font-size:1.05rem;margin:0 0 .8em}
+.feature-intro .feature-excerpt p{font-size:1.14rem;margin:0 0 .8em}
 .feature-intro .feature-excerpt p.lead{font-size:1.14rem}
 @media (max-width:767px){
   .feature-intro figure.art-figure{float:none;width:100%;margin:0 0 1rem}
@@ -656,7 +656,7 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 }
 article.full h1{font-family:var(--font-headline);font-weight:800;font-size:clamp(1.875rem,4.5vw,2.875rem);line-height:1.12;margin:.4rem 0}
 article.full h2{font-family:var(--font-headline);font-weight:700;font-size:1.6875rem;line-height:1.25;margin:1.8rem 0 .8rem}
-article.full p{font-size:1.125rem;line-height:1.6;margin:0 0 .8em}
+article.full p{font-size:1.15rem;line-height:1.6;margin:0 0 .8em}
 article.full p.lead{font-size:1.15rem}
 article.full figure.article-hero{margin:1.1rem 0}
 .why{border-left:4px solid var(--color-red);background:var(--color-ivory);padding:20px;margin:24px 0}
