@@ -594,7 +594,7 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
    deck, byline, then the intro — the framed plate with its caption
    floated right, the excerpt text wrapping around it — then the
    action buttons, the Why It Matters box and the sources line. */
-.lead-story{padding-bottom:1.2rem;margin-bottom:1.2rem}
+.lead-story{padding-bottom:0;margin-bottom:0}
 .feature-headline{font-size:clamp(2rem,4.5vw,2.875rem)}
 .feature-intro{margin-top:1rem}
 .feature-intro::after{content:"";display:block;clear:both}
@@ -632,7 +632,7 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 .satire-list figure.art-figure{margin:0}
 .satire-list .satire-caption{margin-top:.7rem}
 /* Gold filigree divider between homepage features. */
-.feature-divider{text-align:center;margin:.5rem 0 .4rem}
+.feature-divider{text-align:center;margin:1.2rem 0}
 .feature-divider img{display:block;width:100%;max-width:100%;height:auto}
 /* Homepage rail story rows: thumbnail left (no outline, engraving at
    its natural edges), red category label, serif headline. */
