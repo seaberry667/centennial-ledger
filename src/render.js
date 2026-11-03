@@ -58,6 +58,21 @@ function inline(s) {
     .replace(/\*([^*]+)\*/g, '<em>$1</em>');
 }
 
+/**
+ * The dek text for display. A dek that accidentally carries the
+ * byline label as a prefix ("News Desk: ..." or "Editorial Desk:
+ * ...") shows without it (owner instruction, 2026-11-02, after the
+ * St. Mary preschool story's dek arrived with the label baked in).
+ * Only the leading label is stripped; the byline itself renders
+ * separately and is untouched.
+ */
+function dekText(a) {
+  return String((a && a.dek) || '').replace(
+    /^\s*(News Desk|Editorial Desk)\s*:\s*/i,
+    ''
+  );
+}
+
 function fmtDate(iso) {
   try {
     return new Intl.DateTimeFormat('en-US', {
@@ -1075,7 +1090,7 @@ function featureStory(a) {
     esc(sectionName(a.section)) +
     '</span></div><h1 class="headline feature-headline"><a style="text-decoration:none" href="/article/' +
     esc(a.slug) + '">' + esc(a.headline) + '</a></h1>' +
-    (a.dek ? '<p class="dek">' + inline(a.dek) + '</p>' : '') +
+    (a.dek ? '<p class="dek">' + inline(dekText(a)) + '</p>' : '') +
     '<div class="byline">' + bylineLine(a) + '</div>';
   if (excerpt) {
     // Intro: the plate (with caption) floats right and the excerpt
@@ -1708,7 +1723,7 @@ function articlePage(a, related, localStories) {
     '<div class="kicker-row"><span class="kicker">' + esc(a.topicLabel || sectionName(a.section)) +
     (a.region ? ' &middot; ' + esc(a.region) : '') + '</span></div>' +
     '<h1>' + esc(a.headline) + '</h1>' +
-    (a.dek ? '<p class="dek">' + inline(a.dek) + '</p>' : '') +
+    (a.dek ? '<p class="dek">' + inline(dekText(a)) + '</p>' : '') +
     '<div class="byline">' + bylineLine(a) + '</div>';
 
   // Full-width hero illustration, in its own figure directly under
