@@ -589,8 +589,6 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
    floated right, the excerpt text wrapping around it — then the
    action buttons, the Why It Matters box and the sources line. */
 .lead-story{padding-bottom:1.2rem;margin-bottom:1.2rem}
-.feature-kicker{display:flex;align-items:center;gap:.9rem}
-.feature-kicker::after{content:"";flex:1;height:1px;background:var(--color-gold)}
 .feature-headline{font-size:clamp(2rem,4.5vw,2.875rem)}
 .feature-intro{margin-top:1rem}
 .feature-intro::after{content:"";display:block;clear:both}
@@ -1074,8 +1072,9 @@ function featureDivider() {
 }
 
 /**
- * One homepage feature block (redesign spec 3.3), in order: category
- * label with a fine gold rule, headline, italic dek, byline, the
+ * One homepage feature block (redesign spec 3.3), in order: headline
+ * (no category label above it — owner instruction, 2026-11-02),
+ * italic dek, byline, the
  * two-column intro (excerpt left at ~48%, the story's framed plate
  * with its caption right at ~52%), the Read Full Story and Save
  * controls, and the Why It Matters box. The excerpt's
@@ -1086,9 +1085,7 @@ function featureDivider() {
 function featureStory(a) {
   const excerpt = leadExcerpt(a);
   let s =
-    '<section class="lead-story"><div class="feature-kicker"><span class="kicker">' +
-    esc(sectionName(a.section)) +
-    '</span></div><h1 class="headline feature-headline"><a style="text-decoration:none" href="/article/' +
+    '<section class="lead-story"><h1 class="headline feature-headline"><a style="text-decoration:none" href="/article/' +
     esc(a.slug) + '">' + esc(a.headline) + '</a></h1>' +
     (a.dek ? '<p class="dek">' + inline(dekText(a)) + '</p>' : '') +
     '<div class="byline">' + bylineLine(a) + '</div>';
