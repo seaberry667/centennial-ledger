@@ -289,6 +289,10 @@ app.get('/subscribe/checkout', (req, res) => {
   res.type('html').send(render.checkoutPage(String(req.query.tier || 'patriot')));
 });
 
+app.get('/about', (req, res) => {
+  res.type('html').send(render.aboutPage());
+});
+
 app.get('/privacy', (req, res) => {
   res.type('html').send(render.staticPage('privacy'));
 });
@@ -338,6 +342,7 @@ app.get('/sitemap.xml', async (req, res) => {
       priority: '0.7',
     })),
     { loc: base + '/subscribe', changefreq: 'monthly', priority: '0.5' },
+    { loc: base + '/about', changefreq: 'monthly', priority: '0.5' },
     { loc: base + '/privacy', changefreq: 'yearly', priority: '0.2' },
     { loc: base + '/terms', changefreq: 'yearly', priority: '0.2' },
     ...articles.map((a) => ({
