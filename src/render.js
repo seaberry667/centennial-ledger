@@ -282,7 +282,7 @@ function articleFigure(a, extraClass, opts) {
 /**
  * Homepage feature excerpt: the opening of the story itself — the
  * first body section's lead paragraph plus its body paragraphs, taken
- * as whole blocks until the excerpt reaches roughly 240–260 words —
+ * as whole blocks until the excerpt reaches roughly 180 words —
  * so the front page gives readers a real read of the story, not just
  * its headline and dek. Whole blocks only: the excerpt always stops
  * at a clean paragraph boundary, never mid-sentence, so the last
@@ -302,7 +302,7 @@ function leadExcerpt(a) {
   }
   if (!texts.length) return '';
   const wordCount = (s) => String(s || '').trim().split(/\s+/).filter(Boolean).length;
-  const TARGET = 250; // words: about 240–260 once the crossing block lands
+  const TARGET = 180; // words (owner instruction, 2026-11-02); the crossing block lands whole
   const kept = [];
   let used = 0;
   for (const b of texts) {
@@ -631,7 +631,7 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 .satire-list{display:flex;flex-direction:column;gap:2.4rem}
 .satire-list figure.art-figure{margin:0}
 .satire-list .satire-caption{margin-top:.7rem}
-/* Gold filigree divider between the two homepage features only. */
+/* Gold filigree divider between homepage features. */
 .feature-divider{text-align:center;margin:.5rem 0 .4rem}
 .feature-divider img{display:block;width:100%;max-width:100%;height:auto}
 /* Homepage rail story rows: thumbnail left (no outline, engraving at
@@ -1071,7 +1071,7 @@ const SAVE_SCRIPT =
   'paint(b);});})(bs[i]);}' +
   '})();</script>';
 
-/** Gold filigree divider, used between the two homepage features only. */
+/** Gold filigree divider, used between homepage features. */
 function featureDivider() {
   return (
     '<div class="feature-divider" aria-hidden="true">' +
@@ -1087,7 +1087,7 @@ function featureDivider() {
  * with its caption right at ~52%), the Read Full Story and Save
  * controls, and the Why It Matters box. The excerpt's
  * first paragraph carries the red drop cap (see leadExcerpt). Used
- * for the lead story and the second feature under it (drawn from a
+ * for the lead story and the features under it (each drawn from a
  * different section by the home route).
  */
 function featureStory(a) {
@@ -1307,7 +1307,7 @@ function editorialStrip(opinion) {
   );
 }
 
-function homePage({ lead, second, latest, railGroups, latestRow, localStories, opinion, briefingThanks }) {
+function homePage({ lead, second, third, latest, railGroups, latestRow, localStories, opinion, briefingThanks }) {
   const jsonLd = [
     {
       '@context': 'https://schema.org',
@@ -1337,17 +1337,18 @@ function homePage({ lead, second, latest, railGroups, latestRow, localStories, o
     // below the columns, full width, come the editorial strip (when
     // an Opinion piece exists), the three-card "Latest from
     // Colorado" grid and the Explore Colorado News module. The lead
-    // and second feature were pulled out of `latest` by the route.
+    // and third feature were pulled out of `latest` by the route.
     let features = featureStory(lead);
-    // Second feature, directly under the lead in the same format,
-    // from a different section (selected by the home route), with
-    // the gold filigree divider between the two features only.
-    // Absent when no different-section story exists.
+    // Second and third features, directly under the lead in the
+    // same format, each from a different section (selected by the
+    // home route), with the gold filigree divider between features.
+    // Either is absent when no different-section story exists.
     if (second) features += featureDivider() + featureStory(second);
+    if (third) features += featureDivider() + featureStory(third);
     // The rail groups the five news sections (Politics, Rights,
     // Taxes, Energy, Schools), each with its two most recent
     // stories under the section heading, picked by the home route
-    // skipping the two features. The Latest grid takes the three
+    // skipping the features. The Latest grid takes the three
     // most recent stories after the features, also skipping
     // whatever the rail groups use, so no story appears twice on
     // the front page: features, rail rows and Latest cards are

@@ -97,8 +97,8 @@ app.post('/api/ingest', async (req, res) => {
 /* --------------------------- Public pages ------------------------- */
 
 app.get('/', async (req, res) => {
-  // Fetch 32: the lead, a second feature, and the pool the rail
-  // rows and Latest cards draw from. (The per-section rail picks
+  // Fetch 32: the lead, second and third features, and the pool the
+  // rail rows and Latest cards draw from. (The per-section rail picks
   // and the Local & Statewide list are fetched separately, below.)
   // Satire pieces are never featured or listed among the homepage
   // articles (owner instruction, 2026-11-02): they live on their
@@ -107,35 +107,44 @@ app.get('/', async (req, res) => {
   const articles = (await store.listArticles({ limit: 32 })).filter(
     (a) => a.section !== 'satire'
   );
-  // The two featured spots (lead and second feature) are news only:
-  // Opinion pieces never take them (owner instruction, 2026-11-02).
-  // Opinion reaches the homepage through the Editorial Desk strip
-  // below, and Satire is already filtered out of the pool above. The
-  // lead is the newest news story; the second feature is the most
-  // recent news story from a different section than the lead's,
-  // shown directly under the lead in the same format. Both are
-  // pulled out of the shared pool so no story appears twice on the
-  // front page. The second feature is null when every other news
-  // story shares the lead's section (the homepage then renders the
-  // single lead, exactly as before).
+  // The three featured spots (lead, second and third feature) are
+  // news only: Opinion pieces never take them (owner instruction,
+  // 2026-11-02). Opinion reaches the homepage through the Editorial
+  // Desk strip below, and Satire is already filtered out of the pool
+  // above. The lead is the newest news story; the second feature is
+  // the most recent news story from a different section than the
+  // lead's, and the third is the most recent from a section
+  // different from both (owner instruction, 2026-11-02: three
+  // features), each shown directly under the last in the same
+  // format. All are pulled out of the shared pool so no story
+  // appears twice on the front page. A feature is null when no
+  // different-section story exists for its spot (the homepage then
+  // renders the features it has, exactly as before).
   const newsPool = articles.filter((a) => a.section !== 'opinion');
   const lead = newsPool[0] || null;
   let second = null;
+  let third = null;
   if (lead) {
     second = newsPool.find((a) => a.section !== lead.section) || null;
+    if (second) {
+      third =
+        newsPool.find(
+          (a) => a.section !== lead.section && a.section !== second.section
+        ) || null;
+    }
   }
   const featuredSlugs = new Set(
-    [lead, second].filter(Boolean).map((a) => a.slug)
+    [lead, second, third].filter(Boolean).map((a) => a.slug)
   );
   const rest = articles.filter((a) => !featuredSlugs.has(a.slug));
   // Rail groups (owner instruction, 2026-11-02): the right column
   // groups the five news sections — Politics, Rights, Taxes, Energy
   // and Schools, in that order — with the TWO most recent stories
   // from each section under that section's heading, excluding the
-  // two features. A section whose newest stories are features
+  // features. A section whose newest stories are features
   // contributes its next stories instead; a section with nothing
   // left has no group.
-  const featureSlugs = new Set([lead, second].filter(Boolean).map((a) => a.slug));
+  const featureSlugs = new Set([lead, second, third].filter(Boolean).map((a) => a.slug));
   const railGroups = [];
   for (const slug of ['politics', 'rights', 'taxes', 'energy', 'schools']) {
     const inSection = await store.listArticles({ section: slug, limit: 6 });
@@ -144,7 +153,7 @@ app.get('/', async (req, res) => {
   }
   const railTop = railGroups.flatMap((g) => g.articles);
   // "Latest from Colorado" grid (spec 3.10): the three most recent
-  // stories after the two features, also skipping anything the
+  // stories after the features, also skipping anything the
   // rail rows already use, so features, rail rows and Latest cards
   // are all disjoint on the front page.
   const usedSlugs = new Set(
@@ -163,6 +172,7 @@ app.get('/', async (req, res) => {
     render.homePage({
       lead: lead || null,
       second,
+      third,
       latest: rest.slice(0, 12),
       railGroups,
       latestRow,
