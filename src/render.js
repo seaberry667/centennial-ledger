@@ -539,19 +539,20 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
   .home-rail{grid-column:auto;grid-row:auto;position:static}
 }
 /* Homepage features: kicker with a fine gold rule, headline, italic
-   deck, byline, then the intro split — excerpt left, framed plate
-   with its caption right — then the action buttons, the Why It
-   Matters box and the sources line. */
+   deck, byline, then the intro — the framed plate with its caption
+   floated right, the excerpt text wrapping around it — then the
+   action buttons, the Why It Matters box and the sources line. */
 .lead-story{padding-bottom:1.2rem;margin-bottom:1.2rem}
 .feature-kicker{display:flex;align-items:center;gap:.9rem}
 .feature-kicker::after{content:"";flex:1;height:1px;background:var(--color-gold)}
 .feature-headline{font-size:clamp(2rem,4.5vw,2.875rem)}
-.feature-intro{display:grid;grid-template-columns:minmax(0,48fr) minmax(0,52fr);gap:1.6rem;margin-top:1rem;align-items:start}
-.feature-intro figure.art-figure{margin:0}
+.feature-intro{margin-top:1rem}
+.feature-intro::after{content:"";display:block;clear:both}
+.feature-intro figure.art-figure{float:right;width:52%;margin:.15rem 0 1rem 1.6rem}
 .feature-intro .feature-excerpt p{font-size:1.05rem;margin:0 0 .8em}
 .feature-intro .feature-excerpt p.lead{font-size:1.14rem}
 @media (max-width:767px){
-  .feature-intro{grid-template-columns:1fr}
+  .feature-intro figure.art-figure{float:none;width:100%;margin:0 0 1rem}
 }
 /* Red drop cap on the opening paragraph (features and articles):
    generated from the paragraph's actual first letter. */
@@ -1016,11 +1017,11 @@ function featureStory(a) {
     (a.dek ? '<p class="dek">' + inline(a.dek) + '</p>' : '') +
     '<div class="byline">' + bylineLine(a) + '</div>';
   if (excerpt) {
-    // Intro split: excerpt on the left, the plate (with caption)
-    // on the right. With no image the excerpt runs full width.
+    // Intro: the plate (with caption) floats right and the excerpt
+    // text wraps around it. With no image the excerpt runs full width.
     const fig = articleFigure(a, 'feature-figure');
     s += fig
-      ? '<div class="feature-intro"><div class="feature-excerpt">' + excerpt + '</div>' + fig + '</div>'
+      ? '<div class="feature-intro">' + fig + '<div class="feature-excerpt">' + excerpt + '</div></div>'
       : '<div class="feature-excerpt">' + excerpt + '</div>';
   } else {
     s += articleFigure(a, 'feature-figure');
