@@ -566,6 +566,22 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 .why-feature .why-label{font-family:var(--font-ui);color:var(--color-red);font-size:.78rem;font-weight:bold;letter-spacing:.14em;text-transform:uppercase;margin-bottom:.35rem}
 .why-feature p{margin:0;font-size:1.03rem}
 .feature-sources{font-family:var(--font-ui);font-size:.78rem;color:#8a8474;margin:.45rem 0 0}
+/* Satire pieces (owner instruction, 2026-11-02): a satire page is
+   only the comic and the owner's long caption — no headline, no
+   dek, no byline, no sidebar, no related grid — with previous /
+   next buttons under the caption for moving between comics. The
+   section page lists the comics the same way: image, then caption. */
+.satire-wrap{max-width:760px;margin:0 auto;padding-top:.6rem}
+.satire-wrap figure.art-figure{margin:0}
+.satire-caption{font-size:1.06rem;line-height:1.55;margin:1rem 0 0}
+.satire-caption p{margin:0 0 .8em}
+.satire-nav{display:flex;gap:.8rem;margin:1.4rem 0 .4rem}
+.satire-nav a{display:inline-block;font-family:var(--font-ui);font-weight:bold;font-size:.95rem;text-decoration:none;padding:.55rem 1.15rem;border-radius:3px;border:1px solid var(--color-red);color:var(--color-red);background:#fff}
+.satire-nav a.prev{margin-right:auto}
+.satire-nav a.next{background:var(--color-red);color:#fff;margin-left:auto}
+.satire-list{display:flex;flex-direction:column;gap:2.4rem}
+.satire-list figure.art-figure{margin:0}
+.satire-list .satire-caption{margin-top:.7rem}
 /* Gold filigree divider between the two homepage features only. */
 .feature-divider{text-align:center;margin:1.6rem 0 .4rem}
 .feature-divider img{max-width:100%;height:auto}
@@ -1326,12 +1342,19 @@ function sectionPage({ section, articles }) {
     description:
       'Colorado ' + name.toLowerCase() + ' news reported with the facts first and the original sources linked, from communities across the state. Read the latest stories here.',
   };
+  // Satire lists its comics bare (owner instruction, 2026-11-02):
+  // each entry is the comic itself, linked to its page, with the
+  // owner's long caption under it — no headline, no byline, no date.
+  const listing =
+    section === 'satire'
+      ? '<div class="satire-list">' + articles.map(satireListItem).join('') + '</div>'
+      : '<div class="grid">' + articles.map(articleCard).join('') + '</div>';
   const body =
     '<div class="kicker">' + esc(name) + '</div>' +
     '<h1 class="headline" style="font-size:2.4rem">' + esc(name) + '</h1>' +
     '<p class="dek">' + esc(meta.description) + '</p>' +
     (articles.length
-      ? '<div class="grid">' + articles.map(articleCard).join('') + '</div>'
+      ? listing
       : '<p>No stories in this section yet. Check back after the next edition.</p>') +
     hubBox(section);
   return layout({
@@ -1453,6 +1476,110 @@ function splitWhySections(a) {
     }
   }
   return { sections, whyParas };
+}
+
+/**
+ * The paragraphs of a satire piece's stored body, in order: the
+ * owner's long caption exactly as provided (the blurbs are stored
+ * as the body). Section headings, if any ever appear, are not part
+ * of the caption and are skipped.
+ */
+function satireCaptionParas(a) {
+  const paras = [];
+  for (const s of a.sections || []) {
+    if (s.lead) paras.push(s.lead);
+    for (const p of s.paragraphs || []) paras.push(p);
+  }
+  return paras;
+}
+
+function satireCaptionHtml(a) {
+  const paras = satireCaptionParas(a);
+  if (!paras.length) return '';
+  return (
+    '<div class="satire-caption">' +
+    paras.map((p) => '<p>' + inline(p) + '</p>').join('') +
+    '</div>'
+  );
+}
+
+/** One entry on the Satire section page: the comic, linked to its
+ * own page, with the long caption under it. No headline or byline. */
+function satireListItem(a) {
+  return (
+    '<div class="satire-item">' +
+    articleFigure(a, '', { link: true, noCaption: true }) +
+    satireCaptionHtml(a) +
+    '</div>'
+  );
+}
+
+/**
+ * A satire piece's page (owner instruction, 2026-11-02): only the
+ * comic and the owner's long caption as provided — no headline, no
+ * subheader, no byline, no sidebar, no related grid — with
+ * previous/next buttons under the caption to move between comics.
+ * `prev` is the older comic, `next` the newer one; either may be
+ * null at the ends of the run, and its button is then omitted. The
+ * working title still serves the browser tab and search metadata,
+ * where a title has to exist; it is not printed on the page.
+ */
+function satirePage(a, prev, next) {
+  const url = absUrl('/article/' + a.slug);
+  const title = fitTitle(a.seoTitle || a.headline, 70);
+  const description = articleDescription(a);
+  const imgUrl = shareImageUrl(a);
+  const jsonLd = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'NewsArticle',
+      headline: a.headline,
+      description,
+      image: imgUrl || undefined,
+      datePublished: a.publishedAt,
+      dateModified: a.modifiedAt || a.publishedAt,
+      publisher: {
+        '@type': 'NewsMediaOrganization',
+        name: SITE_NAME,
+        url: siteUrl() + '/',
+      },
+      mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+      articleSection: 'Satire',
+    },
+  ];
+  let nav = '';
+  if (prev || next) {
+    nav =
+      '<nav class="satire-nav" aria-label="More cartoons">' +
+      (prev
+        ? '<a class="prev" href="/article/' + esc(prev.slug) + '">&larr; Previous comic</a>'
+        : '') +
+      (next
+        ? '<a class="next" href="/article/' + esc(next.slug) + '">Next comic &rarr;</a>'
+        : '') +
+      '</nav>';
+  }
+  const body =
+    '<div class="satire-wrap">' +
+    articleFigure(a, 'satire-hero', { noCaption: true }) +
+    satireCaptionHtml(a) +
+    nav +
+    '</div>';
+  return layout({
+    title,
+    description,
+    path: '/article/' + a.slug,
+    ogType: 'article',
+    ogImage: imgUrl,
+    articleMeta: {
+      published: a.publishedAt,
+      modified: a.modifiedAt || a.publishedAt,
+      section: 'Satire',
+    },
+    jsonLd,
+    activeNav: 'satire',
+    body,
+  });
 }
 
 function articlePage(a, related, localStories) {
@@ -1708,6 +1835,7 @@ module.exports = {
   localHubPage,
   localRegionPage,
   articlePage,
+  satirePage,
   subscribePage,
   checkoutPage,
   searchPage,

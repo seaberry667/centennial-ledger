@@ -96,10 +96,16 @@ app.post('/api/ingest', async (req, res) => {
 /* --------------------------- Public pages ------------------------- */
 
 app.get('/', async (req, res) => {
-  // Fetch 24: the lead, a second feature, and the pool the rail
+  // Fetch 32: the lead, a second feature, and the pool the rail
   // rows and Latest cards draw from. (The per-section rail picks
   // and the Local & Statewide list are fetched separately, below.)
-  const articles = await store.listArticles({ limit: 24 });
+  // Satire pieces are never featured or listed among the homepage
+  // articles (owner instruction, 2026-11-02): they live on their
+  // own section page and are reached from there, so they are
+  // filtered out of the homepage pool before anything is picked.
+  const articles = (await store.listArticles({ limit: 32 })).filter(
+    (a) => a.section !== 'satire'
+  );
   const [lead, ...rest] = articles;
   // Second feature: the most recent story from a different section
   // than the lead's, shown directly under the lead in the same
@@ -174,6 +180,18 @@ app.get('/local/:region', async (req, res) => {
 app.get('/article/:slug', async (req, res) => {
   const article = await store.getArticle(req.params.slug);
   if (!article) return res.status(404).type('html').send(notFound());
+  // Satire pieces get their own bare page (owner instruction,
+  // 2026-11-02): just the comic and its long caption, with
+  // previous/next buttons to move between comics. Neighbors come
+  // from the Satire list, newest first: "previous" is the older
+  // comic, "next" is the newer one.
+  if (article.section === 'satire') {
+    const comics = await store.listArticles({ section: 'satire', limit: 60 });
+    const idx = comics.findIndex((c) => c.slug === article.slug);
+    const newer = idx > 0 ? comics[idx - 1] : null;
+    const older = idx >= 0 && idx < comics.length - 1 ? comics[idx + 1] : null;
+    return res.type('html').send(render.satirePage(article, older, newer));
+  }
   const related = (await store.listArticles({ section: article.section, limit: 4 })).filter(
     (a) => a.slug !== article.slug
   );
