@@ -186,6 +186,30 @@ app.get('/local/:region', async (req, res) => {
   res.type('html').send(render.localRegionPage({ region, articles }));
 });
 
+/* Article plate images at a real URL, so social platforms can fetch
+   them for link previews (og:image points here). Plates are stored
+   inline as data URIs; this decodes and serves the bytes. An article
+   whose image is already an http(s) URL redirects to it. */
+app.get('/img/:slug', async (req, res) => {
+  const article = await store.getArticle(req.params.slug);
+  if (!article || !article.image || !article.image.url) {
+    return res.status(404).type('text').send('Not found');
+  }
+  const url = article.image.url;
+  if (/^https?:\/\//i.test(url)) return res.redirect(302, url);
+  const m = /^data:([^;,]+)?(;base64)?,([\s\S]*)$/.exec(url);
+  if (!m) return res.status(404).type('text').send('Not found');
+  const type = m[1] || 'application/octet-stream';
+  if (!/^image\//i.test(type)) {
+    return res.status(404).type('text').send('Not found');
+  }
+  const buf = m[2]
+    ? Buffer.from(m[3], 'base64')
+    : Buffer.from(decodeURIComponent(m[3]));
+  res.set('Cache-Control', 'public, max-age=86400');
+  return res.type(type).send(buf);
+});
+
 app.get('/article/:slug', async (req, res) => {
   const article = await store.getArticle(req.params.slug);
   if (!article) return res.status(404).type('html').send(notFound());

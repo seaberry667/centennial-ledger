@@ -293,7 +293,13 @@ function leadExcerpt(a) {
 function shareImageUrl(a) {
   if (!a || !a.image || !a.image.url) return '';
   const u = imageAbsUrl(a.image.url);
-  return /^https?:\/\//i.test(u) ? u : '';
+  if (/^https?:\/\//i.test(u)) return u;
+  // Plates stored inline as data URIs are not fetchable by social
+  // platforms, so shares carried no picture. The site serves those
+  // plates itself at /img/<slug> (see the route in server.js), and
+  // the share image points there (owner instruction, 2026-11-02:
+  // fix the site so link posts carry the illustration).
+  return siteUrl() + '/img/' + a.slug;
 }
 
 function adSlot(label) {
