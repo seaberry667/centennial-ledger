@@ -96,8 +96,9 @@ app.post('/api/ingest', async (req, res) => {
 /* --------------------------- Public pages ------------------------- */
 
 app.get('/', async (req, res) => {
-  // Fetch 24: the lead, a second feature, and the pool the Latest
-  // row and Trending draw from.
+  // Fetch 24: the lead, a second feature, and the pool the rail
+  // rows and Latest cards draw from. (The per-section rail picks
+  // and the Local & Statewide list are fetched separately, below.)
   const articles = await store.listArticles({ limit: 24 });
   const [lead, ...rest] = articles;
   // Second feature: the most recent story from a different section
@@ -111,20 +112,29 @@ app.get('/', async (req, res) => {
     const idx = rest.findIndex((a) => a.section !== lead.section);
     if (idx >= 0) second = rest.splice(idx, 1)[0];
   }
-  // Rail rows: the latest story from each of the five news
-  // sections, in section order. A section whose latest story is one
-  // of the two features contributes its next story instead, so no
-  // story appears twice on the front page; a section with no other
-  // story simply has no row.
-  const featureSlugs = new Set(
-    [lead, second].filter(Boolean).map((a) => a.slug)
-  );
+  // Rail rows (redesign spec 3.6): five supporting stories — the
+  // latest story from each of Politics, Rights, Taxes, Energy and
+  // Schools, in that section order, excluding the two features. A
+  // section whose latest story is a feature contributes its next
+  // story instead; a section with nothing left has no row.
+  const featureSlugs = new Set([lead, second].filter(Boolean).map((a) => a.slug));
   const railTop = [];
   for (const slug of ['politics', 'rights', 'taxes', 'energy', 'schools']) {
-    const inSection = await store.listArticles({ section: slug, limit: 3 });
+    const inSection = await store.listArticles({ section: slug, limit: 6 });
     const pick = inSection.find((a) => !featureSlugs.has(a.slug));
     if (pick) railTop.push(pick);
   }
+  // "Latest from Colorado" grid (spec 3.10): the three most recent
+  // stories after the two features, also skipping anything the
+  // rail rows already use, so features, rail rows and Latest cards
+  // are all disjoint on the front page.
+  const usedSlugs = new Set(
+    [...featureSlugs, ...railTop.map((a) => a.slug)]
+  );
+  const latestRow = rest.filter((a) => !usedSlugs.has(a.slug)).slice(0, 3);
+  // Local & Statewide (design addendum): the eight most recently
+  // published Local stories across all eight regions, newest first.
+  const localStories = await store.listArticles({ section: 'local', limit: 8 });
   // The newest Opinion piece feeds the "From Our Editorial Desk"
   // strip; null while the store holds none, and the strip is then
   // absent from the page.
@@ -136,6 +146,8 @@ app.get('/', async (req, res) => {
       second,
       latest: rest.slice(0, 12),
       railTop,
+      latestRow,
+      localStories,
       opinion,
       briefingThanks: req.query.briefing === 'thanks',
     })
@@ -165,17 +177,11 @@ app.get('/article/:slug', async (req, res) => {
   const related = (await store.listArticles({ section: article.section, limit: 4 })).filter(
     (a) => a.slug !== article.slug
   );
-  // Trending in Colorado: the most recent stories site-wide (the site
-  // has no view tracking), spotlight-flagged stories first within that
-  // recency order, the story being read excluded, up to five.
-  const recent = (await store.listArticles({ limit: 10 })).filter(
-    (a) => a.slug !== article.slug
-  );
-  const trending = recent
-    .filter((a) => a.spotlight)
-    .concat(recent.filter((a) => !a.spotlight))
-    .slice(0, 5);
-  res.type('html').send(render.articlePage(article, related.slice(0, 3), trending));
+  // Local & Statewide (design addendum): the eight most recently
+  // published Local stories across all eight regions, newest first —
+  // the same sidebar component the homepage uses.
+  const localStories = await store.listArticles({ section: 'local', limit: 8 });
+  res.type('html').send(render.articlePage(article, related.slice(0, 3), localStories));
 });
 
 app.get('/subscribe', (req, res) => {
