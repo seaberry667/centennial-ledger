@@ -171,9 +171,51 @@ function normalizeSources(raw) {
     if (!/^https?:\/\//i.test(url) || seen.has(url)) continue;
     seen.add(url);
     out.push({ name: String(s.title || s.name || s.domain || url).trim(), url });
-    if (out.length >= 12) break;
+    // The cap sits at 40 (raised from 12 on 2026-11-03): an Opinion
+    // piece's full documentation list — the Engineered series'
+    // finale carries 20 sources — must fit whole.
+    if (out.length >= 40) break;
   }
   return out;
+}
+
+/**
+ * Opinion pieces carry their sources in the stored sources list,
+ * rendered as the regular Sources section — never as bracketed
+ * number references in the text and never as a typed-out sources
+ * section at the end of the body (owner instruction, 2026-11-03,
+ * superseding the earlier bottom-of-piece citations format). This
+ * strips the bracketed numeric markers from an Opinion article's
+ * body text and drops a trailing typed Sources section. The
+ * structured source entries themselves arrive through ingest's
+ * sources list (and the sources fill for existing articles); this
+ * only cleans the body. Mutates and returns the article, and
+ * reports whether anything changed.
+ */
+function cleanOpinionBody(article) {
+  if (!article || article.section !== 'opinion') return false;
+  let changed = false;
+  const strip = (s) => {
+    const before = String(s || '');
+    const after = before
+      .replace(/\s*\[(?:\s*\d+(?:\s*[-–,]\s*\d+)*\s*)\]/g, '')
+      .replace(/\s+([.,;:!?])/g, '$1')
+      .replace(/ {2,}/g, ' ');
+    if (after !== before) changed = true;
+    return after;
+  };
+  if (article.dek) article.dek = strip(article.dek);
+  const sections = Array.isArray(article.sections) ? article.sections : [];
+  for (const s of sections) {
+    if (s.lead) s.lead = strip(s.lead);
+    if (Array.isArray(s.paragraphs)) s.paragraphs = s.paragraphs.map(strip);
+  }
+  const last = sections[sections.length - 1];
+  if (last && /^sources\b/i.test(String(last.heading || '').trim())) {
+    sections.pop();
+    changed = true;
+  }
+  return changed;
 }
 
 function normalizeArticle(raw) {
@@ -208,7 +250,7 @@ function normalizeArticle(raw) {
   if (!section) return null;
   const spotlight = normalizeSpotlight(raw.spotlight);
 
-  return {
+  const out = {
     slug,
     headline,
     dek: String(raw.dek || '').trim(),
@@ -234,6 +276,8 @@ function normalizeArticle(raw) {
     seoTitle: String(raw.seoTitle || raw.seo_title || '').trim(),
     metaDescription: String(raw.metaDescription || raw.meta_description || '').trim(),
   };
+  cleanOpinionBody(out);
+  return out;
 }
 
 /* ------------------------------------------------------------------ */
@@ -259,6 +303,16 @@ class FileStore {
     } else {
       this._save();
     }
+    // One-time, idempotent cleanup of stored Opinion bodies
+    // (owner instruction, 2026-11-03): strip the bracketed
+    // citation markers and drop any typed-out Sources section.
+    // After the first pass nothing matches, so later boots
+    // change nothing.
+    let opinionChanged = false;
+    for (const a of this.data.articles) {
+      if (cleanOpinionBody(a)) opinionChanged = true;
+    }
+    if (opinionChanged) this._save();
   }
 
   _save() {
@@ -410,6 +464,27 @@ class PgStore {
     await this.pool.query(
       'CREATE INDEX IF NOT EXISTS idx_articles_published ON articles(published_at DESC)'
     );
+    // Same one-time, idempotent Opinion body cleanup as the file
+    // store's (owner instruction, 2026-11-03): strip bracketed
+    // citation markers from stored Opinion bodies and drop any
+    // typed-out Sources section at the end of the body.
+    const opinionRows = await this.pool.query(
+      "SELECT slug, dek, sections FROM articles WHERE section = 'opinion'"
+    );
+    for (const r of opinionRows.rows) {
+      const probe = {
+        section: 'opinion',
+        dek: r.dek || '',
+        sections:
+          typeof r.sections === 'string' ? JSON.parse(r.sections) : r.sections || [],
+      };
+      if (cleanOpinionBody(probe)) {
+        await this.pool.query(
+          'UPDATE articles SET dek = $2, sections = $3 WHERE slug = $1',
+          [r.slug, probe.dek, JSON.stringify(probe.sections)]
+        );
+      }
+    }
   }
 
   _row(r) {
