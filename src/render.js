@@ -198,11 +198,28 @@ function imageAbsUrl(url) {
  * so the image clicks through like the headline does. Homepage
  * features and article pages render the figure with its caption.
  */
+/**
+ * Display form of a stored image caption. Per the owner's
+ * 2026-11-02 instruction, the "S.I.-generated image." credit no
+ * longer appears in captions. Stored article data is append-only
+ * and keeps the suffix, so it is stripped here, at render time: a
+ * trailing credit, together with the whitespace before it, is
+ * removed and the rest of the caption is left intact. A caption
+ * that consists only of the credit becomes '' and renders no
+ * figcaption at all. Alt text is never touched.
+ */
+function displayCaption(caption) {
+  return String(caption || '')
+    .replace(/\s*S\.I\.-generated image\.\s*$/i, '')
+    .trim();
+}
+
 function articleFigure(a, extraClass, opts) {
   if (!a || !a.image || !a.image.url) return '';
   const o = opts || {};
-  const cap = !o.noCaption && a.image.caption
-    ? '<figcaption>' + esc(a.image.caption) + '</figcaption>'
+  const captionText = o.noCaption ? '' : displayCaption(a.image.caption);
+  const cap = captionText
+    ? '<figcaption>' + esc(captionText) + '</figcaption>'
     : '';
   const fig =
     '<figure class="art-figure' + (extraClass ? ' ' + extraClass : '') + '"><img src="' + esc(a.image.url) + '" alt="' +

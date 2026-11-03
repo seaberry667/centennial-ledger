@@ -25,9 +25,10 @@ const SECTIONS = [
   { slug: 'schools', name: 'Schools' },
   { slug: 'local', name: 'Local' },
   // Opinion is a live section: the owner lifted the hold on 2026-11-01
-  // and Opinion pieces are ingested under their own slug. Satire remains
-  // a placeholder nav section — its page renders (empty) and
-  // SECTION_ALIASES intentionally has no route into its slug.
+  // and Opinion pieces are ingested under their own slug. Satire became
+  // a live section on 2026-11-02: the owner is publishing one-frame
+  // political cartoons with a short blurb there, ingested as
+  // article-shaped items under their own slug.
   { slug: 'opinion', name: 'Opinion' },
   { slug: 'satire', name: 'Satire' },
 ];
@@ -51,6 +52,7 @@ const SECTION_ALIASES = {
   governor: 'politics',
   elections: 'politics',
   opinion: 'opinion',
+  satire: 'satire',
   rights: 'rights',
   'second amendment': 'rights',
   taxes: 'taxes',
