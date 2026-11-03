@@ -140,6 +140,22 @@ function slugify(text) {
 
 /** Validate and normalize an incoming article from the ingest API / seed. */
 /**
+ * Owner-pulled stories (retractions): the append-only store never
+ * deletes rows, so a pulled story is hidden at the read layer
+ * instead — every read path treats these slugs as nonexistent (the
+ * article page 404s and the story leaves the homepage, sections,
+ * search and sitemaps). Reversible: remove a slug here and the
+ * story returns exactly as stored. uploadtolive excludes the same
+ * stories on the newsroom side so they are never re-sent.
+ * - The El Paso County party vote story (newsroom ID 62): pulled by
+ *   the owner on 2026-11-03 — its events are from 2021 but were
+ *   written as current.
+ */
+const RETRACTED_SLUGS = new Set([
+  'el-paso-county-party-vote-stands-state-republicans-scrap-do-over-despite-sham-warning-q4pxl',
+]);
+
+/**
  * The full source list as the newsroom stores it: entries with a
  * title/name and an http(s) URL. Cleaned, de-duplicated by URL and
  * capped; anything else is dropped. Returns [] when the payload
@@ -294,11 +310,12 @@ class FileStore {
   }
 
   async getArticle(slug) {
+    if (RETRACTED_SLUGS.has(slug)) return null;
     return this.data.articles.find((a) => a.slug === slug) || null;
   }
 
   async listArticles({ section = null, region = null, spotlight = null, search = null, limit = 50 } = {}) {
-    let rows = [...this.data.articles];
+    let rows = this.data.articles.filter((a) => !RETRACTED_SLUGS.has(a.slug));
     if (section) rows = rows.filter((a) => a.section === section);
     if (region) rows = rows.filter((a) => slugify(a.region) === region);
     if (spotlight) rows = rows.filter((a) => a.spotlight === spotlight);
@@ -317,7 +334,7 @@ class FileStore {
   }
 
   async countArticles() {
-    return this.data.articles.length;
+    return this.data.articles.filter((a) => !RETRACTED_SLUGS.has(a.slug)).length;
   }
 
   async addSubscriber(email) {
@@ -482,6 +499,7 @@ class PgStore {
   }
 
   async getArticle(slug) {
+    if (RETRACTED_SLUGS.has(slug)) return null;
     const res = await this.pool.query('SELECT * FROM articles WHERE slug = $1', [slug]);
     return this._row(res.rows[0]);
   }
@@ -500,6 +518,10 @@ class PgStore {
       params.push('%' + search + '%');
       where.push(`(headline ILIKE $${params.length} OR dek ILIKE $${params.length} OR topic_label ILIKE $${params.length})`);
     }
+    if (RETRACTED_SLUGS.size) {
+      params.push([...RETRACTED_SLUGS]);
+      where.push(`slug <> ALL($${params.length})`);
+    }
     params.push(limit);
     const sql =
       'SELECT * FROM articles' +
@@ -510,7 +532,11 @@ class PgStore {
   }
 
   async countArticles() {
-    const res = await this.pool.query('SELECT COUNT(*)::int AS n FROM articles');
+    const res = RETRACTED_SLUGS.size
+      ? await this.pool.query('SELECT COUNT(*)::int AS n FROM articles WHERE slug <> ALL($1)', [
+          [...RETRACTED_SLUGS],
+        ])
+      : await this.pool.query('SELECT COUNT(*)::int AS n FROM articles');
     return res.rows[0].n;
   }
 
