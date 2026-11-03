@@ -363,6 +363,31 @@ class FileStore {
     return true;
   }
 
+  /**
+   * Opinion-only companion to the sources fill (owner instruction,
+   * 2026-11-03): Opinion source lists were restructured in the
+   * newsroom — typed citations lifted into the stored list,
+   * bracketed prefixes cleaned off the names, and an idea-only
+   * entry removed — so for Opinion pieces the newsroom's list is
+   * authoritative: replace the stored list whenever the incoming
+   * one differs, even when it is shorter. News pieces keep the
+   * longer-list-wins fill above. Returns true when updated.
+   */
+  async replaceSourcesIfDifferent(slug, sources) {
+    const list = normalizeSources(sources);
+    if (!list.length) return false;
+    const existing = this.data.articles.find((a) => a.slug === slug);
+    if (!existing) return false;
+    const current = normalizeSources(existing.sources);
+    const same =
+      current.length === list.length &&
+      current.every((s, i) => s.name === list[i].name && s.url === list[i].url);
+    if (same) return false;
+    existing.sources = list;
+    this._save();
+    return true;
+  }
+
   async getArticle(slug) {
     if (RETRACTED_SLUGS.has(slug)) return null;
     return this.data.articles.find((a) => a.slug === slug) || null;
@@ -570,6 +595,34 @@ class PgStore {
         RETURNING slug`,
       [slug, JSON.stringify(list), list.length]
     );
+    return res.rowCount > 0;
+  }
+
+  /**
+   * Same Opinion-only contract as the file store's: replace the
+   * stored sources list whenever the newsroom's list differs,
+   * even when it is shorter. The read-compare-write is not
+   * atomic, but ingest is a single trusted writer, so a race is
+   * not a practical concern here.
+   */
+  async replaceSourcesIfDifferent(slug, sources) {
+    const list = normalizeSources(sources);
+    if (!list.length) return false;
+    const cur = await this.pool.query('SELECT sources FROM articles WHERE slug = $1', [slug]);
+    if (!cur.rows.length) return false;
+    const current = normalizeSources(
+      typeof cur.rows[0].sources === 'string'
+        ? JSON.parse(cur.rows[0].sources)
+        : cur.rows[0].sources
+    );
+    const same =
+      current.length === list.length &&
+      current.every((s, i) => s.name === list[i].name && s.url === list[i].url);
+    if (same) return false;
+    const res = await this.pool.query('UPDATE articles SET sources = $2::jsonb WHERE slug = $1', [
+      slug,
+      JSON.stringify(list),
+    ]);
     return res.rowCount > 0;
   }
 

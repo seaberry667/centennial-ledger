@@ -59,7 +59,10 @@ app.get('/api/health', async (req, res) => {
  * no image and the incoming one carries a valid image, the image alone
  * is filled in (counted as "imaged"); and when the incoming source list
  * is longer than the stored one, the sources alone are replaced
- * (counted as "sourced").
+ * (counted as "sourced"). One further exception, Opinion articles
+ * only (owner instruction, 2026-11-03): their source lists were
+ * restructured in the newsroom, so a differing incoming list replaces
+ * the stored one outright, even when it is shorter.
  * Returns { received, inserted, skipped, imaged, sourced }, where
  * skipped counts items that were neither inserted nor filled.
  */
@@ -95,6 +98,15 @@ app.post('/api/ingest', async (req, res) => {
       filled = true;
     }
     if (await store.backfillSourcesIfFewer(article.slug, article.sources)) {
+      sourced += 1;
+      filled = true;
+    }
+    // Opinion pieces: the newsroom's restructured list replaces the
+    // stored one whenever it differs (see the route comment above).
+    if (
+      article.section === 'opinion' &&
+      (await store.replaceSourcesIfDifferent(article.slug, article.sources))
+    ) {
       sourced += 1;
       filled = true;
     }
