@@ -352,7 +352,7 @@ function localStatewideBox(items) {
   const list = (items || []).filter(Boolean).slice(0, 8);
   if (!list.length) return '';
   return (
-    '<section class="local-statewide"><h2>Local &amp; Statewide</h2><ol>' +
+    '<section class="local-statewide"><h2><a href="/section/local">Local &amp; Statewide</a></h2><ol>' +
     list
       .map(
         (a, i) =>
@@ -650,8 +650,10 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
    red circular markers. The numbers are chronological order, not a
    popularity ranking. */
 .local-statewide{border-top:3px solid var(--color-text);padding-top:.7rem;margin-bottom:1.2rem}
-.local-statewide h2{font-family:var(--font-headline);font-weight:700;font-size:1.25rem;margin:.1rem 0 .5rem;display:flex;align-items:center;gap:.8rem}
+.local-statewide h2{font-family:var(--font-ui);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--color-red);margin:0 0 .2rem;display:flex;align-items:center;gap:.7rem}
 .local-statewide h2::after{content:"";flex:1;height:1px;background:var(--color-gold)}
+.local-statewide h2 a{text-decoration:none;color:inherit;font:inherit}
+.local-statewide h2 a:hover{text-decoration:underline}
 .local-statewide ol{list-style:none;margin:0;padding:0}
 .local-statewide li{display:flex;gap:.65rem;align-items:flex-start;padding:.5rem 0;border-bottom:1px solid var(--color-border)}
 .local-statewide li:last-child{border-bottom:0;padding-bottom:0}
