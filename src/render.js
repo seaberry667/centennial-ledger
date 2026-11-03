@@ -756,7 +756,7 @@ article.full figure.article-hero{margin:1.1rem 0}
 footer{background:#fff;color:#3d3d3d;border-top:4px double var(--color-text);font-family:var(--font-body);font-size:.92rem;margin-top:2rem;position:relative}
 footer::before{content:"";position:absolute;top:-8px;left:0;right:0;height:1px;background:var(--color-gold)}
 .footer-inner{max-width:1200px;margin:0 auto;padding:32px 24px 8px}
-.footer-grid{display:grid;grid-template-columns:1.3fr 1fr 1fr .8fr 1.2fr;gap:1.8rem}
+.footer-grid{display:grid;grid-template-columns:1.3fr 1fr 1fr 1.3fr;gap:1.8rem}
 .footer-brand img{display:block;max-width:230px;width:100%;height:auto}
 .footer-brand p{margin:.7rem 0 0;color:#555;font-size:.9rem}
 .footer-col h3{color:var(--color-red);font-family:var(--font-ui);font-size:.82rem;font-weight:bold;letter-spacing:.14em;text-transform:uppercase;margin:.1rem 0 .6rem}
@@ -766,7 +766,7 @@ footer::before{content:"";position:absolute;top:-8px;left:0;right:0;height:1px;b
 .footer-col a:hover{text-decoration:underline}
 .footer-col{border-left:1px solid rgba(170,133,72,.4);padding-left:1.2rem}
 .footer-col:first-child{border-left:0;padding-left:0}
-.footer-ornament{display:block;width:110px;max-width:100%;height:auto;margin-bottom:.5rem}
+.footer-ornament{display:block;width:110px;max-width:100%;height:auto;margin-top:.9rem;margin-bottom:.5rem}
 .footer-stay-text{font-style:italic;margin:.2rem 0 .8rem;color:#333}
 .btn-signup{display:inline-block;border:1.5px solid var(--color-red);color:var(--color-red);text-decoration:none;font-family:var(--font-ui);font-weight:bold;font-size:.9rem;padding:.45rem 1.1rem;background:#fff}
 .btn-signup:hover{background:var(--color-red);color:#fff}
@@ -905,17 +905,14 @@ ${body}
           ${REGIONS.map((r) => '<li><a href="/local/' + r.slug + '">' + r.name + '</a></li>').join('')}
         </ul>
       </nav>
-      <nav class="footer-col" aria-label="About">
+      <div class="footer-col">
         <h3>About</h3>
         <ul>
           <li><a href="/about">About Us</a></li>
           <li><a href="/subscribe">Subscribe</a></li>
           <li><a href="https://www.facebook.com/profile.php?id=61595978079628" target="_blank" rel="noopener">Facebook</a></li>
         </ul>
-      </nav>
-      <div class="footer-col footer-stay">
         <img class="footer-ornament" src="/section-break.png" alt="" width="642" height="26">
-        <h3>Stay Informed</h3>
         <p class="footer-stay-text">The Colorado Daily Briefing in your inbox.</p>
         <a class="btn-signup" href="/subscribe">Sign Up &rarr;</a>
       </div>
