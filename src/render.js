@@ -655,7 +655,7 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
    the most recent Local stories, newest first, numbered 1-8 with
    red circular markers. The numbers are chronological order, not a
    popularity ranking. */
-.local-statewide{border-top:3px solid var(--color-text);padding-top:.7rem;margin-bottom:1.2rem}
+.local-statewide{padding-top:.7rem;margin-bottom:1.2rem}
 .local-statewide h2{font-family:var(--font-ui);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--color-red);margin:0 0 .2rem;display:flex;align-items:center;gap:.7rem}
 .local-statewide h2::after{content:"";flex:1;height:1px;background:var(--color-gold)}
 .local-statewide h2 a{text-decoration:none;color:inherit;font:inherit}
