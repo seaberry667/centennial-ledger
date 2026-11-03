@@ -698,12 +698,6 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 /* Reader-facing topic navigation module (homepage) and the topic
    hub boxes on article/section pages: ivory, fine border, no
    internal SEO terminology in the visible copy. */
-.explore-box{border:1px solid var(--color-border);background:var(--color-ivory);padding:1rem 1.2rem;margin-top:2rem}
-.explore-box h2{font-family:var(--font-headline);font-size:1.35rem;margin:.1rem 0 .4rem}
-.explore-box p{margin:.2rem 0 .6rem;color:#444}
-.explore-links{display:flex;flex-wrap:wrap;gap:.4rem 1.2rem;list-style:none;margin:0;padding:0}
-.explore-links a{text-decoration:none;font-weight:600}
-.explore-links a:hover{text-decoration:underline}
 .hub-box{border:1px solid var(--color-border);border-top:3px solid var(--color-text);background:var(--color-ivory);padding:1rem 1.2rem;margin-top:2rem}
 .hub-box h2{font-family:var(--font-headline);font-size:1.35rem;margin:.1rem 0 .4rem}
 .hub-box p{margin:.2rem 0;color:#444}
@@ -1233,33 +1227,6 @@ function regionHubBox(region) {
 }
 
 /**
- * Homepage topic navigation module (redesign spec 3.11): the last
- * content element on the front page, in reader-facing language —
- * a heading, one concise sentence, and clickable links to the news
- * sections and the eight Colorado regions, reusing the existing
- * section and region URLs. No internal SEO terminology is shown.
- */
-function exploreBox() {
-  const links = [
-    { href: '/section/politics', label: 'Politics' },
-    { href: '/section/taxes', label: 'Taxes' },
-    { href: '/section/rights', label: 'Rights' },
-    { href: '/section/energy', label: 'Energy' },
-    { href: '/section/schools', label: 'Schools' },
-    { href: '/section/local', label: 'Local News' },
-  ].concat(REGIONS.map((r) => ({ href: '/local/' + r.slug, label: r.name })));
-  return (
-    '<aside class="explore-box">' +
-    '<h2>Explore Colorado News</h2>' +
-    '<p>Follow the stories by topic, or by the part of Colorado you call home — every story links its original sources.</p>' +
-    '<ul class="explore-links">' +
-    links.map((l) => '<li><a href="' + l.href + '">' + l.label + '</a></li>').join('') +
-    '</ul>' +
-    '</aside>'
-  );
-}
-
-/**
  * Teaser text for the Editorial Desk strip: the opening of the piece
  * itself — its first section's lead plus up to two body paragraphs —
  * trimmed at a word boundary to about 340 characters with an
@@ -1342,8 +1309,8 @@ function homePage({ lead, second, third, latest, railGroups, latestRow, localSto
     // Two-column front page from the top: the lead opens the main
     // column and the rail starts beside it at the same height;
     // below the columns, full width, come the editorial strip (when
-    // an Opinion piece exists), the three-card "Latest from
-    // Colorado" grid and the Explore Colorado News module. The lead
+    // an Opinion piece exists) and the three-card "Latest from
+    // Colorado" grid. The lead
     // and third feature were pulled out of `latest` by the route.
     let features = featureStory(lead);
     // Second and third features, directly under the lead in the
@@ -1396,7 +1363,6 @@ function homePage({ lead, second, third, latest, railGroups, latestRow, localSto
         '<section class="latest-home"><h2 class="latest-home-heading">Latest from Colorado</h2>' +
         '<div class="latest-grid">' + latestCards.map(latestCard).join('') + '</div></section>';
     }
-    body += exploreBox();
     body += SAVE_SCRIPT;
   } else {
     body += '<section class="lead-story"><h1 class="headline">Colorado news, reported plainly.</h1><p class="dek">New stories are on the way.</p></section>';
