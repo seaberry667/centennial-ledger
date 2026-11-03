@@ -602,7 +602,7 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
    red circular markers. The numbers are chronological order, not a
    popularity ranking. */
 .local-statewide{border-top:3px solid var(--color-text);padding-top:.7rem;margin-bottom:1.2rem}
-.local-statewide h2{font-family:var(--font-headline);font-weight:700;font-style:italic;font-size:1.25rem;margin:.1rem 0 .5rem;display:flex;align-items:center;gap:.8rem}
+.local-statewide h2{font-family:var(--font-headline);font-weight:700;font-size:1.25rem;margin:.1rem 0 .5rem;display:flex;align-items:center;gap:.8rem}
 .local-statewide h2::after{content:"";flex:1;height:1px;background:var(--color-gold)}
 .local-statewide ol{list-style:none;margin:0;padding:0}
 .local-statewide li{display:flex;gap:.65rem;align-items:flex-start;padding:.5rem 0;border-bottom:1px solid var(--color-border)}
