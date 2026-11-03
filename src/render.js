@@ -801,7 +801,7 @@ ${body}
     <div class="footer-grid">
       <div class="footer-col footer-brand">
         <a href="/" aria-label="The Centennial Ledger: back to the front page"><picture><source srcset="/footer-logo.webp" type="image/webp"><img src="/footer-logo.png" alt="The Centennial Ledger" width="285" height="140"></picture></a>
-        <p>The Centennial Ledger covers Colorado’s Capitol and all 64 counties. Independent and unaffiliated with any party or campaign. Stories are largely AI-written from linked sources; always check original sources for full context.</p>
+        <p>Covering Colorado’s Capitol and all 64 counties. Independent and unaffiliated with any party or campaign. Stories are AI-written from linked sources; always check original sources for full context.</p>
       </div>
       <nav class="footer-col" aria-label="Sections">
         <h3>Sections</h3>
