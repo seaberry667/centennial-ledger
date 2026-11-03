@@ -402,7 +402,7 @@ function rectangleAdSlot() {
  * red uppercase category label and the headline as a link. No
  * byline, no read time and no source line, as on cards.
  */
-function railStoryRow(a) {
+function railStoryRow(a, grouped) {
   const thumb =
     a.image && a.image.url
       ? '<a class="rail-thumb" href="/article/' + esc(a.slug) + '"><img src="' + esc(a.image.url) +
@@ -411,9 +411,25 @@ function railStoryRow(a) {
   return (
     '<div class="rail-row">' + thumb +
     '<div class="rail-row-text">' +
-    '<div class="kicker">' + esc(sectionName(a.section)) + '</div>' +
+    (grouped ? '' : '<div class="kicker">' + esc(sectionName(a.section)) + '</div>') +
     '<h4><a href="/article/' + esc(a.slug) + '">' + esc(a.headline) + '</a></h4>' +
     '</div></div>'
+  );
+}
+
+/**
+ * One homepage rail section group (owner instruction, 2026-11-02):
+ * the section's name as a heading linking to its section page, with
+ * the section's two most recent stories as rail rows under it. The
+ * rows carry no category label of their own — the heading is it.
+ */
+function railSectionGroup(g) {
+  return (
+    '<div class="rail-group">' +
+    '<h3 class="rail-group-title"><a href="/section/' + esc(g.section) + '">' +
+    esc(sectionName(g.section)) + '</a></h3>' +
+    g.articles.map((a) => railStoryRow(a, true)).join('') +
+    '</div>'
   );
 }
 
@@ -607,6 +623,12 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 .rail-row:last-child{border-bottom:0;padding-bottom:0}
 .rail-thumb{flex:0 0 100px;width:100px;height:70px;overflow:hidden;background:#fff}
 .rail-thumb img{display:block;width:100%;height:100%;object-fit:cover;object-position:center;filter:grayscale(1) contrast(1.06);background:#fff}
+.rail-group{margin:0 0 1.15rem}
+.rail-group:last-child{margin-bottom:0}
+.rail-group-title{font-family:var(--font-ui);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--color-red);margin:0 0 .2rem;display:flex;align-items:center;gap:.7rem}
+.rail-group-title::after{content:"";flex:1;height:1px;background:var(--color-gold)}
+.rail-group-title a{text-decoration:none;color:inherit}
+.rail-group-title a:hover{text-decoration:underline}
 .rail-row-text h4{font-family:var(--font-headline);font-size:1.03rem;line-height:1.28;margin:.15rem 0 .3rem}
 .rail-row-text h4 a{text-decoration:none}
 .rail-row-text h4 a:hover{text-decoration:underline}
@@ -1265,7 +1287,7 @@ function editorialStrip(opinion) {
   );
 }
 
-function homePage({ lead, second, latest, railTop, latestRow, localStories, opinion, briefingThanks }) {
+function homePage({ lead, second, latest, railGroups, latestRow, localStories, opinion, briefingThanks }) {
   const jsonLd = [
     {
       '@context': 'https://schema.org',
@@ -1302,23 +1324,24 @@ function homePage({ lead, second, latest, railTop, latestRow, localStories, opin
     // the gold filigree divider between the two features only.
     // Absent when no different-section story exists.
     if (second) features += featureDivider() + featureStory(second);
-    // The rail rows are the five supporting stories — the latest
-    // from each of Politics, Rights, Taxes, Energy and Schools,
-    // picked by the home route, skipping the two features; without
-    // railTop the rail falls back to the first five of `latest`.
-    // The Latest grid takes the three most recent stories after
-    // the features, also skipping whatever the rail rows use, so
-    // no story appears twice on the front page: features, rail
-    // rows and Latest cards are all disjoint.
-    const railRows = (Array.isArray(railTop) ? railTop : latest.slice(0, 5))
-      .filter(Boolean)
-      .slice(0, 5);
-    const railSlugs = new Set(railRows.map((a) => a.slug));
+    // The rail groups the five news sections (Politics, Rights,
+    // Taxes, Energy, Schools), each with its two most recent
+    // stories under the section heading, picked by the home route
+    // skipping the two features. The Latest grid takes the three
+    // most recent stories after the features, also skipping
+    // whatever the rail groups use, so no story appears twice on
+    // the front page: features, rail rows and Latest cards are
+    // all disjoint.
+    const groups = (Array.isArray(railGroups) ? railGroups : [])
+      .filter((g) => g && Array.isArray(g.articles) && g.articles.length);
+    const railSlugs = new Set(
+      groups.flatMap((g) => g.articles.map((a) => a.slug))
+    );
     const latestCards = (Array.isArray(latestRow)
       ? latestRow
       : latest.filter((a) => !railSlugs.has(a.slug)).slice(0, 3)
     ).filter(Boolean).slice(0, 3);
-    // Rail order: the five supporting story rows, the briefing
+    // Rail order: the per-section story groups, the briefing
     // signup (title, one italic line and the form — no roundup
     // paragraph), Local & Statewide, then a rectangle ad slot. In
     // the markup the rail follows the features inside the
@@ -1327,9 +1350,9 @@ function homePage({ lead, second, latest, railTop, latestRow, localStories, opin
     body +=
       '<div class="home-layout"><div class="home-features">' + features + '</div>' +
       '<aside class="home-rail" aria-label="Sidebar">' +
-      (railRows.length
-        ? '<section class="rail-latest" aria-label="Latest stories">' +
-          railRows.map(railStoryRow).join('') + '</section>'
+      (groups.length
+        ? '<section class="rail-latest" aria-label="Latest stories by section">' +
+          groups.map(railSectionGroup).join('') + '</section>'
         : '') +
       briefingBox(briefingThanks) +
       localStatewideBox(localStories) +

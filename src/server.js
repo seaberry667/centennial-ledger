@@ -128,18 +128,21 @@ app.get('/', async (req, res) => {
     [lead, second].filter(Boolean).map((a) => a.slug)
   );
   const rest = articles.filter((a) => !featuredSlugs.has(a.slug));
-  // Rail rows (redesign spec 3.6): five supporting stories — the
-  // latest story from each of Politics, Rights, Taxes, Energy and
-  // Schools, in that section order, excluding the two features. A
-  // section whose latest story is a feature contributes its next
-  // story instead; a section with nothing left has no row.
+  // Rail groups (owner instruction, 2026-11-02): the right column
+  // groups the five news sections — Politics, Rights, Taxes, Energy
+  // and Schools, in that order — with the TWO most recent stories
+  // from each section under that section's heading, excluding the
+  // two features. A section whose newest stories are features
+  // contributes its next stories instead; a section with nothing
+  // left has no group.
   const featureSlugs = new Set([lead, second].filter(Boolean).map((a) => a.slug));
-  const railTop = [];
+  const railGroups = [];
   for (const slug of ['politics', 'rights', 'taxes', 'energy', 'schools']) {
     const inSection = await store.listArticles({ section: slug, limit: 6 });
-    const pick = inSection.find((a) => !featureSlugs.has(a.slug));
-    if (pick) railTop.push(pick);
+    const picks = inSection.filter((a) => !featureSlugs.has(a.slug)).slice(0, 2);
+    if (picks.length) railGroups.push({ section: slug, articles: picks });
   }
+  const railTop = railGroups.flatMap((g) => g.articles);
   // "Latest from Colorado" grid (spec 3.10): the three most recent
   // stories after the two features, also skipping anything the
   // rail rows already use, so features, rail rows and Latest cards
@@ -161,7 +164,7 @@ app.get('/', async (req, res) => {
       lead: lead || null,
       second,
       latest: rest.slice(0, 12),
-      railTop,
+      railGroups,
       latestRow,
       localStories,
       opinion,
