@@ -760,6 +760,7 @@ function layout({ title, description, path, ogType = 'website', ogImage = '', ar
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="google-site-verification" content="UqshzzuCgZVhRdVyE8HdU96yZw1hMI8SbgJ8Ii1Tnuw">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
 <link rel="canonical" href="${esc(canonical)}">
