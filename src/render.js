@@ -739,6 +739,7 @@ article.full figure.article-hero{margin:1.1rem 0}
 .static-page ul{margin:0 0 1em;padding-left:1.4em}
 .static-page li{margin-bottom:.45em;line-height:1.55}
 .about-tagline{font-size:1.3rem;color:var(--color-navy);margin-bottom:1.2rem}
+.static-page.about-page p,.static-page.about-page li{font-size:1.12rem;line-height:1.65}
 /* ---------- Footer ---------- */
 footer{background:#fff;color:#3d3d3d;border-top:4px double var(--color-text);font-family:var(--font-body);font-size:.92rem;margin-top:2rem;position:relative}
 footer::before{content:"";position:absolute;top:-8px;left:0;right:0;height:1px;background:var(--color-gold)}
