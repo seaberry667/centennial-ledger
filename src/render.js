@@ -291,7 +291,7 @@ function articleFigure(a, extraClass, opts) {
  * whatever opening it has. Returns '' when the story has no body
  * text (the caller then falls back to headline/dek/figure).
  */
-function leadExcerpt(a) {
+function leadExcerpt(a, targetWords) {
   const first = a && Array.isArray(a.sections) ? a.sections[0] : null;
   if (!first) return '';
   const texts = [];
@@ -302,7 +302,7 @@ function leadExcerpt(a) {
   }
   if (!texts.length) return '';
   const wordCount = (s) => String(s || '').trim().split(/\s+/).filter(Boolean).length;
-  const TARGET = 180; // words (owner instruction, 2026-11-02); the crossing block lands whole
+  const TARGET = targetWords || 180; // words (owner instruction, 2026-11-02); the crossing block lands whole
   const kept = [];
   let used = 0;
   for (const b of texts) {
@@ -612,6 +612,12 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 .btn-read:hover{background:#7d181e}
 .btn-save{background:#fff;border:1px solid #b9b2a0;color:var(--color-text);font-family:var(--font-ui);font-weight:bold;font-size:.92rem;padding:.55rem 1rem;border-radius:3px;cursor:pointer}
 .btn-save.saved{background:#fbeeee;border-color:var(--color-red);color:var(--color-red)}
+.btn-share{background:#fff;border:1px solid #b9b2a0;color:var(--color-text);font-family:var(--font-ui);font-weight:bold;font-size:.92rem;padding:.55rem 1rem;border-radius:3px;cursor:pointer}
+.share-wrap{position:relative;display:inline-block}
+.share-menu{position:absolute;left:0;top:calc(100% + 6px);z-index:60;display:block;min-width:215px;background:#fff;border:1px solid #b9b2a0;border-radius:4px;box-shadow:0 8px 22px rgba(16,36,56,.18);padding:.35rem 0}
+.share-menu[hidden]{display:none}
+.share-menu a,.share-menu button{display:block;width:100%;box-sizing:border-box;text-align:left;background:none;border:0;padding:.5rem .9rem;font-family:var(--font-ui);font-size:.92rem;color:var(--color-text);text-decoration:none;cursor:pointer}
+.share-menu a:hover,.share-menu button:hover{background:var(--color-ivory)}
 .why-feature{border-left:4px solid var(--color-red);background:var(--color-ivory);padding:16px 18px;margin-top:1rem}
 .why-feature .why-label{font-family:var(--font-ui);color:var(--color-red);font-size:.78rem;font-weight:bold;letter-spacing:.14em;text-transform:uppercase;margin-bottom:.35rem}
 .why-feature p{margin:0;font-size:1.03rem}
@@ -1071,6 +1077,66 @@ const SAVE_SCRIPT =
   'paint(b);});})(bs[i]);}' +
   '})();</script>';
 
+/**
+ * Share control rendered beside every Save button (owner
+ * instruction, 2026-11-03): a Share button opening a small menu
+ * with the usual destinations — Facebook and X share links,
+ * WhatsApp, Email, Instagram and Copy link. Instagram offers no
+ * web share link, so its entry copies the article URL and tells
+ * the reader to paste it into Instagram. The menu's behavior
+ * (open/close, copy) lives in SHARE_SCRIPT.
+ */
+function shareControl(a) {
+  const url = absUrl('/article/' + a.slug);
+  const eu = encodeURIComponent(url);
+  const et = encodeURIComponent(a.headline || '');
+  return (
+    '<span class="share-wrap">' +
+    '<button type="button" class="btn-share" aria-haspopup="true" aria-expanded="false">🔗 Share</button>' +
+    '<span class="share-menu" role="menu" hidden>' +
+    '<a role="menuitem" target="_blank" rel="noopener" href="https://www.facebook.com/sharer/sharer.php?u=' +
+    eu + '">Facebook</a>' +
+    '<a role="menuitem" target="_blank" rel="noopener" href="https://twitter.com/intent/tweet?url=' +
+    eu + '&text=' + et + '">X</a>' +
+    '<a role="menuitem" target="_blank" rel="noopener" href="https://wa.me/?text=' +
+    et + '%20' + eu + '">WhatsApp</a>' +
+    '<a role="menuitem" href="mailto:?subject=' + et + '&body=' + eu + '">Email</a>' +
+    '<button type="button" role="menuitem" class="share-copy" data-copy-url="' + esc(url) +
+    '" data-copy-label="Instagram">Instagram</button>' +
+    '<button type="button" role="menuitem" class="share-copy" data-copy-url="' + esc(url) +
+    '" data-copy-label="Copy link">Copy link</button>' +
+    '</span></span>'
+  );
+}
+
+/**
+ * Inline script for the Share controls: toggling one menu closes
+ * the others, a click anywhere else or Escape closes them, share
+ * links close the menu as they open, and the copy entries write
+ * the article URL to the clipboard with a brief confirmation
+ * label (the Instagram entry explains the paste step).
+ */
+const SHARE_SCRIPT =
+  '<script>(function(){' +
+  'var wraps=document.querySelectorAll(".share-wrap");' +
+  'function closeAll(){for(var i=0;i<wraps.length;i++){var m=wraps[i].querySelector(".share-menu");if(m)m.hidden=true;var b=wraps[i].querySelector(".btn-share");if(b)b.setAttribute("aria-expanded","false");}}' +
+  'for(var i=0;i<wraps.length;i++){(function(w){' +
+  'var btn=w.querySelector(".btn-share"),menu=w.querySelector(".share-menu");' +
+  'if(!btn||!menu)return;' +
+  'btn.addEventListener("click",function(e){e.stopPropagation();var open=menu.hidden;closeAll();menu.hidden=!open;btn.setAttribute("aria-expanded",open?"true":"false");});' +
+  'menu.addEventListener("click",function(e){e.stopPropagation();if(e.target.tagName==="A")closeAll();});' +
+  'var cps=menu.querySelectorAll(".share-copy");' +
+  'for(var k=0;k<cps.length;k++){(function(cp){cp.addEventListener("click",function(){' +
+  'var url=cp.getAttribute("data-copy-url"),orig=cp.getAttribute("data-copy-label");' +
+  'function done(){cp.textContent=orig==="Instagram"?"Copied — paste it in Instagram":"✓ Link copied";setTimeout(function(){cp.textContent=orig;closeAll();},1600);}' +
+  'if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(url).then(done,done);}' +
+  'else{var ta=document.createElement("textarea");ta.value=url;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");}catch(err){}document.body.removeChild(ta);done();}' +
+  '});})(cps[k]);}' +
+  '})(wraps[i]);}' +
+  'document.addEventListener("click",function(){closeAll();});' +
+  'document.addEventListener("keydown",function(e){if(e.key==="Escape")closeAll();});' +
+  '})();</script>';
+
 /** Gold filigree divider, used between homepage features. */
 function featureDivider() {
   return (
@@ -1111,7 +1177,7 @@ function featureStory(a) {
     '<div class="feature-actions"><a class="btn-read" href="/article/' + esc(a.slug) +
     '">Read Full Story &rarr;</a>' +
     '<button type="button" class="btn-save" data-save-slug="' + esc(a.slug) +
-    '" aria-pressed="false">📌 Save</button></div>';
+    '" aria-pressed="false">📌 Save</button>' + shareControl(a) + '</div>';
   if (a.whyItMatters) {
     s +=
       '<div class="why-feature"><div class="why-label">Why It Matters</div><p>' +
@@ -1236,7 +1302,8 @@ function regionHubBox(region) {
  * the newest Opinion piece — the headline as "Editorial:
  * <headline>" across the top of the box, then the piece's framed
  * plate at the left and the red small-caps label with the piece's
- * opening at the features' 180-word excerpt length and type size,
+ * opening at about half the features' excerpt length (a 90-word
+ * target; owner instruction, 2026-11-03) and the features' type size,
  * plus the same Read Full Story and Save buttons the features
  * carry (owner instruction, 2026-11-03). Rendered only when the
  * store holds an Opinion article; the home route passes the
@@ -1244,7 +1311,7 @@ function regionHubBox(region) {
  */
 function editorialStrip(opinion) {
   if (!opinion) return '';
-  const excerpt = leadExcerpt(opinion);
+  const excerpt = leadExcerpt(opinion, 90);
   return (
     '<section class="editorial-strip">' +
     // The headline runs across the top of the box, above the
@@ -1259,7 +1326,7 @@ function editorialStrip(opinion) {
     '<div class="feature-actions"><a class="btn-read" href="/article/' + esc(opinion.slug) +
     '">Read Full Story &rarr;</a>' +
     '<button type="button" class="btn-save" data-save-slug="' + esc(opinion.slug) +
-    '" aria-pressed="false">📌 Save</button></div>' +
+    '" aria-pressed="false">📌 Save</button>' + shareControl(opinion) + '</div>' +
     '</div>' +
     '</div>' +
     '</section>'
@@ -1348,7 +1415,7 @@ function homePage({ lead, second, third, latest, railGroups, latestRow, localSto
         '<section class="latest-home"><h2 class="latest-home-heading">Latest from Colorado</h2>' +
         '<div class="latest-grid">' + latestCards.map(latestCard).join('') + '</div></section>';
     }
-    body += SAVE_SCRIPT;
+    body += SAVE_SCRIPT + SHARE_SCRIPT;
   } else {
     body += '<section class="lead-story"><h1 class="headline">Colorado news, reported plainly.</h1><p class="dek">New stories are on the way.</p></section>';
     body += briefingBox(briefingThanks);
