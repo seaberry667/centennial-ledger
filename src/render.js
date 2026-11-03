@@ -581,7 +581,6 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 .why-feature{border-left:4px solid var(--color-red);background:var(--color-ivory);padding:16px 18px;margin-top:1rem}
 .why-feature .why-label{font-family:var(--font-ui);color:var(--color-red);font-size:.78rem;font-weight:bold;letter-spacing:.14em;text-transform:uppercase;margin-bottom:.35rem}
 .why-feature p{margin:0;font-size:1.03rem}
-.feature-sources{font-family:var(--font-ui);font-size:.78rem;color:#8a8474;margin:.45rem 0 0}
 /* Satire pieces (owner instruction, 2026-11-02): a satire page is
    only the comic and the owner's long caption — no headline, no
    dek, no byline, no sidebar, no related grid — with previous /
@@ -1044,8 +1043,7 @@ function featureDivider() {
  * label with a fine gold rule, headline, italic dek, byline, the
  * two-column intro (excerpt left at ~48%, the story's framed plate
  * with its caption right at ~52%), the Read Full Story and Save
- * controls, the Why It Matters box, and the sources line, which
- * reports the article's actual stored source count. The excerpt's
+ * controls, and the Why It Matters box. The excerpt's
  * first paragraph carries the red drop cap (see leadExcerpt). Used
  * for the lead story and the second feature under it (drawn from a
  * different section by the home route).
@@ -1078,12 +1076,6 @@ function featureStory(a) {
     s +=
       '<div class="why-feature"><div class="why-label">Why It Matters</div><p>' +
       inline(a.whyItMatters) + '</p></div>';
-    const n = sourceCount(a);
-    if (n > 0) {
-      s +=
-        '<p class="feature-sources">' + n + (n === 1 ? ' source' : ' sources') +
-        ', linked in the story</p>';
-    }
   }
   s += '</section>';
   return s;
