@@ -626,8 +626,8 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 .satire-list figure.art-figure{margin:0}
 .satire-list .satire-caption{margin-top:.7rem}
 /* Gold filigree divider between the two homepage features only. */
-.feature-divider{text-align:center;margin:1.6rem 0 .4rem}
-.feature-divider img{max-width:100%;height:auto}
+.feature-divider{text-align:center;margin:.5rem 0 .4rem}
+.feature-divider img{display:block;width:100%;max-width:100%;height:auto}
 /* Homepage rail story rows: thumbnail left (no outline, engraving at
    its natural edges), red category label, serif headline. */
 .rail-latest{margin-bottom:1.4rem}
