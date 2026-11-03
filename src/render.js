@@ -542,7 +542,7 @@ nav.main li.nav-search{margin-left:auto;display:flex;align-items:center}
 h2.headline,h1.headline{font-family:var(--font-headline);font-weight:800;line-height:1.12;margin:.3rem 0}
 .dek{font-size:1.1875rem;line-height:1.4;color:#333;font-style:italic}
 .byline{font-family:var(--font-body);color:var(--color-muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.05em}
-.meta{font-family:var(--font-ui);font-size:.75rem;color:var(--color-muted);text-transform:uppercase;letter-spacing:.05em}
+.meta{font-family:var(--font-body);font-size:.75rem;color:var(--color-muted);text-transform:uppercase;letter-spacing:.05em}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.2rem}
 .card{border-top:3px solid var(--color-text);padding-top:.6rem}
 .card h3{font-family:var(--font-headline);font-size:1.125rem;margin:.25rem 0;line-height:1.25}
