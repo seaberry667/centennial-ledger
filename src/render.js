@@ -1402,7 +1402,6 @@ function sectionPage({ section, articles }) {
   const body =
     '<div class="kicker">' + esc(name) + '</div>' +
     '<h1 class="headline" style="font-size:2.4rem">' + esc(name) + '</h1>' +
-    '<p class="dek">' + esc(meta.description) + '</p>' +
     (articles.length
       ? listing
       : '<p>No stories in this section yet. Check back after the next edition.</p>') +
@@ -1457,7 +1456,6 @@ function localHubPage({ articles }) {
   const body =
     '<div class="kicker">Local</div>' +
     '<h1 class="headline" style="font-size:2.4rem">Local</h1>' +
-    '<p class="dek">County commissions, city councils, sheriffs, and school boards, from every part of Colorado. Pick a part of the state, or browse the latest local stories below.</p>' +
     regionNavList('') +
     (articles.length
       ? '<div class="grid">' + articles.map(articleCard).join('') + '</div>'
