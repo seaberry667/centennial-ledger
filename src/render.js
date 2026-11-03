@@ -670,12 +670,13 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 /* Editorial strip: a full-width ivory band below the homepage
    columns and above Latest from Colorado, promoting the newest
    Opinion piece. Rendered only when an Opinion article exists. */
-.editorial-strip{display:flex;align-items:flex-start;gap:1.2rem;flex-wrap:wrap;background:var(--color-ivory);border:1px solid var(--color-border);padding:1rem 1.2rem;margin-top:1.8rem}
+.editorial-strip{background:var(--color-ivory);border:1px solid var(--color-border);padding:1rem 1.2rem;margin-top:1.8rem}
+.editorial-strip-row{display:flex;align-items:flex-start;gap:1.2rem;flex-wrap:wrap}
 .editorial-strip figure.art-figure{flex:0 0 240px;margin:0}
 .editorial-strip figure.art-figure img{aspect-ratio:16/9;object-fit:cover;border:1px solid #000}
 .editorial-strip .editorial-text{flex:1;min-width:220px}
 .editorial-strip .editorial-label{color:var(--color-red);font-family:var(--font-ui);font-size:.75rem;font-weight:bold;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap}
-.editorial-strip .editorial-headline{display:block;font-family:var(--font-headline);font-weight:bold;font-size:1.2rem;line-height:1.3;margin-top:.3rem}
+.editorial-strip .editorial-headline{display:block;font-family:var(--font-headline);font-weight:700;font-size:2.3rem;line-height:1.12;margin:0 0 .9rem}
 .editorial-strip .editorial-excerpt{font-size:1rem;line-height:1.5;color:#333;margin:.45rem 0 0}
 .editorial-strip .editorial-link{color:var(--color-red);font-family:var(--font-ui);font-weight:bold;font-size:.9rem;text-decoration:none;white-space:nowrap;align-self:center}
 .editorial-strip .editorial-link:hover{text-decoration:underline}
@@ -1297,13 +1298,18 @@ function editorialStrip(opinion) {
   const excerpt = stripExcerpt(opinion);
   return (
     '<section class="editorial-strip">' +
+    // The headline runs across the top of the box, above the
+    // image, in the same font and size as the featured articles'
+    // headlines (owner instruction, 2026-11-02).
+    '<span class="editorial-headline">Editorial: ' + esc(opinion.headline) + '</span>' +
+    '<div class="editorial-strip-row">' +
     articleFigure(opinion, '', { noCaption: true, link: true }) +
     '<div class="editorial-text">' +
     '<span class="editorial-label">From Our Editorial Desk</span>' +
-    '<span class="editorial-headline">Editorial: ' + esc(opinion.headline) + '</span>' +
     (excerpt ? '<p class="editorial-excerpt">' + inline(excerpt) + '</p>' : '') +
     '</div>' +
     '<a class="editorial-link" href="/article/' + esc(opinion.slug) + '">Read the Editorial &rarr;</a>' +
+    '</div>' +
     '</section>'
   );
 }
