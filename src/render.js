@@ -1802,7 +1802,7 @@ function articlePage(a, related, localStories) {
         .map(
           (s) =>
             '<p class="source"><a href="' + esc(s.url) +
-            '" rel="noopener" target="_blank">' + esc(s.name || s.url) + '</a></p>'
+            '" rel="nofollow noopener" target="_blank">' + esc(s.name || s.url) + '</a></p>'
         )
         .join('') +
       '</section>';
@@ -1810,7 +1810,7 @@ function articlePage(a, related, localStories) {
     body +=
       '<section class="sources-block"><h2>Sources</h2><p class="source">' +
       (a.sourceUrl
-        ? '<a href="' + esc(a.sourceUrl) + '" rel="noopener" target="_blank">' +
+        ? '<a href="' + esc(a.sourceUrl) + '" rel="nofollow noopener" target="_blank">' +
           esc(a.sourceName || a.sourceUrl) + '</a>'
         : esc(a.sourceName)) +
       '</p></section>';
