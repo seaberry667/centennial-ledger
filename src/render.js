@@ -503,7 +503,7 @@ a.art-link{display:block;text-decoration:none}
    bordered image. Card thumbnails crop to a fixed 16:9 plate box;
    feature and article illustrations show the full plate. */
 figure.art-figure{margin:1.1rem 0;background:#ffffff;padding:0}
-figure.art-figure img{display:block;width:100%;height:auto;border:1px solid #000;filter:grayscale(1) contrast(1.06);background:#ffffff}
+figure.art-figure img{display:block;width:100%;height:auto;filter:grayscale(1) contrast(1.06);background:#ffffff}
 figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.4;color:#444;text-align:center;padding:.45rem .3rem .15rem}
 .card figure.art-figure{margin:0 0 .55rem}
 .card figure.art-figure img{aspect-ratio:16/9;object-fit:cover}
@@ -615,7 +615,7 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
    Opinion piece. Rendered only when an Opinion article exists. */
 .editorial-strip{display:flex;align-items:flex-start;gap:1.2rem;flex-wrap:wrap;background:var(--color-ivory);border:1px solid var(--color-border);padding:1rem 1.2rem;margin-top:1.8rem}
 .editorial-strip figure.art-figure{flex:0 0 240px;margin:0}
-.editorial-strip figure.art-figure img{aspect-ratio:16/9;object-fit:cover}
+.editorial-strip figure.art-figure img{aspect-ratio:16/9;object-fit:cover;border:1px solid #000}
 .editorial-strip .editorial-text{flex:1;min-width:220px}
 .editorial-strip .editorial-label{color:var(--color-red);font-family:var(--font-ui);font-size:.75rem;font-weight:bold;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap}
 .editorial-strip .editorial-headline{display:block;font-family:var(--font-headline);font-weight:bold;font-size:1.2rem;line-height:1.3;margin-top:.3rem}
