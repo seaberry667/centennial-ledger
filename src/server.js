@@ -395,6 +395,14 @@ app.get('/news-sitemap.xml', async (req, res) => {
   res.type('application/xml').send(xml);
 });
 
+/* AdSense seller declaration: names Google as an authorized seller
+   of this site's ad inventory under the owner's publisher ID. */
+app.get('/ads.txt', (req, res) => {
+  res
+    .type('text/plain')
+    .send('google.com, pub-5686724565796685, DIRECT, f08c47fec0942fa0\n');
+});
+
 app.get('/robots.txt', (req, res) => {
   res
     .type('text/plain')

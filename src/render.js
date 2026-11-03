@@ -12,6 +12,16 @@ const { SECTIONS, REGIONS, sectionName } = require('./store');
 const SITE_NAME = 'The Centennial Ledger';
 const TAGLINE = 'A Clear View of Colorado';
 
+/* AdSense client (publisher) ID. It is public by design — it prints
+ * in every page's source — so it lives in code, with the env var as
+ * an override. The shared head carries the account meta tag and the
+ * loader script at all times so Google can verify and review the
+ * site. The visible ad slots still switch to live units only when
+ * real ad unit IDs are wired in after approval; their placeholder
+ * slot ID is not a serving unit. */
+const ADSENSE_CLIENT =
+  process.env.ADSENSE_PUBLISHER_ID || 'ca-pub-5686724565796685';
+
 function siteUrl() {
   return (process.env.SITE_URL || 'https://centennialledger.com').replace(/\/+$/, '');
 }
@@ -733,10 +743,10 @@ function layout({ title, description, path, ogType = 'website', ogImage = '', ar
       JSON.stringify(jsonLd.length === 1 ? jsonLd[0] : { '@context': 'https://schema.org', '@graph': jsonLd }) +
       '</script>'
     : '';
-  const adsense = process.env.ADSENSE_PUBLISHER_ID
-    ? '<script async src=https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' +
-      esc(process.env.ADSENSE_PUBLISHER_ID) + ' crossorigin="anonymous"></script>'
-    : '';
+  const adsense =
+    '<meta name="google-adsense-account" content="' + esc(ADSENSE_CLIENT) + '">\n' +
+    '<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' +
+    esc(ADSENSE_CLIENT) + '" crossorigin="anonymous"></script>';
   const chevronSvg =
     '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
   const localDropdown =
