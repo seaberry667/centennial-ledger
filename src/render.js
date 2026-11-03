@@ -243,19 +243,25 @@ function imageAbsUrl(url) {
  * features and article pages render the figure with its caption.
  */
 /**
- * Display form of a stored image caption. Per the owner's
- * 2026-11-02 instruction, the "S.I.-generated image." credit no
- * longer appears in captions. Stored article data is append-only
- * and keeps the suffix, so it is stripped here, at render time: a
- * trailing credit, together with the whitespace before it, is
- * removed and the rest of the caption is left intact. A caption
- * that consists only of the credit becomes '' and renders no
- * figcaption at all. Alt text is never touched.
+ * Display form of a stored image caption. Two owner rules meet
+ * here (both 2026-11-02): the retired "S.I.-generated image."
+ * credit never appears — stored article data is append-only and
+ * may keep that suffix, so a trailing credit, together with the
+ * whitespace before it, is stripped at render time; and every
+ * illustration caption ends with the sentence "AI illustration.",
+ * appended here when the stored caption does not already end
+ * with it, so old and new stories alike show it exactly once. A
+ * caption that consists only of the retired credit becomes ''
+ * and renders no figcaption at all. Alt text is never touched.
+ * Satire pages do not use this: they show the owner's own blurb.
  */
 function displayCaption(caption) {
-  return String(caption || '')
+  const base = String(caption || '')
     .replace(/\s*S\.I\.-generated image\.\s*$/i, '')
     .trim();
+  if (!base) return '';
+  if (/AI illustration\.$/i.test(base)) return base;
+  return base + (/[.!?]$/.test(base) ? ' ' : '. ') + 'AI illustration.';
 }
 
 function articleFigure(a, extraClass, opts) {
