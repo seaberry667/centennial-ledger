@@ -55,11 +55,13 @@ app.get('/api/health', async (req, res) => {
  * Header: x-ingest-secret must match INGEST_SECRET.
  * Body: a single article object, or { articles: [ ... ] }.
  * APPEND-ONLY: a slug that already exists is skipped; its text is never
- * updated. One narrow exception: when the stored article has no image
- * and the incoming one carries a valid image, the image alone is filled
- * in and the item is counted as "imaged" instead of skipped.
- * Returns { received, inserted, skipped, imaged }, where skipped counts
- * items that were neither inserted nor imaged.
+ * updated. Two narrow fill-only exceptions: when the stored article has
+ * no image and the incoming one carries a valid image, the image alone
+ * is filled in (counted as "imaged"); and when the incoming source list
+ * is longer than the stored one, the sources alone are replaced
+ * (counted as "sourced").
+ * Returns { received, inserted, skipped, imaged, sourced }, where
+ * skipped counts items that were neither inserted nor filled.
  */
 app.post('/api/ingest', async (req, res) => {
   const secret = process.env.INGEST_SECRET;
@@ -71,6 +73,7 @@ app.post('/api/ingest', async (req, res) => {
   const items = Array.isArray(body) ? body : Array.isArray(body.articles) ? body.articles : [body];
   let inserted = 0;
   let imaged = 0;
+  let sourced = 0;
   let skipped = 0;
   for (const raw of items) {
     const article = normalizeArticle(raw);
@@ -84,14 +87,20 @@ app.post('/api/ingest', async (req, res) => {
       continue;
     }
     // Existing slug: the stored text stays untouched, but an image may
-    // be filled in once if the article live has none.
+    // be filled in once if the article live has none, and a fuller
+    // source list replaces a shorter stored one.
+    let filled = false;
     if (article.image && (await store.backfillImageIfMissing(article.slug, article.image))) {
       imaged += 1;
-    } else {
-      skipped += 1;
+      filled = true;
     }
+    if (await store.backfillSourcesIfFewer(article.slug, article.sources)) {
+      sourced += 1;
+      filled = true;
+    }
+    if (!filled) skipped += 1;
   }
-  res.json({ received: items.length, inserted, skipped, imaged });
+  res.json({ received: items.length, inserted, skipped, imaged, sourced });
 });
 
 /* --------------------------- Public pages ------------------------- */

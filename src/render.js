@@ -959,12 +959,10 @@ function articleCard(a) {
 }
 
 /**
- * The number of sources actually stored on an article. The live
- * store keeps one primary source per story (sourceName/sourceUrl),
- * so the count is 1 when a source is stored and 0 when none is; a
- * stored sources list, if one ever appears, is counted as-is. The
- * homepage feature line reports this number truthfully — it is
- * never dressed up.
+ * The number of sources actually stored on an article: the length
+ * of its stored sources list, falling back to the single primary
+ * source (sourceName/sourceUrl) when no list is stored. Reported
+ * truthfully — it is never dressed up.
  */
 function sourceCount(a) {
   if (!a) return 0;
@@ -1734,9 +1732,31 @@ function articlePage(a, related, localStories) {
   });
   if (!sections.length) body += whyBox;
 
-  // Sources block: whatever source data the stored article carries
-  // (the live store keeps one primary source per story).
-  if (a.sourceUrl || a.sourceName) {
+  // Sources block: the article's full stored source list, one link
+  // per source (owner instruction, 2026-11-03: list them all — the
+  // live store once kept only the primary source). Pieces whose body
+  // already ends with their own Sources section (the owner's Opinion
+  // pieces carry their citations at the bottom of the text) skip
+  // this block, so no page ever shows two source listings.
+  const lastHeading = sections.length
+    ? String(sections[sections.length - 1].heading || '').trim().toLowerCase()
+    : '';
+  const bodyHasSources = lastHeading === 'sources';
+  const storedSources = (Array.isArray(a.sources) ? a.sources : []).filter(
+    (s) => s && s.url
+  );
+  if (!bodyHasSources && storedSources.length) {
+    body +=
+      '<section class="sources-block"><h2>Sources</h2>' +
+      storedSources
+        .map(
+          (s) =>
+            '<p class="source"><a href="' + esc(s.url) +
+            '" rel="noopener" target="_blank">' + esc(s.name || s.url) + '</a></p>'
+        )
+        .join('') +
+      '</section>';
+  } else if (!bodyHasSources && (a.sourceUrl || a.sourceName)) {
     body +=
       '<section class="sources-block"><h2>Sources</h2><p class="source">' +
       (a.sourceUrl

@@ -9,9 +9,12 @@
  *
  * Articles are append-only from the outside: insertArticle() reports
  * 'skipped' for a slug that already exists and never updates or deletes.
- * The single exception is backfillImageIfMissing(): an article's image
- * may be filled in once, after the fact, when the stored article has
- * none — no other field is ever changed by it.
+ * Two narrow exceptions, both fill-only: backfillImageIfMissing() sets
+ * an article's image when the stored article has none, and
+ * backfillSourcesIfFewer() replaces the stored source list when the
+ * incoming list is longer (the newsroom carries every source; the live
+ * store once kept only the primary one). No other field is ever
+ * changed by either.
  */
 
 const fs = require('fs');
@@ -136,6 +139,27 @@ function slugify(text) {
 }
 
 /** Validate and normalize an incoming article from the ingest API / seed. */
+/**
+ * The full source list as the newsroom stores it: entries with a
+ * title/name and an http(s) URL. Cleaned, de-duplicated by URL and
+ * capped; anything else is dropped. Returns [] when the payload
+ * carries no usable list.
+ */
+function normalizeSources(raw) {
+  if (!Array.isArray(raw)) return [];
+  const seen = new Set();
+  const out = [];
+  for (const s of raw) {
+    if (!s || typeof s !== 'object') continue;
+    const url = String(s.url || s.href || '').trim();
+    if (!/^https?:\/\//i.test(url) || seen.has(url)) continue;
+    seen.add(url);
+    out.push({ name: String(s.title || s.name || s.domain || url).trim(), url });
+    if (out.length >= 12) break;
+  }
+  return out;
+}
+
 function normalizeArticle(raw) {
   if (!raw || typeof raw !== 'object') return null;
   const headline = String(raw.headline || '').trim();
@@ -184,6 +208,13 @@ function normalizeArticle(raw) {
     image: normalizeImage(raw.image),
     sourceName: String(raw.sourceName || raw.source_name || '').trim(),
     sourceUrl: String(raw.sourceUrl || raw.source_url || '').trim(),
+    sources: (() => {
+      const list = normalizeSources(raw.sources);
+      if (list.length) return list;
+      const name = String(raw.sourceName || raw.source_name || '').trim();
+      const url = String(raw.sourceUrl || raw.source_url || '').trim();
+      return url ? [{ name: name || url, url }] : [];
+    })(),
     seoTitle: String(raw.seoTitle || raw.seo_title || '').trim(),
     metaDescription: String(raw.metaDescription || raw.meta_description || '').trim(),
   };
@@ -241,6 +272,23 @@ class FileStore {
     if (!existing) return false;
     if (existing.image && existing.image.url) return false;
     existing.image = img;
+    this._save();
+    return true;
+  }
+
+  /**
+   * Fill-only companion to the image backfill: when the incoming
+   * source list is longer than the stored one, replace ONLY the
+   * sources field. Returns true when the article was updated.
+   */
+  async backfillSourcesIfFewer(slug, sources) {
+    const list = normalizeSources(sources);
+    if (!list.length) return false;
+    const existing = this.data.articles.find((a) => a.slug === slug);
+    if (!existing) return false;
+    const current = Array.isArray(existing.sources) ? existing.sources.length : 0;
+    if (list.length <= current) return false;
+    existing.sources = list;
     this._save();
     return true;
   }
@@ -316,6 +364,7 @@ class PgStore {
         image JSONB,
         source_name TEXT DEFAULT '',
         source_url TEXT DEFAULT '',
+        sources JSONB DEFAULT '[]'::jsonb,
         seo_title TEXT DEFAULT '',
         meta_description TEXT DEFAULT '',
         created_at TIMESTAMPTZ DEFAULT now()
@@ -332,6 +381,11 @@ class PgStore {
     );
     await this.pool.query(
       'ALTER TABLE articles ADD COLUMN IF NOT EXISTS modified_at TIMESTAMPTZ'
+    );
+    // Migration for databases created before the full source list
+    // was carried through ingest (only the primary source was kept).
+    await this.pool.query(
+      "ALTER TABLE articles ADD COLUMN IF NOT EXISTS sources JSONB DEFAULT '[]'::jsonb"
     );
     await this.pool.query(
       'CREATE INDEX IF NOT EXISTS idx_articles_section ON articles(section)'
@@ -361,6 +415,9 @@ class PgStore {
       image: normalizeImage(typeof r.image === 'string' ? JSON.parse(r.image) : r.image),
       sourceName: r.source_name || '',
       sourceUrl: r.source_url || '',
+      sources: normalizeSources(
+        typeof r.sources === 'string' ? JSON.parse(r.sources) : r.sources
+      ),
       seoTitle: r.seo_title || '',
       metaDescription: r.meta_description || '',
     };
@@ -370,8 +427,8 @@ class PgStore {
     const res = await this.pool.query(
       `INSERT INTO articles
          (slug, headline, dek, byline, published_at, modified_at, section, topic_label, region,
-          spotlight, sections, why_it_matters, image, source_name, source_url, seo_title, meta_description)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
+          spotlight, sections, why_it_matters, image, source_name, source_url, sources, seo_title, meta_description)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
        ON CONFLICT (slug) DO NOTHING
        RETURNING slug`,
       [
@@ -379,7 +436,7 @@ class PgStore {
         a.section, a.topicLabel,
         a.region, a.spotlight, JSON.stringify(a.sections), a.whyItMatters,
         a.image ? JSON.stringify(a.image) : null,
-        a.sourceName, a.sourceUrl, a.seoTitle, a.metaDescription,
+        a.sourceName, a.sourceUrl, JSON.stringify(a.sources || []), a.seoTitle, a.metaDescription,
       ]
     );
     return res.rowCount > 0 ? 'inserted' : 'skipped';
@@ -401,6 +458,25 @@ class PgStore {
           AND (image IS NULL OR image->>'url' IS NULL OR image->>'url' = '')
         RETURNING slug`,
       [slug, JSON.stringify(img)]
+    );
+    return res.rowCount > 0;
+  }
+
+  /**
+   * Same fill-only contract as the file store's: replace ONLY the
+   * sources list when the incoming list is longer than the stored
+   * one. The length guard in the WHERE clause makes the
+   * check-and-set atomic, so a fuller stored list is never shrunk.
+   */
+  async backfillSourcesIfFewer(slug, sources) {
+    const list = normalizeSources(sources);
+    if (!list.length) return false;
+    const res = await this.pool.query(
+      `UPDATE articles SET sources = $2::jsonb
+        WHERE slug = $1
+          AND COALESCE(jsonb_array_length(sources), 0) < $3
+        RETURNING slug`,
+      [slug, JSON.stringify(list), list.length]
     );
     return res.rowCount > 0;
   }
