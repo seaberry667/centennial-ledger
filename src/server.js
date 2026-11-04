@@ -62,9 +62,13 @@ app.get('/api/health', async (req, res) => {
  * (counted as "sourced"). One further exception, Opinion articles
  * only (owner instruction, 2026-11-03): their source lists were
  * restructured in the newsroom, so a differing incoming list replaces
- * the stored one outright, even when it is shorter.
- * Returns { received, inserted, skipped, imaged, sourced }, where
- * skipped counts items that were neither inserted nor filled.
+ * the stored one outright, even when it is shorter. One more, any
+ * section (owner instruction, 2026-11-04): when the payload article
+ * carries imageReplace: true, which the newsroom sets only after the
+ * owner orders a published plate replaced, the stored image alone is
+ * replaced by the incoming one (counted as "reimaged").
+ * Returns { received, inserted, skipped, imaged, sourced, reimaged },
+ * where skipped counts items that were neither inserted nor filled.
  */
 app.post('/api/ingest', async (req, res) => {
   const secret = process.env.INGEST_SECRET;
@@ -77,6 +81,7 @@ app.post('/api/ingest', async (req, res) => {
   let inserted = 0;
   let imaged = 0;
   let sourced = 0;
+  let reimaged = 0;
   let skipped = 0;
   for (const raw of items) {
     const article = normalizeArticle(raw);
@@ -93,7 +98,18 @@ app.post('/api/ingest', async (req, res) => {
     // be filled in once if the article live has none, and a fuller
     // source list replaces a shorter stored one.
     let filled = false;
-    if (article.image && (await store.backfillImageIfMissing(article.slug, article.image))) {
+    // Owner-ordered plate replacement: only when the payload flags
+    // this article (imageReplace: true on the raw item; the flag is
+    // not a stored field). Checked before the fill-only backfill.
+    if (
+      raw &&
+      raw.imageReplace === true &&
+      article.image &&
+      (await store.replaceImage(article.slug, article.image))
+    ) {
+      reimaged += 1;
+      filled = true;
+    } else if (article.image && (await store.backfillImageIfMissing(article.slug, article.image))) {
       imaged += 1;
       filled = true;
     }
@@ -112,7 +128,7 @@ app.post('/api/ingest', async (req, res) => {
     }
     if (!filled) skipped += 1;
   }
-  res.json({ received: items.length, inserted, skipped, imaged, sourced });
+  res.json({ received: items.length, inserted, skipped, imaged, sourced, reimaged });
 });
 
 /* --------------------------- Public pages ------------------------- */

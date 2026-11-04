@@ -13,8 +13,11 @@
  * an article's image when the stored article has none, and
  * backfillSourcesIfFewer() replaces the stored source list when the
  * incoming list is longer (the newsroom carries every source; the live
- * store once kept only the primary one). No other field is ever
- * changed by either.
+ * store once kept only the primary one). One further exception, only
+ * when the ingest payload explicitly flags the article
+ * (imageReplace: true, set by the newsroom after the owner orders a
+ * plate replaced): replaceImage() swaps the stored image for the
+ * incoming one. No other field is ever changed by any of these.
  */
 
 const fs = require('fs');
@@ -347,6 +350,26 @@ class FileStore {
   }
 
   /**
+   * Owner-ordered plate replacement (2026-11-04): the ingest handler
+   * calls this ONLY when the payload article carries imageReplace:
+   * true, which the newsroom sets after the owner orders a published
+   * plate replaced (a defective illustration). Replaces ONLY the
+   * image field; returns false when the article is missing, the
+   * supplied image is invalid, or the stored image already is the
+   * supplied one.
+   */
+  async replaceImage(slug, image) {
+    const img = normalizeImage(image);
+    if (!img) return false;
+    const existing = this.data.articles.find((a) => a.slug === slug);
+    if (!existing) return false;
+    if (existing.image && existing.image.url === img.url) return false;
+    existing.image = img;
+    this._save();
+    return true;
+  }
+
+  /**
    * Fill-only companion to the image backfill: when the incoming
    * source list is longer than the stored one, replace ONLY the
    * sources field. Returns true when the article was updated.
@@ -575,6 +598,26 @@ class PgStore {
           AND (image IS NULL OR image->>'url' IS NULL OR image->>'url' = '')
         RETURNING slug`,
       [slug, JSON.stringify(img)]
+    );
+    return res.rowCount > 0;
+  }
+
+  /**
+   * Same owner-ordered replacement contract as the file store's: the
+   * ingest handler calls this ONLY for a payload article flagged
+   * imageReplace: true. Replaces ONLY the image field. The URL guard
+   * in the WHERE clause makes the check-and-set atomic and a no-op
+   * when the stored image already is the supplied one.
+   */
+  async replaceImage(slug, image) {
+    const img = normalizeImage(image);
+    if (!img) return false;
+    const res = await this.pool.query(
+      `UPDATE articles SET image = $2
+        WHERE slug = $1
+          AND COALESCE(image->>'url', '') <> $3
+        RETURNING slug`,
+      [slug, JSON.stringify(img), img.url]
     );
     return res.rowCount > 0;
   }
