@@ -1171,12 +1171,12 @@ function featureStory(a) {
   if (excerpt) {
     // Intro: the plate (with caption) floats right and the excerpt
     // text wraps around it. With no image the excerpt runs full width.
-    const fig = articleFigure(a, 'feature-figure');
+    const fig = articleFigure(a, 'feature-figure', { link: true });
     s += fig
       ? '<div class="feature-intro">' + fig + '<div class="feature-excerpt">' + excerpt + '</div></div>'
       : '<div class="feature-excerpt">' + excerpt + '</div>';
   } else {
-    s += articleFigure(a, 'feature-figure');
+    s += articleFigure(a, 'feature-figure', { link: true });
   }
   s +=
     '<div class="feature-actions"><a class="btn-read" href="/article/' + esc(a.slug) +
