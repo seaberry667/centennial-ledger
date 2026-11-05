@@ -634,7 +634,7 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
    section page lists the comics the same way: image, then caption. */
 .satire-wrap{max-width:760px;margin:0 auto;padding-top:.6rem}
 .satire-wrap figure.art-figure{margin:0}
-.satire-caption{font-size:1.06rem;line-height:1.55;margin:1rem 0 0}
+.satire-caption{font-size:.8125rem;font-style:italic;line-height:1.4;color:#444;margin:1rem 0 0}
 .satire-caption p{margin:0 0 .8em}
 .satire-nav{display:flex;gap:.8rem;margin:1.4rem 0 .4rem}
 .satire-nav a{display:inline-block;font-family:var(--font-ui);font-weight:bold;font-size:.95rem;text-decoration:none;padding:.55rem 1.15rem;border-radius:3px;border:1px solid var(--color-red);color:var(--color-red);background:#fff}
