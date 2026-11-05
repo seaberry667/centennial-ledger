@@ -12,6 +12,7 @@ const path = require('path');
 const sharp = require('sharp');
 const { createStore, SECTIONS, REGIONS, normalizeArticle } = require('./store');
 const render = require('./render');
+const { startWeatherUpdates } = require('./weather');
 
 const app = express();
 app.disable('x-powered-by');
@@ -497,6 +498,7 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 3000;
 if (require.main === module) {
+  startWeatherUpdates();
   app.listen(PORT, () => {
     console.log('The Centennial Ledger listening on port ' + PORT);
   });

@@ -8,6 +8,7 @@
  */
 
 const { SECTIONS, REGIONS, sectionName } = require('./store');
+const { topbarSegment } = require('./weather');
 
 const SITE_NAME = 'The Centennial Ledger';
 const TAGLINE = 'A Clear View of Colorado';
@@ -863,7 +864,7 @@ ${adsense}
 </head>
 <body>
 <div class="topbar">
-  <span class="topbar-left">${esc(fmtDate(new Date().toISOString()).toUpperCase())} | CENTENNIAL, COLORADO &nbsp; 54&deg; &middot; Fair</span>
+  <span class="topbar-left">${esc(fmtDate(new Date().toISOString()).toUpperCase())} | ${topbarSegment()}</span>
   <span class="center">Colorado Political News, Reporting, and Analysis</span>
   <span class="topbar-right"><a href="/signin">Sign In</a><a class="btn-subscribe" href="/subscribe">Subscribe</a></span>
 </div>
