@@ -159,6 +159,31 @@ const RETRACTED_SLUGS = new Set([
 ]);
 
 /**
+ * Owner-ordered Satire display swap (2026-11-05): on the Satire page
+ * the gasoline-spill comic sits in the middle and the bicycle comic
+ * at the very bottom, reversing the two launch comics' publication
+ * order. Both were published an hour apart on 2026-11-02; swapping
+ * their stored publication times is the whole change — the section
+ * listing and the Previous/Next navigation both sort by publication
+ * time, and satire pages show no dates. One-time and idempotent:
+ * each side applies only while the comic still carries its original
+ * timestamp, so later boots change nothing. The newsroom store makes
+ * the matching swap (fixsatireorder) so its records agree.
+ */
+const SATIRE_ORDER_SWAP = [
+  {
+    slug: 'polis-makes-first-visit-to-southern-ute-gasoline-spill-site',
+    from: '2026-11-02T21:00:00.000Z',
+    to: '2026-11-02T22:00:00.000Z',
+  },
+  {
+    slug: 'colorados-bicycle-safety-stop-law-signed-by-polis-in-2022',
+    from: '2026-11-02T22:00:00.000Z',
+    to: '2026-11-02T21:00:00.000Z',
+  },
+];
+
+/**
  * The full source list as the newsroom stores it: entries with a
  * title/name and an http(s) URL. Cleaned, de-duplicated by URL and
  * capped; anything else is dropped. Returns [] when the payload
@@ -316,6 +341,16 @@ class FileStore {
       if (cleanOpinionBody(a)) opinionChanged = true;
     }
     if (opinionChanged) this._save();
+    // One-time, idempotent Satire order swap (see SATIRE_ORDER_SWAP).
+    let satireSwapped = false;
+    for (const swap of SATIRE_ORDER_SWAP) {
+      const a = this.data.articles.find((x) => x.slug === swap.slug);
+      if (a && new Date(a.publishedAt).getTime() === Date.parse(swap.from)) {
+        a.publishedAt = swap.to;
+        satireSwapped = true;
+      }
+    }
+    if (satireSwapped) this._save();
   }
 
   _save() {
@@ -532,6 +567,15 @@ class PgStore {
           [r.slug, probe.dek, JSON.stringify(probe.sections)]
         );
       }
+    }
+    // One-time, idempotent Satire order swap (see SATIRE_ORDER_SWAP):
+    // each UPDATE lands only while the comic still carries its
+    // original publication time, so later boots change nothing.
+    for (const swap of SATIRE_ORDER_SWAP) {
+      await this.pool.query(
+        'UPDATE articles SET published_at = $2 WHERE slug = $1 AND published_at = $3',
+        [swap.slug, swap.to, swap.from]
+      );
     }
   }
 
