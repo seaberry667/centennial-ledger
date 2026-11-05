@@ -198,6 +198,22 @@ const KIROS_BLURB_UPDATE = {
 };
 
 /**
+ * One-time, idempotent blurb replacement for the schoolmistress
+ * cartoon (owner instruction, 2026-11-05): same pattern as
+ * KIROS_BLURB_UPDATE — the stored blurb and dek are swapped only
+ * while the old blurb is still in place; its marker phrase
+ * ("a rather curious exception") exists solely in the old text.
+ * The owner's email labeled this text for the Kiros cartoon; he
+ * confirmed in chat it belongs to the schoolmistress cartoon.
+ */
+const SCHOOLMISTRESS_BLURB_UPDATE = {
+  slug: 'colorado-schoolmistress-teaches-tolerance-all-beliefs-are-equal-some-less-so',
+  fromMarker: 'a rather curious exception for Catholics',
+  toLead: "Colorado has unveiled its latest preschool curriculum: tolerance, inclusion, and a curious exception for Catholics. Under its Universal Preschool program, secular schools receive enrollment exemptions for certain groups, while Catholic schools are denied comparable accommodations for their religious beliefs. Apparently, diversity is wonderful, provided nobody takes religion too seriously. Now the Supreme Court is weighing whether Colorado can use supposedly neutral regulations to accomplish what previous rulings prohibit outright: excluding religious schools from public benefits. In Colorado's classroom, every belief deserves respect, every family deserves a choice, and everyone is welcome. Terms and conditions apply, naturally.",
+  toDek: "Colorado has unveiled its latest preschool curriculum: tolerance, inclusion, and a curious exception for Catholics.",
+};
+
+/**
  * The full source list as the newsroom stores it: entries with a
  * title/name and an http(s) URL. Cleaned, de-duplicated by URL and
  * capped; anything else is dropped. Returns [] when the payload
@@ -377,6 +393,23 @@ class FileStore {
       String(kiros.sections[0].lead || '').includes(KIROS_BLURB_UPDATE.fromMarker)
     ) {
       kiros.sections[0].lead = KIROS_BLURB_UPDATE.toLead;
+      this._save();
+    }
+    // One-time, idempotent schoolmistress cartoon blurb
+    // replacement (see SCHOOLMISTRESS_BLURB_UPDATE above).
+    const mistress = this.data.articles.find(
+      (x) => x.slug === SCHOOLMISTRESS_BLURB_UPDATE.slug
+    );
+    if (
+      mistress &&
+      mistress.sections &&
+      mistress.sections[0] &&
+      String(mistress.sections[0].lead || '').includes(
+        SCHOOLMISTRESS_BLURB_UPDATE.fromMarker
+      )
+    ) {
+      mistress.sections[0].lead = SCHOOLMISTRESS_BLURB_UPDATE.toLead;
+      mistress.dek = SCHOOLMISTRESS_BLURB_UPDATE.toDek;
       this._save();
     }
   }
@@ -625,6 +658,34 @@ class PgStore {
         await this.pool.query(
           'UPDATE articles SET sections = $2 WHERE slug = $1',
           [KIROS_BLURB_UPDATE.slug, JSON.stringify(kSections)]
+        );
+      }
+    }
+    // One-time, idempotent schoolmistress cartoon blurb
+    // replacement (see SCHOOLMISTRESS_BLURB_UPDATE above).
+    const mistressRow = await this.pool.query(
+      'SELECT sections FROM articles WHERE slug = $1',
+      [SCHOOLMISTRESS_BLURB_UPDATE.slug]
+    );
+    if (mistressRow.rows.length) {
+      const mSections =
+        typeof mistressRow.rows[0].sections === 'string'
+          ? JSON.parse(mistressRow.rows[0].sections)
+          : mistressRow.rows[0].sections || [];
+      if (
+        mSections[0] &&
+        String(mSections[0].lead || '').includes(
+          SCHOOLMISTRESS_BLURB_UPDATE.fromMarker
+        )
+      ) {
+        mSections[0].lead = SCHOOLMISTRESS_BLURB_UPDATE.toLead;
+        await this.pool.query(
+          'UPDATE articles SET sections = $2, dek = $3 WHERE slug = $1',
+          [
+            SCHOOLMISTRESS_BLURB_UPDATE.slug,
+            JSON.stringify(mSections),
+            SCHOOLMISTRESS_BLURB_UPDATE.toDek,
+          ]
         );
       }
     }
