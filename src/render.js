@@ -1991,6 +1991,8 @@ function aboutPage() {
     "<p>Editorials and commentary may take strong positions on the issues and personalities shaping Colorado. Those views belong in clearly identified opinion content, not disguised as impartial reporting.</p>" +
     "<p>Our satire and political cartoons draw on the long tradition of American newspaper commentary, where humor, caricature, and pointed criticism have always had a place.</p>" +
     "<p>Illustrations, including AI-generated imagery, are used to complement our coverage. Such images are illustrative representations, not documentary photographs of actual events, unless explicitly identified otherwise.</p>" +
+    "<h2>Editorial Mission</h2>" +
+    "<p>The Centennial Ledger is an independent Colorado news publication covering the people, policies, institutions, and decisions shaping our state. We believe in fiscal accountability, individual liberty, limited government, public transparency, and responsible stewardship of taxpayer resources. Through original reporting, thoughtful analysis, and commentary, we aim to help Coloradans better understand the issues affecting their communities.</p>" +
     "<h2>Independence &amp; Ownership</h2>" +
     "<p>The Centennial Ledger is an independently operated publication. We are not affiliated with any political party, candidate, political campaign, or government agency.</p>" +
     "<p>Editorial independence does not require the absence of opinions. It requires the freedom to question powerful institutions, scrutinize public officials, and follow the facts regardless of whom they favor.</p>" +
