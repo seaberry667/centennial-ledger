@@ -640,7 +640,8 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 .satire-nav a{display:inline-block;font-family:var(--font-ui);font-weight:bold;font-size:.95rem;text-decoration:none;padding:.55rem 1.15rem;border-radius:3px;border:1px solid var(--color-red);color:var(--color-red);background:#fff}
 .satire-nav a.prev{margin-right:auto}
 .satire-nav a.next{background:var(--color-red);color:#fff;margin-left:auto}
-.satire-list{display:flex;flex-direction:column;gap:2.4rem}
+.satire-list{display:grid;grid-template-columns:1fr 1fr;gap:2.4rem 2rem}
+@media (max-width:767px){.satire-list{grid-template-columns:1fr}}
 .satire-list figure.art-figure{margin:0}
 .satire-list .satire-caption{margin-top:.7rem}
 /* Gold filigree divider between homepage features. */
