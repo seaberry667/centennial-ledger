@@ -214,6 +214,21 @@ const SCHOOLMISTRESS_BLURB_UPDATE = {
 };
 
 /**
+ * One-time, idempotent caption trim for the schoolmistress
+ * cartoon (owner instruction, 2026-11-05, minutes after the v2
+ * swap above): the owner resent the caption with one sentence
+ * ("Apparently, diversity is wonderful, provided nobody takes
+ * religion too seriously.") removed. Applies only while the
+ * stored blurb still contains that sentence, which exists
+ * solely in the v2 text.
+ */
+const SCHOOLMISTRESS_BLURB_V3 = {
+  slug: 'colorado-schoolmistress-teaches-tolerance-all-beliefs-are-equal-some-less-so',
+  fromMarker: 'provided nobody takes religion too seriously',
+  toLead: "Colorado has unveiled its latest preschool curriculum: tolerance, inclusion, and a curious exception for Catholics. Under its Universal Preschool program, secular schools receive enrollment exemptions for certain groups, while Catholic schools are denied comparable accommodations for their religious beliefs. Now the Supreme Court is weighing whether Colorado can use supposedly neutral regulations to accomplish what previous rulings prohibit outright: excluding religious schools from public benefits. In Colorado's classroom, every belief deserves respect, every family deserves a choice, and everyone is welcome. Terms and conditions apply, naturally.",
+};
+
+/**
  * The full source list as the newsroom stores it: entries with a
  * title/name and an http(s) URL. Cleaned, de-duplicated by URL and
  * capped; anything else is dropped. Returns [] when the payload
@@ -410,6 +425,22 @@ class FileStore {
     ) {
       mistress.sections[0].lead = SCHOOLMISTRESS_BLURB_UPDATE.toLead;
       mistress.dek = SCHOOLMISTRESS_BLURB_UPDATE.toDek;
+      this._save();
+    }
+    // One-time, idempotent schoolmistress caption trim (see
+    // SCHOOLMISTRESS_BLURB_V3 above).
+    const mistress3 = this.data.articles.find(
+      (x) => x.slug === SCHOOLMISTRESS_BLURB_V3.slug
+    );
+    if (
+      mistress3 &&
+      mistress3.sections &&
+      mistress3.sections[0] &&
+      String(mistress3.sections[0].lead || '').includes(
+        SCHOOLMISTRESS_BLURB_V3.fromMarker
+      )
+    ) {
+      mistress3.sections[0].lead = SCHOOLMISTRESS_BLURB_V3.toLead;
       this._save();
     }
   }
@@ -686,6 +717,30 @@ class PgStore {
             JSON.stringify(mSections),
             SCHOOLMISTRESS_BLURB_UPDATE.toDek,
           ]
+        );
+      }
+    }
+    // One-time, idempotent schoolmistress caption trim (see
+    // SCHOOLMISTRESS_BLURB_V3 above).
+    const mistress3Row = await this.pool.query(
+      'SELECT sections FROM articles WHERE slug = $1',
+      [SCHOOLMISTRESS_BLURB_V3.slug]
+    );
+    if (mistress3Row.rows.length) {
+      const m3Sections =
+        typeof mistress3Row.rows[0].sections === 'string'
+          ? JSON.parse(mistress3Row.rows[0].sections)
+          : mistress3Row.rows[0].sections || [];
+      if (
+        m3Sections[0] &&
+        String(m3Sections[0].lead || '').includes(
+          SCHOOLMISTRESS_BLURB_V3.fromMarker
+        )
+      ) {
+        m3Sections[0].lead = SCHOOLMISTRESS_BLURB_V3.toLead;
+        await this.pool.query(
+          'UPDATE articles SET sections = $2 WHERE slug = $1',
+          [SCHOOLMISTRESS_BLURB_V3.slug, JSON.stringify(m3Sections)]
         );
       }
     }
