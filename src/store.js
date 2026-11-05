@@ -184,6 +184,20 @@ const SATIRE_ORDER_SWAP = [
 ];
 
 /**
+ * One-time, idempotent blurb replacement for the Melat Kiros
+ * cartoon (owner instruction, 2026-11-05): the stored blurb (the
+ * lead of the cartoon's single section) is swapped for the owner's
+ * new text, but only while the old blurb is still in place — the
+ * marker phrase exists solely in the old text, so after the swap
+ * no boot ever matches again.
+ */
+const KIROS_BLURB_UPDATE = {
+  slug: 'colorado-taxpayers-pick-up-the-tab',
+  fromMarker: "Melat Kiros's democratic socialist agenda promises",
+  toLead: "In the People's Republic of Colorado, everything's on the menu, and apparently everything's on the house. Democratic socialist Melat Kiros is serving up an ambitious buffet of taxpayer-funded benefits, with enough promises to make an all-you-can-eat restaurant blush. There's just one small problem: somebody eventually has to pay the bill. Doctors, teachers, construction workers, and government employees have an irritating habit of expecting actual money for their services. Of course, politicians have a remarkable talent for making expensive things sound free, particularly when they're spending someone else's paycheck. And in this restaurant, the customers don't get separate checks. The taxpayers pick up the tab, whether they ordered anything or not!",
+};
+
+/**
  * The full source list as the newsroom stores it: entries with a
  * title/name and an http(s) URL. Cleaned, de-duplicated by URL and
  * capped; anything else is dropped. Returns [] when the payload
@@ -351,6 +365,20 @@ class FileStore {
       }
     }
     if (satireSwapped) this._save();
+    // One-time, idempotent Kiros cartoon blurb replacement (see
+    // KIROS_BLURB_UPDATE above).
+    const kiros = this.data.articles.find(
+      (x) => x.slug === KIROS_BLURB_UPDATE.slug
+    );
+    if (
+      kiros &&
+      kiros.sections &&
+      kiros.sections[0] &&
+      String(kiros.sections[0].lead || '').includes(KIROS_BLURB_UPDATE.fromMarker)
+    ) {
+      kiros.sections[0].lead = KIROS_BLURB_UPDATE.toLead;
+      this._save();
+    }
   }
 
   _save() {
@@ -576,6 +604,29 @@ class PgStore {
         'UPDATE articles SET published_at = $2 WHERE slug = $1 AND published_at = $3',
         [swap.slug, swap.to, swap.from]
       );
+    }
+    // One-time, idempotent Kiros cartoon blurb replacement (see
+    // KIROS_BLURB_UPDATE above): read the row, swap the blurb only
+    // while the old text is still in place, write it back.
+    const kirosRow = await this.pool.query(
+      'SELECT sections FROM articles WHERE slug = $1',
+      [KIROS_BLURB_UPDATE.slug]
+    );
+    if (kirosRow.rows.length) {
+      const kSections =
+        typeof kirosRow.rows[0].sections === 'string'
+          ? JSON.parse(kirosRow.rows[0].sections)
+          : kirosRow.rows[0].sections || [];
+      if (
+        kSections[0] &&
+        String(kSections[0].lead || '').includes(KIROS_BLURB_UPDATE.fromMarker)
+      ) {
+        kSections[0].lead = KIROS_BLURB_UPDATE.toLead;
+        await this.pool.query(
+          'UPDATE articles SET sections = $2 WHERE slug = $1',
+          [KIROS_BLURB_UPDATE.slug, JSON.stringify(kSections)]
+        );
+      }
     }
   }
 

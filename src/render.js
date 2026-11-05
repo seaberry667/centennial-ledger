@@ -1271,7 +1271,82 @@ const LOCAL_HUB = {
     'Colorado local news from all eight regions: county commissions, city councils, sheriffs and school boards, with the original sources linked. Read the latest stories from every part of the state, or pick a region above.',
 };
 
+/**
+ * Bottom-of-page section descriptions (owner-supplied copy,
+ * 2026-11-05): each section page ends with this heading and
+ * these two paragraphs in the hub box. The same box closes
+ * article pages, so the copy stays consistent site-wide.
+ * Page <title>/meta tags still come from SECTION_META.
+ */
+const SECTION_DESCRIPTIONS = {
+  politics: {
+    title: "Colorado Politics News, Elections & State Government",
+    paragraphs: [
+      "Stay informed with the latest Colorado political news, covering the governor's office, Colorado General Assembly, state elections, political parties, and the decisions shaping government in Denver. The Centennial Ledger follows legislative bills, state House and Senate races, campaign financing, ballot initiatives, election results, and political controversies affecting communities throughout Colorado.",
+      "Our political coverage examines the people, policies, and power struggles behind Colorado government, from the state budget and executive orders to voting laws, election integrity, and government accountability. Whether you're following Colorado's governor, tracking new state legislation, or researching where elected officials stand on important issues, explore political reporting that connects what happens at the Capitol to its consequences for Colorado residents.",
+    ],
+  },
+  rights: {
+    title: "Colorado Constitutional Rights, Gun Laws & Civil Liberties News",
+    paragraphs: [
+      "Colorado rights news covers the constitutional freedoms, civil liberties, and legal challenges affecting residents across the state. From Second Amendment gun rights and Colorado firearm legislation to First Amendment free speech protections, religious liberty, parental rights, and private property disputes, The Centennial Ledger examines where government authority meets individual freedom.",
+      "Follow Colorado gun control laws, concealed carry regulations, firearm permit requirements, federal and state court rulings, and lawsuits challenging government restrictions. Our coverage also explores religious discrimination cases, freedom of expression, eminent domain, and conflicts involving constitutional protections under Colorado and federal law. Stay informed about the legislation, legal battles, and judicial decisions defining the rights of Colorado citizens.",
+    ],
+  },
+  taxes: {
+    title: "Colorado Tax News, TABOR Refunds & Government Spending",
+    paragraphs: [
+      "Colorado tax news examines the taxes, fees, government budgets, and fiscal policies affecting homeowners, businesses, and taxpayers throughout the state. The Centennial Ledger covers Colorado income taxes, property tax assessments, sales taxes, the Taxpayer's Bill of Rights (TABOR), state tax refunds, and proposals to increase or reduce the cost of government.",
+      "Follow changes to Colorado tax laws, property tax relief, local tax increases, ballot measures, state budget deficits, and spending decisions by lawmakers and local governments. We also examine business taxes, regulatory fees, tax credits, and the financial consequences of new public programs. Whether you're researching Colorado TABOR refunds, proposed tax increases, or why government spending continues to grow, find reporting on where taxpayer money comes from and how it is spent.",
+    ],
+  },
+  energy: {
+    title: "Colorado Energy News, Oil & Gas, Electricity Rates & Policy",
+    paragraphs: [
+      "Colorado energy news covers the industries, regulations, and economic decisions shaping electricity production, natural gas, oil development, and utility costs across the state. The Centennial Ledger follows Colorado oil and gas drilling, energy legislation, renewable power projects, public utility regulations, and the changing policies governing domestic energy production.",
+      "Explore reporting on Colorado electricity rates, natural gas prices, Xcel Energy rate increases, oil and gas permits, renewable energy mandates, and disputes over land use and environmental regulations. Our coverage examines energy affordability, electric grid reliability, fossil fuels, wind and solar development, and the economic effects of state climate policies. From Weld County drilling operations to household utility bills, we follow the decisions influencing Colorado's energy future.",
+    ],
+  },
+  schools: {
+    title: "Colorado Education News, School Districts & School Board Decisions",
+    paragraphs: [
+      "Colorado education news follows the policies, budgets, and school board decisions affecting public schools, students, teachers, and families throughout the state. The Centennial Ledger covers Colorado school districts, education funding, school closures, student achievement, standardized testing, curriculum debates, and legislative changes to K–12 education.",
+      "Stay informed about school board elections, parental rights in education, school choice, charter schools, special education services, and disputes over classroom policies. Our reporting examines school district budgets, declining enrollment, teacher staffing, academic performance, and how state education policies affect local classrooms. From Denver-area districts to rural Colorado schools, we follow the decisions shaping educational opportunities, accountability, and the future of public education.",
+    ],
+  },
+  local: {
+    title: "Colorado Local News, County Government & Community Headlines",
+    paragraphs: [
+      "Colorado local news covers the government decisions, community developments, and public issues shaping cities, towns, and counties throughout the state. The Centennial Ledger follows city councils, county commissioners, sheriffs, school boards, local elections, and municipal budgets, bringing attention to stories that affect residents beyond the headlines coming out of Denver.",
+      "Explore local Colorado news involving property taxes, housing development, zoning disputes, public safety, infrastructure projects, water rights, and government accountability. Our regional coverage spans the Denver metro area, Northern and Southern Colorado, the Western Slope, Southwest Colorado, mountain communities, the Eastern Plains, and the San Luis Valley. Discover what local officials are deciding, how public money is being spent, and what those decisions mean for your community.",
+    ],
+  },
+  opinion: {
+    title: "Colorado Political Opinion, Editorials & Conservative Commentary",
+    paragraphs: [
+      "Explore Colorado political opinion, editorial commentary, and provocative analysis of the people and policies shaping the Centennial State. The Centennial Ledger publishes opinion columns examining state government, elections, taxation, individual liberty, education, energy policy, and the growing influence of political institutions on everyday life in Colorado.",
+      "Our editorials look beyond political talking points to question government spending, regulatory overreach, partisan maneuvering, and the promises made by elected officials. From the Colorado governor and state legislature to local controversies and national political developments with Colorado consequences, expect pointed arguments, historical perspective, and a healthy skepticism of political power. Read Colorado political commentary that challenges conventional wisdom and gives readers something worth debating.",
+    ],
+  },
+  satire: {
+    title: "Colorado Political Satire, Editorial Cartoons & Political Humor",
+    paragraphs: [
+      "Colorado political satire offers a humorous, irreverent look at state politics, government spending, elected officials, and the peculiarities of life under the gold dome. The Centennial Ledger combines political cartoons, satirical commentary, and sharp political humor to expose the contradictions, questionable priorities, and occasional absurdities of Colorado government.",
+      "Explore Colorado editorial cartoons, political parody, and humorous takes on the governor, state lawmakers, elections, taxes, regulations, and cultural controversies. From government bureaucracy and extravagant campaign promises to political hypocrisy and legislative misadventures, our satire finds the punchline in stories that sometimes seem to write themselves. The issues behind the jokes are real, even when the humor takes a few liberties.",
+    ],
+  },
+};
 function hubBox(section) {
+  const d = SECTION_DESCRIPTIONS[section];
+  if (d) {
+    return (
+      '<aside class="hub-box"><h2>' +
+      esc(d.title) +
+      '</h2>' +
+      d.paragraphs.map((p) => '<p>' + esc(p) + '</p>').join('') +
+      '</aside>'
+    );
+  }
   let title;
   let text;
   if (section === 'local') {
