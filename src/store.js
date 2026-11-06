@@ -222,6 +222,19 @@ const SCHOOLMISTRESS_BLURB_UPDATE = {
  * stored blurb still contains that sentence, which exists
  * solely in the v2 text.
  */
+/**
+ * One-time, idempotent retitle of the Crayons Opinion piece
+ * (owner instruction, 2026-11-05): headline becomes
+ * "Pre-K and Prejudice" while the slug (and therefore the URL)
+ * stays colorados-war-on-crayons-and-the-catechism. Applies only
+ * while the stored headline is still the old title.
+ */
+const CRAYONS_RETITLE = {
+  slug: 'colorados-war-on-crayons-and-the-catechism',
+  fromHeadline: "Colorado's War on Crayons and the Catechism",
+  toHeadline: 'Pre-K and Prejudice',
+};
+
 const SCHOOLMISTRESS_BLURB_V3 = {
   slug: 'colorado-schoolmistress-teaches-tolerance-all-beliefs-are-equal-some-less-so',
   fromMarker: 'provided nobody takes religion too seriously',
@@ -408,6 +421,15 @@ class FileStore {
       String(kiros.sections[0].lead || '').includes(KIROS_BLURB_UPDATE.fromMarker)
     ) {
       kiros.sections[0].lead = KIROS_BLURB_UPDATE.toLead;
+      this._save();
+    }
+    // One-time, idempotent Crayons retitle (see CRAYONS_RETITLE
+    // above).
+    const crayons = this.data.articles.find(
+      (x) => x.slug === CRAYONS_RETITLE.slug
+    );
+    if (crayons && crayons.headline === CRAYONS_RETITLE.fromHeadline) {
+      crayons.headline = CRAYONS_RETITLE.toHeadline;
       this._save();
     }
     // One-time, idempotent schoolmistress cartoon blurb
@@ -669,6 +691,12 @@ class PgStore {
         [swap.slug, swap.to, swap.from]
       );
     }
+    // One-time, idempotent Crayons retitle (see CRAYONS_RETITLE
+    // above): the WHERE guard keeps later boots from re-applying.
+    await this.pool.query(
+      'UPDATE articles SET headline = $2 WHERE slug = $1 AND headline = $3',
+      [CRAYONS_RETITLE.slug, CRAYONS_RETITLE.toHeadline, CRAYONS_RETITLE.fromHeadline]
+    );
     // One-time, idempotent Kiros cartoon blurb replacement (see
     // KIROS_BLURB_UPDATE above): read the row, swap the blurb only
     // while the old text is still in place, write it back.
