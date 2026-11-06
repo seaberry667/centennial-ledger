@@ -8,8 +8,9 @@
  * cities all over Colorado in a single batch request, refreshed
  * every 15 minutes, and the bar rotates through the readings every
  * 10 seconds in the same shape it has always used:
- * "CENTENNIAL, COLORADO  49° · Fair". Centennial stays first in the
- * rotation (the owner's standing choice, 2026-11-05).
+ * "DENVER, COLORADO  45° · Fair". Denver leads the rotation and
+ * the remaining cities are jumbled at random on every page load
+ * (owner, 2026-11-06), so the bar does not sweep region by region.
  *
  * Rendering never waits on the network: pages read the last good
  * readings from memory, and before the first successful fetch (or
@@ -18,11 +19,12 @@
  * that cycle rather than breaking the rotation.
  */
 
-/* Notable cities across every Colorado region. Order is the
- * rotation order: Centennial first, then a sweep of the state. */
+/* Notable cities across every Colorado region. Denver is first
+ * (it always opens the rotation); the rest are jumbled client-side
+ * on each page load, so their listed order here does not matter. */
 const CITIES = [
-  ['CENTENNIAL', 39.5807, -104.8772],
   ['DENVER', 39.7392, -104.9903],
+  ['CENTENNIAL', 39.5807, -104.8772],
   ['GOLDEN', 39.7555, -105.2211],
   ['BOULDER', 40.015, -105.2705],
   ['FORT COLLINS', 40.5853, -105.0844],
@@ -52,7 +54,7 @@ const CITIES = [
   ['STERLING', 40.6255, -103.2077],
 ];
 
-const FALLBACK_SEGMENT = 'CENTENNIAL, COLORADO &nbsp; 54&deg; &middot; Fair';
+const FALLBACK_SEGMENT = 'DENVER, COLORADO &nbsp; 54&deg; &middot; Fair';
 const FEED_URL =
   'https://api.open-meteo.com/v1/forecast?latitude=' +
   CITIES.map((c) => c[1]).join(',') +
@@ -60,7 +62,7 @@ const FEED_URL =
   CITIES.map((c) => c[2]).join(',') +
   '&current=temperature_2m,weather_code&temperature_unit=fahrenheit&timezone=America%2FDenver';
 const REFRESH_MS = 15 * 60 * 1000;
-const ROTATE_MS = 10000;
+const ROTATE_MS = 6000;
 
 /* WMO weather codes -> the short condition words the bar uses. */
 function conditionFor(code) {
@@ -158,6 +160,8 @@ function topbarSegment() {
     '<script>(function(){var r=' +
     json +
     ',i=0,e=document.getElementById("wx-rotor");if(!e||r.length<2)return;' +
+    'for(var j=r.length-1;j>1;j--){var k=1+Math.floor(Math.random()*j);' +
+    'var t=r[j];r[j]=r[k];r[k]=t;}' +
     'setInterval(function(){i=(i+1)%r.length;e.textContent=r[i];},' +
     ROTATE_MS +
     ');})();</script>'
