@@ -235,6 +235,51 @@ const CRAYONS_RETITLE = {
   toHeadline: 'Pre-K and Prejudice',
 };
 
+/**
+ * One-time, idempotent accuracy updates to the midterm Opinion
+ * piece (owner-approved, 2026-11-05): CD5 was called for Jessica
+ * Killin after publication, and Amendment 87's margin widened
+ * from about half a point to about two points. Two exact string
+ * replacements in the body text; each lands only while its old
+ * string is still present, so later boots change nothing.
+ */
+const MIDTERM_FIX = {
+  slug: 'colorado-votes-for-the-story-not-the-state',
+  replacements: [
+    [
+      'Jeff Crank trails in the Fifth, in El Paso County',
+      'Jeff Crank has lost the Fifth to Jessica Killin, in El Paso County',
+    ],
+    [
+      'is passing by a whisker, about half a point, on a night',
+      'is passing by a whisker, about two points, on a night',
+    ],
+  ],
+};
+
+function applyMidtermFix(article) {
+  let changed = false;
+  const fix = (v) => {
+    if (typeof v !== 'string') return v;
+    let out = v;
+    for (const pair of MIDTERM_FIX.replacements) {
+      if (out.includes(pair[0])) {
+        out = out.split(pair[0]).join(pair[1]);
+        changed = true;
+      }
+    }
+    return out;
+  };
+  if (article.dek) article.dek = fix(article.dek);
+  const sections = Array.isArray(article.sections) ? article.sections : [];
+  for (const sec of sections) {
+    if (sec.heading) sec.heading = fix(sec.heading);
+    if (sec.lead) sec.lead = fix(sec.lead);
+    if (Array.isArray(sec.paragraphs)) sec.paragraphs = sec.paragraphs.map(fix);
+  }
+  return changed;
+}
+
 const SCHOOLMISTRESS_BLURB_V3 = {
   slug: 'colorado-schoolmistress-teaches-tolerance-all-beliefs-are-equal-some-less-so',
   fromMarker: 'provided nobody takes religion too seriously',
@@ -432,6 +477,12 @@ class FileStore {
       crayons.headline = CRAYONS_RETITLE.toHeadline;
       this._save();
     }
+    // One-time, idempotent midterm Opinion accuracy fixes (see
+    // MIDTERM_FIX above).
+    const midterm = this.data.articles.find(
+      (x) => x.slug === MIDTERM_FIX.slug
+    );
+    if (midterm && applyMidtermFix(midterm)) this._save();
     // One-time, idempotent schoolmistress cartoon blurb
     // replacement (see SCHOOLMISTRESS_BLURB_UPDATE above).
     const mistress = this.data.articles.find(
@@ -697,6 +748,28 @@ class PgStore {
       'UPDATE articles SET headline = $2 WHERE slug = $1 AND headline = $3',
       [CRAYONS_RETITLE.slug, CRAYONS_RETITLE.toHeadline, CRAYONS_RETITLE.fromHeadline]
     );
+    // One-time, idempotent midterm Opinion accuracy fixes (see
+    // MIDTERM_FIX above): read the row, swap the two strings only
+    // while the old text is still in place, write it back.
+    const midtermRow = await this.pool.query(
+      'SELECT dek, sections FROM articles WHERE slug = $1',
+      [MIDTERM_FIX.slug]
+    );
+    if (midtermRow.rows.length) {
+      const probe = {
+        dek: midtermRow.rows[0].dek || '',
+        sections:
+          typeof midtermRow.rows[0].sections === 'string'
+            ? JSON.parse(midtermRow.rows[0].sections)
+            : midtermRow.rows[0].sections || [],
+      };
+      if (applyMidtermFix(probe)) {
+        await this.pool.query(
+          'UPDATE articles SET dek = $2, sections = $3 WHERE slug = $1',
+          [MIDTERM_FIX.slug, probe.dek, JSON.stringify(probe.sections)]
+        );
+      }
+    }
     // One-time, idempotent Kiros cartoon blurb replacement (see
     // KIROS_BLURB_UPDATE above): read the row, swap the blurb only
     // while the old text is still in place, write it back.
