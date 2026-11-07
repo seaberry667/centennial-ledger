@@ -930,6 +930,7 @@ ${body}
           <li><a href="/about">About Us</a></li>
           <li><a href="/subscribe">Subscribe</a></li>
           <li><a href="https://www.facebook.com/profile.php?id=61595978079628" target="_blank" rel="noopener">Facebook</a></li>
+          <li><a href="https://www.instagram.com/centennialledger" target="_blank" rel="noopener">Instagram</a></li>
         </ul>
         <img class="footer-ornament" src="/section-break.png" alt="" width="642" height="26">
         <p class="footer-stay-text">The Colorado Daily Briefing in your inbox.</p>
