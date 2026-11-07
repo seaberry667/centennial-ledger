@@ -247,10 +247,16 @@ app.get('/local/:region', async (req, res) => {
    to PNG on first request (falling back to a quality JPEG if the
    PNG is unexpectedly huge) and cached in memory. */
 const shareImageCache = new Map();
+/* Resized display variants for page rendering: /img/<slug>?w=<n>
+   (no filename suffix) serves the plate resized to width n as
+   WebP, so pages no longer inline full-size plates as data URIs.
+   Keyed by slug+width, bounded like the share-image cache. */
+const resizedImageCache = new Map();
 app.get('/img/:slug', async (req, res) => {
   // Accept an optional .png/.jpg suffix: a conventional image
   // filename is the safest shape for scrapers, and the suffix also
   // gives format changes a fresh URL for their caches.
+  const hasSuffix = /\.(png|jpe?g)$/i.test(req.params.slug);
   const slug = req.params.slug.replace(/\.(png|jpe?g)$/i, '');
   const article = await store.getArticle(slug);
   if (!article || !article.image || !article.image.url) {
@@ -267,6 +273,34 @@ app.get('/img/:slug', async (req, res) => {
   const raw = m[2]
     ? Buffer.from(m[3], 'base64')
     : Buffer.from(decodeURIComponent(m[3]));
+  // Resized display variant (page rendering only): a bare slug
+  // with a sane width parameter gets a WebP at that width, never
+  // upscaled beyond the stored source. The suffixed share-image
+  // path below is untouched and ignores w entirely.
+  const wParam = parseInt(req.query && req.query.w, 10);
+  if (!hasSuffix && Number.isFinite(wParam)) {
+    const w = Math.min(1600, Math.max(50, wParam));
+    const key = slug + '?w=' + w;
+    let variant = resizedImageCache.get(key);
+    if (!variant) {
+      try {
+        const buf = await sharp(raw)
+          .resize({ width: w, withoutEnlargement: true })
+          .webp({ quality: 78 })
+          .toBuffer();
+        variant = { type: 'image/webp', buf };
+      } catch (err) {
+        console.error('Image resize failed for', slug, err);
+        return res.status(502).type('text').send('Image unavailable');
+      }
+      resizedImageCache.set(key, variant);
+      if (resizedImageCache.size > 64) {
+        resizedImageCache.delete(resizedImageCache.keys().next().value);
+      }
+    }
+    res.set('Cache-Control', 'public, max-age=86400');
+    return res.type(variant.type).send(variant.buf);
+  }
   let out = shareImageCache.get(slug);
   if (!out) {
     if (['image/png', 'image/jpeg', 'image/gif'].includes(storedType)) {

@@ -235,6 +235,21 @@ function imageAbsUrl(url) {
 }
 
 /**
+ * Display URL for a stored plate at a placement width. Plates
+ * stored inline as data URIs are served by the /img route as
+ * resized, cacheable WebP files (see server.js), so pages stop
+ * inlining the full-size plate on every view. Absolute http(s)
+ * image URLs are not ours to resize and pass through untouched,
+ * as does anything else that is not an inline data URI.
+ */
+function plateUrl(a, w) {
+  const url = a && a.image && a.image.url;
+  if (!url) return '';
+  if (!/^data:/i.test(url)) return url;
+  return '/img/' + a.slug + '?w=' + w;
+}
+
+/**
  * Framed engraving figure, or '' when the article has no image. The
  * image and its caption stay together in the one figure block.
  *
@@ -242,6 +257,9 @@ function imageAbsUrl(url) {
  * show no caption, and the figure is wrapped in a link to the article
  * so the image clicks through like the headline does. Homepage
  * features and article pages render the figure with its caption.
+ * opts.width is the placement's plate width in pixels: the stored
+ * data-URI plate is served resized at that width via /img (see
+ * plateUrl) instead of being inlined into the page.
  */
 /**
  * Display form of a stored image caption. Two owner rules meet
@@ -273,7 +291,7 @@ function articleFigure(a, extraClass, opts) {
     ? '<figcaption>' + esc(captionText) + '</figcaption>'
     : '';
   const fig =
-    '<figure class="art-figure' + (extraClass ? ' ' + extraClass : '') + '"><img src="' + esc(a.image.url) + '" alt="' +
+    '<figure class="art-figure' + (extraClass ? ' ' + extraClass : '') + '"><img src="' + esc(plateUrl(a, o.width || 900)) + '" alt="' +
     esc(a.image.alt || '') + '" loading="lazy">' + cap + '</figure>';
   return o.link
     ? '<a class="art-link" href="/article/' + esc(a.slug) + '" aria-label="' + esc(a.headline) + '">' + fig + '</a>'
@@ -427,7 +445,7 @@ function rectangleAdSlot() {
 function railStoryRow(a, grouped) {
   const thumb =
     a.image && a.image.url
-      ? '<a class="rail-thumb" href="/article/' + esc(a.slug) + '"><img src="' + esc(a.image.url) +
+      ? '<a class="rail-thumb" href="/article/' + esc(a.slug) + '"><img src="' + esc(plateUrl(a, 200)) +
         '" alt="' + esc(a.image.alt || '') + '" loading="lazy"></a>'
       : '';
   return (
@@ -960,7 +978,7 @@ function readTimeMinutes(a) {
 function articleCard(a) {
   return (
     '<div class="card">' +
-    articleFigure(a, '', { noCaption: true, link: true }) +
+    articleFigure(a, '', { noCaption: true, link: true, width: 600 }) +
     '<div class="kicker">' + esc(a.topicLabel || sectionName(a.section)) + '</div>' +
     '<h3><a href="/article/' + esc(a.slug) + '">' + esc(a.headline) + '</a></h3>' +
     '<div class="meta">' + esc(fmtDateShort(a.publishedAt)) +
@@ -1012,7 +1030,7 @@ function latestCard(a) {
   const excerpt = cardExcerpt(a);
   return (
     '<div class="latest-card">' +
-    articleFigure(a, '', { noCaption: true, link: true }) +
+    articleFigure(a, '', { noCaption: true, link: true, width: 600 }) +
     '<div class="kicker">' + esc(a.topicLabel || sectionName(a.section)) + '</div>' +
     '<h3><a href="/article/' + esc(a.slug) + '">' + esc(a.headline) + '</a></h3>' +
     (excerpt ? '<p>' + inline(excerpt) + '</p>' : '') +
@@ -1172,12 +1190,12 @@ function featureStory(a) {
   if (excerpt) {
     // Intro: the plate (with caption) floats right and the excerpt
     // text wraps around it. With no image the excerpt runs full width.
-    const fig = articleFigure(a, 'feature-figure', { link: true });
+    const fig = articleFigure(a, 'feature-figure', { link: true, width: 900 });
     s += fig
       ? '<div class="feature-intro">' + fig + '<div class="feature-excerpt">' + excerpt + '</div></div>'
       : '<div class="feature-excerpt">' + excerpt + '</div>';
   } else {
-    s += articleFigure(a, 'feature-figure', { link: true });
+    s += articleFigure(a, 'feature-figure', { link: true, width: 900 });
   }
   s +=
     '<div class="feature-actions"><a class="btn-read" href="/article/' + esc(a.slug) +
@@ -1400,7 +1418,7 @@ function editorialStrip(opinion) {
     // headlines (owner instruction, 2026-11-02).
     '<span class="editorial-headline">Editorial: ' + esc(opinion.headline) + '</span>' +
     '<div class="editorial-strip-row">' +
-    articleFigure(opinion, '', { noCaption: true, link: true }) +
+    articleFigure(opinion, '', { noCaption: true, link: true, width: 900 }) +
     '<div class="editorial-text">' +
     '<span class="editorial-label">From Our Editorial Desk</span>' +
     (excerpt ? '<div class="editorial-excerpt">' + excerpt + '</div>' : '') +
@@ -1704,7 +1722,7 @@ function satireCaptionHtml(a) {
 function satireListItem(a) {
   return (
     '<div class="satire-item">' +
-    articleFigure(a, '', { link: true, noCaption: true }) +
+    articleFigure(a, '', { link: true, noCaption: true, width: 1000 }) +
     satireCaptionHtml(a) +
     '</div>'
   );
@@ -1757,7 +1775,7 @@ function satirePage(a, prev, next) {
   }
   const body =
     '<div class="satire-wrap">' +
-    articleFigure(a, 'satire-hero', { noCaption: true }) +
+    articleFigure(a, 'satire-hero', { noCaption: true, width: 1000 }) +
     satireCaptionHtml(a) +
     nav +
     '</div>';
@@ -1838,7 +1856,7 @@ function articlePage(a, related, localStories) {
 
   // Full-width hero illustration, in its own figure directly under
   // the byline: no float, no crop, caption beneath.
-  body += articleFigure(a, 'article-hero');
+  body += articleFigure(a, 'article-hero', { width: 1200 });
   body += '<div class="article-body">';
   sections.forEach((s, i) => {
     if (s.heading) body += '<h2>' + esc(s.heading) + '</h2>';
