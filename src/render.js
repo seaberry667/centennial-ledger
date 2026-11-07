@@ -21,7 +21,7 @@ const TAGLINE = 'A Clear View of Colorado';
  * real ad unit IDs are wired in after approval; their placeholder
  * slot ID is not a serving unit. */
 const ADSENSE_CLIENT =
-  process.env.ADSENSE_PUBLISHER_ID || 'ca-pub-5686724565796685';
+  process.env.ADSENSE_PUBLISHER_ID || 'ca-pub-6645873078235610';
 
 function siteUrl() {
   return (process.env.SITE_URL || 'https://centennialledger.com').replace(/\/+$/, '');

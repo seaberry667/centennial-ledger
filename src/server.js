@@ -490,7 +490,7 @@ app.get('/news-sitemap.xml', async (req, res) => {
 app.get('/ads.txt', (req, res) => {
   res
     .type('text/plain')
-    .send('google.com, pub-5686724565796685, DIRECT, f08c47fec0942fa0\n');
+    .send('google.com, pub-6645873078235610, DIRECT, f08c47fec0942fa0\n');
 });
 
 app.get('/robots.txt', (req, res) => {
