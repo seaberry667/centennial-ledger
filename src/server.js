@@ -230,7 +230,7 @@ app.get('/', async (req, res) => {
   // left has no group.
   const featureSlugs = new Set([lead, second, third].filter(Boolean).map((a) => a.slug));
   const railGroups = [];
-  for (const slug of ['politics', 'business', 'energy-environment', 'education-health', 'colorado-life']) {
+  for (const slug of ['politics', 'business', 'energy-environment', 'education-health']) {
     const inSection = await store.listArticles({ section: slug, limit: 6 });
     const picks = inSection
       .filter((a) => !featureSlugs.has(a.slug) && !isExplained(a))
@@ -306,6 +306,9 @@ const SECTION_REDIRECTS = {
   taxes: 'business',
   energy: 'energy-environment',
   schools: 'education-health',
+  // Colorado Life retired as a section (owner order, 2026-11-08);
+  // its one article moved to Local News.
+  'colorado-life': 'local',
 };
 
 app.get('/section/:slug', async (req, res) => {

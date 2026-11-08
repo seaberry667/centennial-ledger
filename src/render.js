@@ -1021,7 +1021,11 @@ function layout({ title, description, path, ogType = 'website', ogImage = '', ar
       // Local section is labeled "Local" in the nav bar; its full
       // name "Local News" still stands everywhere else (footer,
       // page titles, kickers).
-      const label = s.slug === 'local' ? 'Local' : s.name;
+      // Nav-only labels (owner instructions, 2026-11-08): Local
+      // News shows as "Local" and Politics as "Colorado Politics"
+      // in the nav bar; both full names stand everywhere else.
+      const label =
+        s.slug === 'local' ? 'Local' : s.slug === 'politics' ? 'Colorado Politics' : s.name;
       const link =
         '<a href="/section/' + s.slug + '"' +
         (activeNav === s.slug ? ' class="active"' : '') + '>' + label + '</a>';
@@ -1108,7 +1112,6 @@ ${body}
           <li><a href="/section/business">Business &amp; Taxes</a></li>
           <li><a href="/section/energy-environment">Energy &amp; Environment</a></li>
           <li><a href="/section/education-health">Education &amp; Health</a></li>
-          <li><a href="/section/colorado-life">Colorado Life</a></li>
           <li><a href="/section/local">Local News</a></li>
         </ul>
       </nav>

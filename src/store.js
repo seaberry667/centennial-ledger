@@ -33,7 +33,6 @@ const SECTIONS = [
   { slug: 'business', name: 'Business & Taxes' },
   { slug: 'energy-environment', name: 'Energy & Environment' },
   { slug: 'education-health', name: 'Education & Health' },
-  { slug: 'colorado-life', name: 'Colorado Life' },
   { slug: 'local', name: 'Local News' },
   { slug: 'opinion', name: 'Opinion' },
 ];
@@ -87,12 +86,15 @@ const SECTION_ALIASES = {
   health: 'education-health',
   healthcare: 'education-health',
   'education & health': 'education-health',
-  life: 'colorado-life',
-  'colorado life': 'colorado-life',
-  sports: 'colorado-life',
-  outdoors: 'colorado-life',
-  'sports & outdoors': 'colorado-life',
-  history: 'colorado-life',
+  // Colorado Life was retired as a section (owner order,
+  // 2026-11-08); its subjects land in Local News now.
+  life: 'local',
+  'colorado life': 'local',
+  'colorado-life': 'local',
+  sports: 'local',
+  outdoors: 'local',
+  'sports & outdoors': 'local',
+  history: 'local',
   local: 'local',
   'local news': 'local',
   counties: 'local',
@@ -790,6 +792,16 @@ class FileStore {
         this._save();
       }
     }
+    // Colorado Life retirement (owner order, 2026-11-08): the
+    // section's one article, the ski season story, moves to Local
+    // News; its Mountains region is already stored and stays.
+    const ski = this.data.articles.find(
+      (a) => a.slug === 'colorado-ski-season-lifts-off-as-resorts-open-through-december-401vd'
+    );
+    if (ski && ski.section === 'colorado-life') {
+      ski.section = 'local';
+      this._save();
+    }
     // Breaking-flag backfill (see BREAKING_BACKFILL_SLUGS above):
     // set the flag on the stories the newsroom had already marked
     // breaking, only where it is not already set.
@@ -1177,6 +1189,12 @@ class PgStore {
         );
       }
     }
+    // Colorado Life retirement (owner order, 2026-11-08): same
+    // one-article move as the file store's.
+    await this.pool.query(
+      "UPDATE articles SET section = 'local' WHERE slug = $1 AND section = 'colorado-life'",
+      ['colorado-ski-season-lifts-off-as-resorts-open-through-december-401vd']
+    );
     // Breaking-flag backfill (see BREAKING_BACKFILL_SLUGS above):
     // lands only while the flag is unset, so later boots change
     // nothing.
