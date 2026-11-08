@@ -452,6 +452,18 @@ const CRAYONS_RETITLE = {
 };
 
 /**
+ * One-time, idempotent Why It Matters for the owner's
+ * donor-problem article (owner instruction, 2026-11-08): the
+ * piece was published without one, so the blurb lands only
+ * while the stored field is still empty.
+ */
+const DONOR_WHY_2026 = {
+  slug: 'colorados-nonpartisan-newsrooms-have-a-democratic-donor-problem',
+  whyItMatters:
+    "Colorado's nonprofit newsrooms ask readers to trust them as nonpartisan while taking six-figure checks from foundations built by the donors who flipped this state, and from a network that accepted dark money. Readers who know who pays for the coverage can judge for themselves how neutral it is.",
+};
+
+/**
  * One-time, idempotent accuracy updates to the midterm Opinion
  * piece (owner-approved, 2026-11-05): CD5 was called for Jessica
  * Killin after publication, and Amendment 87's margin widened
@@ -713,6 +725,15 @@ class FileStore {
     );
     if (crayons && crayons.headline === CRAYONS_RETITLE.fromHeadline) {
       crayons.headline = CRAYONS_RETITLE.toHeadline;
+      this._save();
+    }
+    // One-time, idempotent Why It Matters for the donor-problem
+    // article (see DONOR_WHY_2026 above).
+    const donorWhy = this.data.articles.find(
+      (x) => x.slug === DONOR_WHY_2026.slug
+    );
+    if (donorWhy && !String(donorWhy.whyItMatters || '').trim()) {
+      donorWhy.whyItMatters = DONOR_WHY_2026.whyItMatters;
       this._save();
     }
     // One-time, idempotent midterm Opinion accuracy fixes (see
@@ -1238,6 +1259,13 @@ class PgStore {
     await this.pool.query(
       'UPDATE articles SET headline = $2 WHERE slug = $1 AND headline = $3',
       [CRAYONS_RETITLE.slug, CRAYONS_RETITLE.toHeadline, CRAYONS_RETITLE.fromHeadline]
+    );
+    // One-time, idempotent Why It Matters for the donor-problem
+    // article (see DONOR_WHY_2026 above): lands only while the
+    // stored field is empty, so later boots change nothing.
+    await this.pool.query(
+      "UPDATE articles SET why_it_matters = $2 WHERE slug = $1 AND COALESCE(why_it_matters, '') = ''",
+      [DONOR_WHY_2026.slug, DONOR_WHY_2026.whyItMatters]
     );
     // One-time, idempotent midterm Opinion accuracy fixes (see
     // MIDTERM_FIX above): read the row, swap the two strings only
