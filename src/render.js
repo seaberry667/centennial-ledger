@@ -1723,8 +1723,7 @@ function explainedFeature(a) {
 function explainedModule(ex) {
   let s =
     '<section class="explained-home" aria-label="Colorado Explained">' +
-    '<h2 class="explained-heading">Colorado Explained</h2>' +
-    '<p class="explained-tagline">The laws, institutions, history, and peculiarities that make Colorado tick.</p>';
+    '<h2 class="explained-heading">Colorado Explained</h2>';
   s += explainedFeature(ex.featured);
   const items = (ex.items || []).filter(Boolean).slice(0, 4);
   if (items.length) {
