@@ -791,6 +791,23 @@ class FileStore {
   }
 
   /**
+   * Series metadata correction (2026-11-08): the ingest handler
+   * calls this for an already-live article when the payload carries
+   * a lastReviewed date that differs from the stored one, so the
+   * newsroom's recorded review date replaces a value mangled in
+   * transit. Sets ONLY lastReviewed; returns true on a change.
+   */
+  async fillLastReviewed(slug, value) {
+    const v = String(value || '').trim();
+    if (!v) return false;
+    const existing = this.data.articles.find((a) => a.slug === slug);
+    if (!existing || (existing.lastReviewed || '') === v) return false;
+    existing.lastReviewed = v;
+    this._save();
+    return true;
+  }
+
+  /**
    * Owner-ordered plate replacement (2026-11-04): the ingest handler
    * calls this ONLY when the payload article carries imageReplace:
    * true, which the newsroom sets after the owner orders a published
@@ -1213,6 +1230,23 @@ class PgStore {
         WHERE slug = $1 AND COALESCE(breaking, FALSE) = FALSE
         RETURNING slug`,
       [slug]
+    );
+    return res.rowCount > 0;
+  }
+
+  /**
+   * Same contract as the file store's fillLastReviewed: set ONLY
+   * last_reviewed, only when the incoming date differs from the
+   * stored one. Returns true when a row changed.
+   */
+  async fillLastReviewed(slug, value) {
+    const v = String(value || '').trim();
+    if (!v) return false;
+    const res = await this.pool.query(
+      `UPDATE articles SET last_reviewed = $2
+        WHERE slug = $1 AND COALESCE(last_reviewed, '') <> $2
+        RETURNING slug`,
+      [slug, v]
     );
     return res.rowCount > 0;
   }

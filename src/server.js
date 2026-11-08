@@ -124,6 +124,15 @@ app.post('/api/ingest', async (req, res) => {
     if (article.breaking && (await store.markBreaking(article.slug))) {
       filled = true;
     }
+    // Last-reviewed fill (2026-11-08): an explainer's recorded
+    // review date follows the newsroom's value when the stored one
+    // differs (the inaugural three arrived shifted by a day).
+    if (
+      article.lastReviewed &&
+      (await store.fillLastReviewed(article.slug, article.lastReviewed))
+    ) {
+      filled = true;
+    }
     // Opinion pieces: the newsroom's restructured list replaces the
     // stored one whenever it differs (see the route comment above).
     if (
