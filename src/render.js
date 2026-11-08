@@ -67,8 +67,12 @@ function inline(s) {
 function fmtDateShort(iso) {
   try {
     // A bare YYYY-MM-DD is a calendar date, not an instant: format
-    // it in UTC so it does not shift a day in Denver time.
-    const bare = /^\d{4}-\d{2}-\d{2}$/.test(String(iso || ''));
+    // it in UTC so it does not shift a day in Denver time. The
+    // newsroom may also store the date as a midnight-UTC timestamp
+    // (2026-11-08T00:00:00.000Z); that is the same calendar date.
+    const raw = String(iso || '');
+    const bare =
+      /^\d{4}-\d{2}-\d{2}$/.test(raw) || /^\d{4}-\d{2}-\d{2}T00:00:00/.test(raw);
     return new Intl.DateTimeFormat('en-US', {
       timeZone: bare ? 'UTC' : 'America/Denver',
       year: 'numeric',
