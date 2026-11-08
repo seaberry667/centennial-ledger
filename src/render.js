@@ -360,9 +360,9 @@ function shareImageUrl(a) {
 // a bogus slot, so the layout holds its shape until the unit is
 // wired in.
 const ADSENSE_SLOTS = {
-  leaderboard: process.env.ADSENSE_SLOT_LEADERBOARD || '',
-  incontent: process.env.ADSENSE_SLOT_INCONTENT || '',
-  rectangle: process.env.ADSENSE_SLOT_RECTANGLE || '',
+  leaderboard: process.env.ADSENSE_SLOT_LEADERBOARD || '5354866973',
+  incontent: process.env.ADSENSE_SLOT_INCONTENT || '6512035971',
+  rectangle: process.env.ADSENSE_SLOT_RECTANGLE || '6476376957',
 };
 
 /** One AdSense display unit: the ins tag plus its push call. */
