@@ -541,6 +541,12 @@ function normalizeArticle(raw) {
   // developing stories breaking; the live site keeps the flag so
   // the breaking news ticker can lead with them.
   const breaking = raw.isBreaking === true || raw.breaking === true;
+  // Series designation (Colorado Explained, owner directive
+  // 2026-11-08): independent of the primary section — an explainer
+  // belongs to exactly one section AND carries the series name.
+  // lastReviewed is the evergreen fact-check date (ISO or '').
+  const series = String(raw.series || '').trim();
+  const lastReviewed = String(raw.lastReviewed || raw.last_reviewed || '').trim();
 
   const out = {
     slug,
@@ -552,6 +558,8 @@ function normalizeArticle(raw) {
     section,
     format,
     breaking,
+    series,
+    lastReviewed,
     topicLabel: String(raw.topicLabel || raw.topic_label || '').trim(),
     region: String(raw.region || '').trim(),
     spotlight,
@@ -900,6 +908,8 @@ class PgStore {
         seo_title TEXT DEFAULT '',
         meta_description TEXT DEFAULT '',
         breaking BOOLEAN DEFAULT FALSE,
+        series TEXT DEFAULT '',
+        last_reviewed TEXT DEFAULT '',
         created_at TIMESTAMPTZ DEFAULT now()
       )`);
     await this.pool.query(`
@@ -931,6 +941,15 @@ class PgStore {
     // stories, kept so the ticker can lead with them.
     await this.pool.query(
       'ALTER TABLE articles ADD COLUMN IF NOT EXISTS breaking BOOLEAN DEFAULT FALSE'
+    );
+    // Migration for databases created before the Colorado Explained
+    // series (2026-11-08): the series designation and the evergreen
+    // last-reviewed date.
+    await this.pool.query(
+      "ALTER TABLE articles ADD COLUMN IF NOT EXISTS series TEXT DEFAULT ''"
+    );
+    await this.pool.query(
+      "ALTER TABLE articles ADD COLUMN IF NOT EXISTS last_reviewed TEXT DEFAULT ''"
     );
     await this.pool.query(
       'CREATE INDEX IF NOT EXISTS idx_articles_section ON articles(section)'
@@ -1114,6 +1133,8 @@ class PgStore {
       section: r.section,
       format: r.format || '',
       breaking: r.breaking === true,
+      series: r.series || '',
+      lastReviewed: r.last_reviewed || '',
       topicLabel: r.topic_label || '',
       region: r.region || '',
       spotlight: r.spotlight || null,
@@ -1134,8 +1155,8 @@ class PgStore {
     const res = await this.pool.query(
       `INSERT INTO articles
          (slug, headline, dek, byline, published_at, modified_at, section, format, topic_label, region,
-          spotlight, sections, why_it_matters, image, source_name, source_url, sources, seo_title, meta_description, breaking)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)
+          spotlight, sections, why_it_matters, image, source_name, source_url, sources, seo_title, meta_description, breaking, series, last_reviewed)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22)
        ON CONFLICT (slug) DO NOTHING
        RETURNING slug`,
       [
@@ -1144,7 +1165,7 @@ class PgStore {
         a.region, a.spotlight, JSON.stringify(a.sections), a.whyItMatters,
         a.image ? JSON.stringify(a.image) : null,
         a.sourceName, a.sourceUrl, JSON.stringify(a.sources || []), a.seoTitle, a.metaDescription,
-        a.breaking === true,
+        a.breaking === true, a.series || '', a.lastReviewed || '',
       ]
     );
     return res.rowCount > 0 ? 'inserted' : 'skipped';

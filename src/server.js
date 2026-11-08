@@ -140,6 +140,12 @@ app.post('/api/ingest', async (req, res) => {
 
 /* --------------------------- Public pages ------------------------- */
 
+// Colorado Explained series membership (owner directive,
+// 2026-11-08): an article carries the series designation in
+// addition to its one primary section.
+const isExplained = (a) =>
+  String((a && a.series) || '').trim().toLowerCase() === 'colorado explained';
+
 // Breaking news ticker (owner request, 2026-11-08): before any
 // public page renders, refresh the ticker contents from the store
 // — the six most recent stories, newest first (owner instruction,
@@ -236,6 +242,28 @@ app.get('/', async (req, res) => {
     (await store.listArticles({ section: 'opinion', limit: 10 })).find(
       (a) => !isSatire(a)
     ) || null;
+  // Colorado Explained homepage module (owner directive,
+  // 2026-11-08): curated, not a newest-first feed — the TABOR
+  // flagship features, and the supporting set is picked so no two
+  // adjacent cards share a section while alternatives remain.
+  const explainedAll = (await store.listArticles({ limit: 100 })).filter(isExplained);
+  let explained = null;
+  if (explainedAll.length) {
+    const featured =
+      explainedAll.find((a) => a.slug === 'how-colorados-tabor-law-actually-works') ||
+      explainedAll[0];
+    const pool = explainedAll.filter((a) => a.slug !== featured.slug);
+    const items = [];
+    while (items.length < 4 && pool.length) {
+      const lastSection = items.length
+        ? items[items.length - 1].section
+        : featured.section;
+      let idx = pool.findIndex((a) => a.section !== lastSection);
+      if (idx < 0) idx = 0;
+      items.push(pool.splice(idx, 1)[0]);
+    }
+    explained = { featured, items };
+  }
   res.type('html').send(
     render.homePage({
       lead: lead || null,
@@ -246,6 +274,7 @@ app.get('/', async (req, res) => {
       latestRow,
       localStories,
       opinion,
+      explained,
       briefingThanks: req.query.briefing === 'thanks',
     })
   );
@@ -397,7 +426,47 @@ app.get('/article/:slug', async (req, res) => {
   // published Local stories across all eight regions, newest first —
   // the same sidebar component the homepage uses.
   const localStories = await store.listArticles({ section: 'local', limit: 8 });
-  res.type('html').send(render.articlePage(article, related.slice(0, 3), localStories));
+  // Colorado Explained pieces link to fellow explainers at the end
+  // (owner directive, 2026-11-08), same-section explainers first.
+  let explainedRelated = [];
+  if (isExplained(article)) {
+    explainedRelated = (await store.listArticles({ limit: 100 }))
+      .filter((x) => isExplained(x) && x.slug !== article.slug)
+      .sort(
+        (x, y) =>
+          (y.section === article.section ? 1 : 0) -
+          (x.section === article.section ? 1 : 0)
+      )
+      .slice(0, 3);
+  }
+  res.type('html').send(
+    render.articlePage(article, related.slice(0, 3), localStories, explainedRelated)
+  );
+});
+
+// Colorado Explained series archive (owner directive, 2026-11-08).
+// NOT a navigation item; reached from the homepage module and from
+// explainer article pages. The category chips are an archive
+// filter, not new sections.
+app.get('/explained', async (req, res) => {
+  const all = (await store.listArticles({ limit: 200 })).filter(isExplained);
+  const cat = String(req.query.category || '');
+  const valid = SECTIONS.some((s) => s.slug === cat);
+  const cats = SECTIONS.filter((s) =>
+    all.some((a) => a.section === s.slug)
+  ).map((s) => ({ slug: s.slug, name: s.name }));
+  const filtered = valid ? all.filter((a) => a.section === cat) : all;
+  const featured =
+    !valid && filtered.length
+      ? filtered.find((a) => a.slug === 'how-colorados-tabor-law-actually-works') ||
+        filtered[0]
+      : null;
+  const articles = featured
+    ? filtered.filter((a) => a.slug !== featured.slug)
+    : filtered;
+  res.type('html').send(
+    render.explainedPage({ articles, featured, category: valid ? cat : '', cats })
+  );
 });
 
 app.get('/subscribe', (req, res) => {
@@ -460,6 +529,7 @@ app.get('/sitemap.xml', async (req, res) => {
       changefreq: 'hourly',
       priority: '0.7',
     })),
+    { loc: base + '/explained', changefreq: 'weekly', priority: '0.8' },
     { loc: base + '/subscribe', changefreq: 'monthly', priority: '0.5' },
     { loc: base + '/about', changefreq: 'monthly', priority: '0.5' },
     { loc: base + '/privacy', changefreq: 'yearly', priority: '0.2' },

@@ -56,7 +56,37 @@ function esc(s) {
 function inline(s) {
   return esc(s)
     .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+    .replace(
+      /\[([^\]]+)\]\((https?:\/\/[^)\s]+|\/[^)\s]+)\)/g,
+      '<a href="$2">$1</a>'
+    );
+}
+
+/** Short date for byline-style labels: "November 8, 2026". */
+function fmtDateShort(iso) {
+  try {
+    // A bare YYYY-MM-DD is a calendar date, not an instant: format
+    // it in UTC so it does not shift a day in Denver time.
+    const bare = /^\d{4}-\d{2}-\d{2}$/.test(String(iso || ''));
+    return new Intl.DateTimeFormat('en-US', {
+      timeZone: bare ? 'UTC' : 'America/Denver',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    }).format(new Date(iso));
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * Colorado Explained series membership (owner directive,
+ * 2026-11-08): the series designation is independent of the
+ * article's primary section.
+ */
+function isExplained(a) {
+  return String((a && a.series) || '').trim().toLowerCase() === 'colorado explained';
 }
 
 /**
@@ -813,6 +843,37 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 .editorial-strip .editorial-headline{display:block;font-family:var(--font-headline);font-weight:700;font-size:2.3rem;line-height:1.12;margin:0 0 .9rem}
 .editorial-strip .editorial-excerpt{margin-top:.45rem}
 .editorial-strip .editorial-excerpt p{font-size:1.14rem;margin:0 0 .8em}
+/* ---------- Colorado Explained (series, 2026-11-08) ---------- */
+.series-label{font-family:var(--font-ui);font-size:.82rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;margin:0 0 .4rem}
+.series-label a{color:var(--color-red);text-decoration:none}
+.short-answer{background:var(--color-ivory);border:1px solid var(--color-border);border-left:4px solid var(--color-gold);padding:1rem 1.2rem;margin:1.4rem 0}
+.short-answer-label{font-family:var(--font-ui);font-size:.82rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--color-red);margin-bottom:.5rem}
+.short-answer p{margin:0 0 .6em}
+.short-answer p:last-child{margin-bottom:0}
+.explainer-list{margin:.4rem 0 1rem;padding-left:1.4rem}
+.explainer-list li{margin-bottom:.55rem;line-height:1.5}
+.explained-related{border-top:2px solid var(--color-gold);margin-top:1.6rem;padding-top:1rem}
+.explained-related h2{font-family:var(--font-headline);font-size:1.4rem;margin:0 0 .6rem}
+.explained-related ul{list-style:none;margin:0;padding:0}
+.explained-related li{margin-bottom:.45rem}
+.explained-related .rel-cat{font-family:var(--font-ui);font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--color-red);margin-right:.5rem}
+.last-reviewed{font-style:italic;color:#555;font-size:.95rem;margin-top:1.2rem}
+.explained-home{margin-top:1.8rem}
+.explained-heading{display:flex;align-items:center;gap:1rem;font-family:var(--font-ui);font-size:.95rem;font-weight:bold;letter-spacing:.14em;text-transform:uppercase;margin:0 0 .4rem}
+.explained-heading::after{content:"";flex:1;height:2px;background:var(--color-gold)}
+.explained-tagline{font-style:italic;font-size:1.05rem;color:#444;margin:0 0 1.1rem}
+.explained-feature{display:flex;gap:1.4rem;flex-wrap:wrap;margin-bottom:1.3rem}
+.explained-feature figure.art-figure{flex:0 0 340px;margin:0}
+.explained-feature-text{flex:1;min-width:240px}
+.explained-feature-headline{font-family:var(--font-headline);font-size:1.9rem;line-height:1.15;margin:.2rem 0 .5rem}
+.explained-feature-headline a{color:inherit;text-decoration:none}
+.explained-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.25rem}
+@media (max-width:900px){.explained-grid{grid-template-columns:1fr}}
+.explained-more{margin-top:1rem;text-align:right}
+.explained-more a{font-family:var(--font-ui);font-weight:700;font-size:.9rem;color:var(--color-red);text-decoration:none}
+.explained-chips{display:flex;gap:.5rem;flex-wrap:wrap;margin:0 0 1.4rem}
+.explained-chips a{font-family:var(--font-ui);font-size:.8rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--color-border);padding:.35rem .7rem;color:#333;text-decoration:none}
+.explained-chips a.active{background:var(--color-navy);color:#fff;border-color:var(--color-navy)}
 /* Latest from Colorado: heading with a gold rule, then one row of
    three cards (framed plate, red category, serif headline, short
    excerpt, muted metadata). No shadows, no rounded corners. */
@@ -1609,7 +1670,118 @@ function editorialStrip(opinion) {
   );
 }
 
-function homePage({ lead, second, third, latest, railGroups, latestRow, localStories, opinion, briefingThanks }) {
+/**
+ * The featured explainer treatment, shared by the homepage module
+ * and the /explained archive: plate at the left, category kicker,
+ * headline, dek and an opening excerpt at the right.
+ */
+function explainedFeature(a) {
+  if (!a) return '';
+  const excerpt = leadExcerpt(a, 90);
+  let s =
+    '<article class="explained-feature">' +
+    articleFigure(a, 'explained-figure', { link: true, width: 700 }) +
+    '<div class="explained-feature-text"><div class="kicker">' +
+    esc(sectionName(a.section)) +
+    '</div>' +
+    '<h3 class="explained-feature-headline"><a href="/article/' +
+    esc(a.slug) + '">' + esc(a.headline) + '</a></h3>' +
+    (a.dek ? '<p class="dek">' + inline(dekText(a)) + '</p>' : '');
+  if (excerpt) s += '<div class="feature-excerpt">' + excerpt + '</div>';
+  s +=
+    '<div class="feature-actions"><a class="btn-read" href="/article/' +
+    esc(a.slug) + '">Read the Explainer &rarr;</a></div>';
+  s += '</div></article>';
+  return s;
+}
+
+/**
+ * Homepage Colorado Explained module (owner directive, 2026-11-08):
+ * replaces the "Latest from Colorado" grid. Curated by the home
+ * route (flagship feature plus a subject-diverse supporting set),
+ * never a plain newest-first feed.
+ */
+function explainedModule(ex) {
+  let s =
+    '<section class="explained-home" aria-label="Colorado Explained">' +
+    '<h2 class="explained-heading">Colorado Explained</h2>' +
+    '<p class="explained-tagline">The laws, institutions, history, and peculiarities that make Colorado tick.</p>';
+  s += explainedFeature(ex.featured);
+  const items = (ex.items || []).filter(Boolean).slice(0, 4);
+  if (items.length) {
+    s += '<div class="explained-grid">' + items.map(articleCard).join('') + '</div>';
+  }
+  s +=
+    '<div class="explained-more"><a href="/explained">Explore Colorado Explained &rarr;</a></div></section>';
+  return s;
+}
+
+/**
+ * The Colorado Explained series archive at /explained (owner
+ * directive, 2026-11-08): a featured explainer, subject filter
+ * chips (an archive feature, not navigation), and the full grid.
+ */
+function explainedPage({ articles, featured, category, cats }) {
+  const list = Array.isArray(articles) ? articles : [];
+  const jsonLd = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      name: 'Colorado Explained | ' + SITE_NAME,
+      url: absUrl('/explained'),
+      isPartOf: { '@type': 'WebSite', name: SITE_NAME, url: siteUrl() + '/' },
+    },
+    {
+      '@type': 'ItemList',
+      '@context': 'https://schema.org',
+      itemListElement: (featured ? [featured, ...list] : list).map((a, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        url: absUrl('/article/' + a.slug),
+        name: a.headline,
+      })),
+    },
+  ];
+  let body = leaderboardAdSlot();
+  body +=
+    '<h1 class="headline" style="font-size:2.4rem">Colorado Explained</h1>' +
+    '<p class="dek">The laws, institutions, history, and peculiarities that make Colorado tick.</p>' +
+    '<p>Daily news tells you what is happening in Colorado. Colorado Explained tells you how it works and why it matters: the tax rules, water law, school funding formulas, and local governments that shape everyday life here, researched from primary sources and reviewed on a regular cycle so the answers stay current.</p>';
+  const chips = Array.isArray(cats) ? cats : [];
+  if (chips.length > 1) {
+    body +=
+      '<nav class="explained-chips" aria-label="Filter explainers by subject">' +
+      '<a href="/explained"' + (!category ? ' class="active"' : '') + '>All Topics</a>' +
+      chips
+        .map(
+          (c) =>
+            '<a href="/explained?category=' + esc(c.slug) + '"' +
+            (category === c.slug ? ' class="active"' : '') + '>' +
+            esc(c.name) + '</a>'
+        )
+        .join('') +
+      '</nav>';
+  }
+  if (featured) body += explainedFeature(featured);
+  if (list.length) {
+    body += '<div class="grid">' + list.map(articleCard).join('') + '</div>';
+  } else if (!featured) {
+    body += '<p>The first explainers are on the way.</p>';
+  }
+  body +=
+    '<p class="last-reviewed">New explainers arrive every Tuesday and Friday. Each article lists its sources and the date it was last reviewed; explainers on law, taxes, and healthcare are rechecked at least every six months, and sooner when the law changes.</p>';
+  return layout({
+    title: fitTitle('Colorado Explained: how Colorado laws, water and taxes work', 70),
+    description: fitDescription(
+      'Colorado Explained answers how Colorado works: TABOR, property taxes, water rights, school funding, local government and more, in plain language.'
+    ),
+    path: '/explained',
+    jsonLd,
+    body,
+  });
+}
+
+function homePage({ lead, second, third, latest, railGroups, latestRow, localStories, opinion, briefingThanks, explained }) {
   const jsonLd = [
     {
       '@context': 'https://schema.org',
@@ -1686,7 +1858,13 @@ function homePage({ lead, second, third, latest, railGroups, latestRow, localSto
     // the Explore module as the last content element, then the
     // Save buttons' inline script.
     body += editorialStrip(opinion);
-    if (latestCards.length) {
+    // Colorado Explained module (owner directive, 2026-11-08)
+    // replaces the "Latest from Colorado" grid; the Latest grid
+    // remains only as the fallback while the store holds no
+    // explainers yet.
+    if (explained && explained.featured) {
+      body += explainedModule(explained);
+    } else if (latestCards.length) {
       body +=
         '<section class="latest-home"><h2 class="latest-home-heading">Latest from Colorado</h2>' +
         '<div class="latest-grid">' + latestCards.map(latestCard).join('') + '</div></section>';
@@ -1984,7 +2162,7 @@ function satirePage(a, prev, next) {
   });
 }
 
-function articlePage(a, related, localStories) {
+function articlePage(a, related, localStories, explainedRelated) {
   const url = absUrl('/article/' + a.slug);
   const title = fitTitle(a.seoTitle || a.headline, 70);
   const description = articleDescription(a);
@@ -2035,6 +2213,9 @@ function articlePage(a, related, localStories) {
   let body =
     '<div class="article-layout"><article class="full">' +
     leaderboardAdSlot() +
+    (isExplained(a)
+      ? '<div class="series-label"><a href="/explained">Colorado Explained</a></div>'
+      : '') +
     '<div class="breadcrumb"><a href="/">Home</a> &rsaquo; <a href="/section/' + a.section + '">' +
     esc(sectionName(a.section)) + '</a> &rsaquo; ' + esc(a.topicLabel || sectionName(a.section)) + '</div>' +
     '<div class="kicker-row"><span class="kicker">' + esc(a.topicLabel || sectionName(a.section)) +
@@ -2048,15 +2229,58 @@ function articlePage(a, related, localStories) {
   body += articleFigure(a, 'article-hero', { width: 1200 });
   body += '<div class="article-body">';
   sections.forEach((s, i) => {
-    if (s.heading) body += '<h2>' + esc(s.heading) + '</h2>';
+    // Colorado Explained pieces carry a "The Short Answer" section
+    // that renders as a distinct summary box instead of a headed
+    // section (owner directive, 2026-11-08).
+    const shortAnswer =
+      isExplained(a) &&
+      String(s.heading || '').trim().toLowerCase() === 'the short answer';
+    let inner = '';
+    if (s.heading && !shortAnswer) inner += '<h2>' + esc(s.heading) + '</h2>';
+    // Blocks: the section lead, then its paragraphs. Consecutive
+    // bullet blocks (starting with "•") group into one list — the
+    // explainer house style; every other block keeps the
+    // established paragraph treatment, drop cap included.
+    const blocks = [];
+    if (s.lead) blocks.push(s.lead);
+    for (const p of s.paragraphs) blocks.push(p);
     let firstPara = true;
-    if (s.lead) {
-      body += '<p class="lead' + (i === 0 ? ' dropcap' : '') + '">' + inline(s.lead) + '</p>';
+    let listBuf = [];
+    const flushList = () => {
+      if (listBuf.length) {
+        inner +=
+          '<ul class="explainer-list">' +
+          listBuf.map((t) => '<li>' + inline(t) + '</li>').join('') +
+          '</ul>';
+        listBuf = [];
+      }
+    };
+    blocks.forEach((raw, bi) => {
+      const txt = String(raw || '');
+      if (txt.trim().startsWith('•')) {
+        listBuf.push(txt.trim().replace(/^•\s*/, ''));
+        firstPara = false;
+        return;
+      }
+      flushList();
+      if (bi === 0 && s.lead) {
+        inner +=
+          '<p class="lead' + (i === 0 && !shortAnswer ? ' dropcap' : '') + '">' +
+          inline(txt) + '</p>';
+      } else {
+        inner +=
+          '<p' + (i === 0 && firstPara && !shortAnswer ? ' class="dropcap"' : '') + '>' +
+          inline(txt) + '</p>';
+      }
       firstPara = false;
-    }
-    for (const p of s.paragraphs) {
-      body += '<p' + (i === 0 && firstPara ? ' class="dropcap"' : '') + '>' + inline(p) + '</p>';
-      firstPara = false;
+    });
+    flushList();
+    if (shortAnswer) {
+      body +=
+        '<div class="short-answer"><div class="short-answer-label">The Short Answer</div>' +
+        inner + '</div>';
+    } else {
+      body += inner;
     }
     // The Why It Matters callout goes after the first complete
     // section (also when it is the only section), before the
@@ -2097,6 +2321,31 @@ function articlePage(a, related, localStories) {
           esc(a.sourceName || a.sourceUrl) + '</a>'
         : esc(a.sourceName)) +
       '</p></section>';
+  }
+  // Colorado Explained pieces close with links to related
+  // explainers and their last-reviewed date (owner directive,
+  // 2026-11-08), inside the article column after Sources.
+  if (isExplained(a)) {
+    const rel = (Array.isArray(explainedRelated) ? explainedRelated : [])
+      .filter(Boolean)
+      .slice(0, 3);
+    if (rel.length) {
+      body +=
+        '<section class="explained-related"><h2>More From Colorado Explained</h2><ul>' +
+        rel
+          .map(
+            (r) =>
+              '<li><span class="rel-cat">' + esc(sectionName(r.section)) +
+              '</span><a href="/article/' + esc(r.slug) + '">' +
+              esc(r.headline) + '</a></li>'
+          )
+          .join('') +
+        '</ul></section>';
+    }
+    body +=
+      '<p class="last-reviewed">Last reviewed ' +
+      esc(fmtDateShort(a.lastReviewed || a.publishedAt)) +
+      ' &middot; Part of the <a href="/explained">Colorado Explained</a> series</p>';
   }
   body += '</div></article>';
   // Article sidebar (spec 5): the Briefing signup first, then
@@ -2322,6 +2571,7 @@ module.exports = {
   localHubPage,
   localRegionPage,
   articlePage,
+  explainedPage,
   satirePage,
   subscribePage,
   checkoutPage,
