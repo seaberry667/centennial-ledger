@@ -777,7 +777,7 @@ footer{background:#fff;color:#3d3d3d;border-top:4px double var(--color-text);fon
 footer::before{content:"";position:absolute;top:-8px;left:0;right:0;height:1px;background:var(--color-gold)}
 .footer-inner{max-width:1200px;margin:0 auto;padding:32px 24px 8px}
 .footer-grid{display:grid;grid-template-columns:1.3fr 1fr 1fr 1.3fr;gap:1.8rem}
-.footer-brand img{display:block;max-width:230px;width:100%;height:auto}
+.footer-brand img{display:block;max-width:285px;width:100%;height:auto}
 .footer-brand p{margin:.7rem 0 0;color:#555;font-size:.9rem}
 .footer-col h3{color:var(--color-red);font-family:var(--font-ui);font-size:.82rem;font-weight:bold;letter-spacing:.14em;text-transform:uppercase;margin:.1rem 0 .6rem}
 .footer-col ul{list-style:none;margin:0;padding:0}
@@ -905,7 +905,7 @@ ${body}
   <div class="footer-inner">
     <div class="footer-grid">
       <div class="footer-col footer-brand">
-        <a href="/" aria-label="The Centennial Ledger: back to the front page"><picture><source srcset="/footer-logo.webp" type="image/webp"><img src="/footer-logo.png" alt="The Centennial Ledger" width="285" height="140"></picture></a>
+        <a href="/" aria-label="The Centennial Ledger: back to the front page"><picture><source srcset="/footer-logo-v2.webp" type="image/webp"><img src="/footer-logo-v2.png" alt="The Centennial Ledger" width="285" height="117"></picture></a>
         <p>Covering Colorado’s Capitol and all 64 counties. Independent and unaffiliated with any party or campaign. Stories are AI-written from linked sources; always check original sources for full context.</p>
       </div>
       <nav class="footer-col" aria-label="Sections">
