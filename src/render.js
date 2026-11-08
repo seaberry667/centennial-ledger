@@ -2030,6 +2030,7 @@ function articlePage(a, related, localStories) {
 
   let body =
     '<div class="article-layout"><article class="full">' +
+    leaderboardAdSlot() +
     '<div class="breadcrumb"><a href="/">Home</a> &rsaquo; <a href="/section/' + a.section + '">' +
     esc(sectionName(a.section)) + '</a> &rsaquo; ' + esc(a.topicLabel || sectionName(a.section)) + '</div>' +
     '<div class="kicker-row"><span class="kicker">' + esc(a.topicLabel || sectionName(a.section)) +
