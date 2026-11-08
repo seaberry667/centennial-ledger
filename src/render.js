@@ -603,11 +603,13 @@ const CSS = `
   --color-gold:#AA8548;--color-ivory:#F8F4EB;--color-border:#DED7C9;--color-muted:#777777;
   --font-headline:"Playfair Display",Georgia,serif;
   --font-body:"Source Serif 4",Georgia,serif;
-  --font-ui:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  /* Even-stroke sans for the top bar and the breaking ticker
-     (owner instruction, 2026-11-08): Inter, whose strokes are a
-     near-uniform weight, instead of the varied-stroke system sans. */
-  --font-bar:"Inter",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  /* Sans roles follow the dev (newsroom) site's font system
+     (owner instruction, 2026-11-08): wherever the dev version
+     uses Archivo — its default sans for UI text, meta lines and
+     the ticker — the live site uses Archivo too. This supersedes
+     the same morning's Inter choice for the bars. */
+  --font-ui:"Archivo",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --font-bar:"Archivo",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   /* Legacy aliases, kept so older rules resolve to the spec palette. */
   --navy:var(--color-navy);--red:var(--color-red);--ink:var(--color-text);
   --paper:var(--color-bg);--rule:var(--color-border)
@@ -654,11 +656,11 @@ nav.main li.nav-search{margin-left:auto;display:flex;align-items:center}
    left; the track is clipped by its viewport so the page itself
    never scrolls sideways. Pauses on hover. */
 .ticker{display:flex;align-items:center;gap:.9rem;background:var(--color-red);color:#fff;overflow:hidden;max-width:100%;font-family:var(--font-bar);padding:.35rem .6rem}
-.ticker-chip{background:#fff;color:var(--color-red);font-family:var(--font-bar);font-weight:700;font-size:.78rem;letter-spacing:.12em;padding:.2rem .55rem;flex:0 0 auto;position:relative;z-index:1}
+.ticker-chip{background:#fff;color:var(--color-red);font-family:var(--font-bar);font-weight:800;font-size:11px;letter-spacing:.1em;padding:.2rem .55rem;flex:0 0 auto;position:relative;z-index:1}
 .ticker-viewport{overflow:hidden;flex:1 1 auto;display:flex;align-items:center}
 .ticker-track{display:inline-flex;white-space:nowrap;animation-name:ticker-scroll;animation-timing-function:linear;animation-iteration-count:infinite;will-change:transform}
 .ticker-group{display:inline-flex;align-items:center;gap:2.5rem;padding-right:2.5rem}
-.ticker-track a{color:#fff;text-decoration:none;font-weight:600;font-size:.95rem;font-family:var(--font-bar)}
+.ticker-track a{color:#fff;text-decoration:none;font-weight:400;font-size:.875rem;font-family:var(--font-bar)}
 .ticker-track a:hover{text-decoration:underline}
 .ticker-sep{opacity:.7}
 .ticker:hover .ticker-track{animation-play-state:paused}
@@ -702,8 +704,8 @@ nav.main li.nav-search{margin-left:auto;display:flex;align-items:center}
 .kicker-row::after{content:"";flex:1;height:1px;background:var(--color-gold)}
 h2.headline,h1.headline{font-family:var(--font-headline);font-weight:800;line-height:1.12;margin:.3rem 0}
 .dek{font-size:1.1875rem;line-height:1.4;color:#333;font-style:italic}
-.byline{font-family:var(--font-body);color:var(--color-muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.05em}
-.meta{font-family:var(--font-body);font-size:.75rem;color:var(--color-muted);text-transform:uppercase;letter-spacing:.05em}
+.byline{font-family:var(--font-ui);color:var(--color-muted);font-size:11px;text-transform:uppercase;letter-spacing:.14em}
+.meta{font-family:var(--font-ui);font-size:11px;color:var(--color-muted);text-transform:uppercase;letter-spacing:.14em}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.2rem}
 .card{border-top:3px solid var(--color-text);padding-top:.6rem}
 .card h3{font-family:var(--font-headline);font-size:1.125rem;margin:.25rem 0;line-height:1.25}
@@ -1067,7 +1069,7 @@ ${ogImage ? '<meta name="twitter:image" content="' + esc(ogImage) + '">\n' : ''}
 <meta name="twitter:description" content="${esc(description)}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Playfair+Display:wght@600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400;1,8..60,600;1,8..60,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400;1,8..60,600;1,8..60,700&display=swap" rel="stylesheet">
 <style>${CSS}</style>
 ${ld}
 ${adsense}
