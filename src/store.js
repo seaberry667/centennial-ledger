@@ -30,7 +30,7 @@ const SECTIONS = [
   // with format 'satire' on the article record, and their bare
   // presentation is keyed off that format, not the section.
   { slug: 'politics', name: 'Politics' },
-  { slug: 'business', name: 'Business' },
+  { slug: 'business', name: 'Business & Taxes' },
   { slug: 'energy-environment', name: 'Energy & Environment' },
   { slug: 'education-health', name: 'Education & Health' },
   { slug: 'colorado-life', name: 'Colorado Life' },
@@ -53,7 +53,7 @@ const REGIONS = [
 // Newsroom section names collapse into the seven live categories
 // (owner restructure, 2026-11-08). The old Rights/Taxes/Energy/
 // Schools sections are retired: rights and courts coverage belongs
-// to Politics, taxes and budgets to Business, energy to Energy &
+// to Politics, taxes and budgets to Business & Taxes, energy to Energy &
 // Environment, schools and health to Education & Health. Sports,
 // outdoors and history now have a home in Colorado Life, so nothing
 // is dropped at ingest anymore. 'satire' still maps to Opinion, and
@@ -74,6 +74,8 @@ const SECTION_ALIASES = {
   'taxes & rights': 'business',
   tabor: 'business',
   business: 'business',
+  'business & taxes': 'business',
+  'business and taxes': 'business',
   money: 'business',
   economy: 'business',
   'money & taxes': 'business',

@@ -955,7 +955,7 @@ ${body}
         <h3>Sections</h3>
         <ul>
           <li><a href="/section/politics">Politics</a></li>
-          <li><a href="/section/business">Business</a></li>
+          <li><a href="/section/business">Business &amp; Taxes</a></li>
           <li><a href="/section/energy-environment">Energy &amp; Environment</a></li>
           <li><a href="/section/education-health">Education &amp; Health</a></li>
           <li><a href="/section/colorado-life">Colorado Life</a></li>
@@ -1271,9 +1271,9 @@ const SECTION_META = {
       'Colorado politics news from the Capitol: the legislature, the governor, elections, courts and the state budget, reported with the original sources linked. Read the latest.',
   },
   business: {
-    title: 'Colorado business news: economy, taxes, jobs and real estate',
+    title: 'Colorado business and taxes news: economy, jobs and real estate',
     description:
-      'Colorado business news: companies, jobs, housing, taxes, TABOR refunds and state spending across the state, with the original sources linked. Read the latest.',
+      'Colorado business and taxes news: companies, jobs, housing, TABOR refunds and state spending across the state, with the original sources linked. Read the latest.',
   },
   'energy-environment': {
     title: 'Colorado energy and environment news: oil, gas, water, climate',
