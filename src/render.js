@@ -438,15 +438,15 @@ function adSlot(label) {
  * and the rest, on pages long enough to carry one. Shorter lists
  * render as a single plain grid.
  */
-function cardGridWithAd(articles) {
+function cardGridWithAd(articles, opts = {}) {
   if (!articles.length) return '';
   if (articles.length <= 6) {
-    return '<div class="grid">' + articles.map(articleCard).join('') + '</div>';
+    return '<div class="grid">' + articles.map((a) => articleCard(a, opts)).join('') + '</div>';
   }
   return (
-    '<div class="grid">' + articles.slice(0, 6).map(articleCard).join('') + '</div>' +
+    '<div class="grid">' + articles.slice(0, 6).map((a) => articleCard(a, opts)).join('') + '</div>' +
     adSlot() +
-    '<div class="grid">' + articles.slice(6).map(articleCard).join('') + '</div>'
+    '<div class="grid">' + articles.slice(6).map((a) => articleCard(a, opts)).join('') + '</div>'
   );
 }
 
@@ -1170,11 +1170,15 @@ function readTimeMinutes(a) {
  * (captions live on article pages and homepage features), and the
  * thumbnail links to the article.
  */
-function articleCard(a) {
+function articleCard(a, opts = {}) {
   return (
     '<div class="card">' +
     articleFigure(a, '', { noCaption: true, link: true, width: 600 }) +
-    '<div class="kicker">' + esc(a.topicLabel || sectionName(a.section)) + '</div>' +
+    // No red kicker above card headlines on section pages (owner
+    // order, 2026-11-08): callers there pass { kicker: false }.
+    (opts.kicker === false
+      ? ''
+      : '<div class="kicker">' + esc(a.topicLabel || sectionName(a.section)) + '</div>') +
     '<h3><a href="/article/' + esc(a.slug) + '">' + esc(a.headline) + '</a></h3>' +
     '<div class="meta">' + esc(fmtMetaDate(a.publishedAt)) +
     ' &middot; ' + readTimeMinutes(a) + ' min read</div>' +
@@ -1949,7 +1953,7 @@ function sectionPage({ section, articles }) {
   const cardItems =
     section === 'opinion' ? articles.filter((a) => !isSatire(a)) : articles;
   const listing =
-    cardGridWithAd(cardItems) +
+    cardGridWithAd(cardItems, { kicker: false }) +
     (satireItems.length
       ? '<h2 class="section-subhead">Satire &amp; Editorial Cartoons</h2>' +
         '<div class="satire-list">' +
@@ -2018,7 +2022,7 @@ function localHubPage({ articles }) {
     '<h1 class="headline" style="font-size:2.4rem">Local News</h1>' +
     regionNavList('') +
     (articles.length
-      ? cardGridWithAd(articles)
+      ? cardGridWithAd(articles, { kicker: false })
       : '<p>No local stories yet. Check back after the next edition.</p>') +
     hubBox('local');
 
@@ -2042,7 +2046,7 @@ function localRegionPage({ region, articles }) {
     regionNavList(region.slug) +
     leaderboardAdSlot() +
     (articles.length
-      ? cardGridWithAd(articles)
+      ? cardGridWithAd(articles, { kicker: false })
       : '<p>No local stories from ' + esc(region.name) + ' yet. Check back after the next edition.</p>') +
     regionHubBox(region);
 
