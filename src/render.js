@@ -2112,8 +2112,9 @@ function articlePage(a, related, localStories) {
     body += '<h2 style="font-family:\'Playfair Display\',Georgia,serif">More in ' + esc(sectionName(a.section)) +
       '</h2><div class="grid">' + related.map(articleCard).join('') + '</div>';
   }
-  // The topic-cluster hub box is the last element on the page.
-  body += hubBox(a.section);
+  // The section's end-of-page SEO blurb (hubBox) belongs ONLY on
+  // the section's main page, never on articles in that section
+  // (owner instruction, 2026-11-08).
 
   return layout({
     title,
