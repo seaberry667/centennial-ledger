@@ -246,6 +246,7 @@ const EXPLAINED_REVIEW_FIX = {
   'who-owns-colorados-water': '2026-11-08',
   'why-are-colorado-property-taxes-so-complicated': '2026-11-08',
 };
+// The shifted value may be stored bare or with a time attached.
 const EXPLAINED_REVIEW_SHIFTED = '2026-11-07';
 
 // Stories the newsroom had already flagged breaking before the
@@ -688,7 +689,10 @@ class FileStore {
         recategorized = true;
       }
       const reviewFix = EXPLAINED_REVIEW_FIX[a.slug];
-      if (reviewFix && a.lastReviewed === EXPLAINED_REVIEW_SHIFTED) {
+      if (
+        reviewFix &&
+        String(a.lastReviewed || '').startsWith(EXPLAINED_REVIEW_SHIFTED)
+      ) {
         a.lastReviewed = reviewFix;
         recategorized = true;
       }
@@ -999,8 +1003,8 @@ class PgStore {
     for (const [slug, reviewed] of Object.entries(EXPLAINED_REVIEW_FIX)) {
       await this.pool.query(
         `UPDATE articles SET last_reviewed = $2
-          WHERE slug = $1 AND last_reviewed = $3`,
-        [slug, reviewed, EXPLAINED_REVIEW_SHIFTED]
+          WHERE slug = $1 AND last_reviewed LIKE $3`,
+        [slug, reviewed, EXPLAINED_REVIEW_SHIFTED + '%']
       );
     }
     // Breaking-flag backfill (see BREAKING_BACKFILL_SLUGS above):

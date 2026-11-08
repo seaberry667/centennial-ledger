@@ -1042,7 +1042,6 @@ function layout({ title, description, path, ogType = 'website', ogImage = '', ar
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="google-site-verification" content="UqshzzuCgZVhRdVyE8HdU96yZw1hMI8SbgJ8Ii1Tnuw">
-<!-- lv:20261108e -->
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
 <link rel="canonical" href="${esc(canonical)}">
