@@ -236,6 +236,18 @@ const REGION_FIX_2026 = {
   'losing-chaffee-county-sheriff-candidate-pays-4-500-for-election-recount-3gw5c': 'Mountains',
 };
 
+// The three inaugural Colorado Explained articles were reviewed on
+// 2026-11-08 (the date the newsroom holds), but the upload pipeline
+// shifted the date one day back in transit, so the live store holds
+// 2026-11-07. Both backends restore the recorded date, only while
+// the shifted value is what's stored.
+const EXPLAINED_REVIEW_FIX = {
+  'how-colorados-tabor-law-actually-works': '2026-11-08',
+  'who-owns-colorados-water': '2026-11-08',
+  'why-are-colorado-property-taxes-so-complicated': '2026-11-08',
+};
+const EXPLAINED_REVIEW_SHIFTED = '2026-11-07';
+
 // Stories the newsroom had already flagged breaking before the
 // live store kept the flag (owner's breaking ticker, 2026-11-08):
 // the governor's race call, the Lakewood shooting and the income
@@ -675,6 +687,11 @@ class FileStore {
         a.region = regionFix;
         recategorized = true;
       }
+      const reviewFix = EXPLAINED_REVIEW_FIX[a.slug];
+      if (reviewFix && a.lastReviewed === EXPLAINED_REVIEW_SHIFTED) {
+        a.lastReviewed = reviewFix;
+        recategorized = true;
+      }
     }
     if (recategorized) this._save();
     // Breaking-flag backfill (see BREAKING_BACKFILL_SLUGS above):
@@ -974,6 +991,16 @@ class PgStore {
         `UPDATE articles SET region = $2
           WHERE slug = $1 AND (region IS NULL OR region = '')`,
         [slug, region]
+      );
+    }
+    // Restore the recorded review date on the inaugural explainers
+    // (see EXPLAINED_REVIEW_FIX above): lands only while the
+    // shifted value is what's stored.
+    for (const [slug, reviewed] of Object.entries(EXPLAINED_REVIEW_FIX)) {
+      await this.pool.query(
+        `UPDATE articles SET last_reviewed = $2
+          WHERE slug = $1 AND last_reviewed = $3`,
+        [slug, reviewed, EXPLAINED_REVIEW_SHIFTED]
       );
     }
     // Breaking-flag backfill (see BREAKING_BACKFILL_SLUGS above):
