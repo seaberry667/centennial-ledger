@@ -384,7 +384,7 @@ function adsenseIns(slotId, format) {
  */
 function adSlot(label) {
   if (ADSENSE_SLOTS.incontent) {
-    return '<div class="ad-slot">' + adsenseIns(ADSENSE_SLOTS.incontent, 'auto') + '</div>';
+    return '<div class="ad-slot ad-incontent">' + adsenseIns(ADSENSE_SLOTS.incontent, 'auto') + '</div>';
   }
   return '<div class="ad-slot ad-placeholder" aria-hidden="true">Advertisement</div>';
 }
@@ -695,6 +695,10 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 .ad-slot.ad-leaderboard{margin:0 0 1.4rem;background:var(--color-ivory);border:1px solid var(--color-border);padding:.4rem}
 .ad-rectangle{background:var(--color-ivory);border:1px solid var(--color-border);text-align:center;padding:1rem;display:flex;flex-direction:column;justify-content:center;min-height:250px}
 .ad-slot.ad-rectangle{margin:0;background:var(--color-ivory);border:1px solid var(--color-border);padding:.4rem;display:block;min-height:0}
+/* In-content slot gets the same house dress as the leaderboard and
+   rectangle (owner flagged the bare slot, 2026-11-08): without it the
+   unfilled unit rendered as an undelineated blank void mid-article. */
+.ad-slot.ad-incontent{background:var(--color-ivory);border:1px solid var(--color-border);padding:.4rem}
 /* ---------- Homepage two-column layout ---------- */
 .home-layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:0 2.2rem;align-items:start}
 .home-features{grid-column:1;grid-row:1}
