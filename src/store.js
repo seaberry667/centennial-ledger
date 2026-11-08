@@ -249,6 +249,25 @@ const EXPLAINED_REVIEW_FIX = {
 // The shifted value may be stored bare or with a time attached.
 const EXPLAINED_REVIEW_SHIFTED = '2026-11-07';
 
+// Owner-ordered backdates (2026-11-08): the first two Colorado
+// Explained articles move to Nov 3 and Nov 6 — publication date
+// and last-reviewed date together, so each piece reads
+// consistently. Both backends apply only while the stored
+// publication date is still Nov 8.
+const BACKDATE_EXPLAINED_2026 = {
+  'how-colorados-tabor-law-actually-works': { publishedAt: '2026-11-03T17:00:00.000Z', lastReviewed: '2026-11-03' },
+  'who-owns-colorados-water': { publishedAt: '2026-11-06T17:00:00.000Z', lastReviewed: '2026-11-06' },
+};
+// Owner-ordered restructure (2026-11-08): Part Two of the
+// Engineered series was published in podcast-script form — a run
+// of one-sentence paragraphs. These sections keep the owner's
+// sentences and voice, merged into developed op-ed paragraphs
+// under his original headings. Both backends swap them in only
+// while the stored article still has the fragment structure
+// (more than 40 paragraphs in total).
+const PART_TWO_SLUG = 'colorado-wasnt-just-flipped-it-was-engineered-part-two';
+const PART_TWO_SECTIONS = [{"heading": "Part Two: The Progressive Paradise Comes With a Bill", "lead": "For years, Colorado Democrats have presented themselves as the party of competent government, affordability, environmental responsibility, and public investment. They've had ample opportunity to demonstrate those virtues.", "paragraphs": ["And after years of Democratic control, ordinary Coloradans have an increasingly reasonable question: **If this is what successful progressive government looks like, why is everything so expensive, and why does the state keep running into fiscal trouble?** Let's examine the results."]}, {"heading": "The $46.8 Billion Budget That Still Wasn't Enough", "lead": "In May 2026, Gov. Jared Polis signed Colorado's budget for the 2026–27 fiscal year. It exceeded **$46.8 billion**, nearly $4 billion larger than the previous year's budget.", "paragraphs": ["That sounds like a substantial amount of money. Apparently, it wasn't substantial enough. Lawmakers also faced an approximately **$1.5 billion shortfall** between available resources and the projected cost of maintaining programs at existing levels, and the state reduced spending in several areas, including a 2% reimbursement-rate cut for many Medicaid providers.", "To appreciate the absurdity, consider the political optics. The state adopts a budget approaching $47 billion, substantially larger than the previous year's, while simultaneously announcing painful fiscal cuts.", "There is an explanation: total-funds spending includes federal money and other dedicated revenue, while the shortfall concerned resources available for particular obligations. Rising Medicaid costs were an important driver. But understanding the accounting doesn't eliminate the central problem: Colorado's existing government commitments had become expensive enough that lawmakers struggled to finance them.", "Colorado Public Radio reported that Medicaid costs had increased approximately 86% since the 2018–19 fiscal year, substantially faster than growth in the state's TABOR revenue cap over that period. Healthcare costs, enrollment, benefit decisions, and federal policy all contributed.", "This is precisely why fiscal conservatives worry about expanding recurring government obligations. A program can be popular. It can have sympathetic beneficiaries. It can even accomplish something useful. None of that guarantees the state can afford its growing costs indefinitely.", "Yet Colorado's political culture has developed an unfortunate habit of treating every proposed expansion of government as an expression of compassion and every question about its cost as a suspicious ideological deficiency. Eventually, the arithmetic gets a vote. And arithmetic has no interest in anybody's political intentions.", "The 2026 budget was not proof that Colorado had run out of money. It was evidence that maintaining existing commitments had become substantially more difficult. After years of Democratic government, that's not a footnote. It's a governing record."]}, {"heading": "Colorado's Housing Crisis: Congratulations, Nobody Can Afford Your Paradise", "lead": "Colorado is an extraordinarily beautiful state. Unfortunately, living here increasingly requires an extraordinarily beautiful bank account.", "paragraphs": ["The Colorado Housing and Finance Authority's 2025 report documented the scale of the affordability problem. Between 2000 and 2023, Colorado's median rent increased from $1,188 to $1,824 in inflation-adjusted 2023 dollars. That's a **53.5% increase even after accounting for inflation**. The report also placed Colorado ninth nationally in estimated housing underproduction. In other words, Colorado hasn't built enough homes to satisfy demand, and residents have paid for that failure through higher housing costs.", "This didn't begin with Jared Polis, and it certainly wasn't created by four donors sitting around a table in 2004. But Colorado's governing class has had plenty of time to recognize the problem. Instead, housing policy has often combined new regulations, subsidies, tenant protections, affordability programs, and increasingly elaborate state intervention.", "Consider House Bill 24-1098. Signed in April 2024, the law established new requirements limiting when residential landlords can evict tenants. It includes specific permitted causes and exceptions. Supporters portray it as protection from arbitrary displacement. But property owners have legitimate concerns about the growing legal and administrative obligations of providing rental housing. Those obligations deserve consideration alongside the interests of tenants.", "Or consider House Bill 24-1313, also enacted in 2024. That legislation directed certain transit-oriented communities to increase their zoning capacity for residential development. It was, at least in part, an acknowledgment that Colorado needs more housing. Fair enough. But after years of deteriorating affordability, the state was still working through the rather elementary realization that making it easier to build homes might help alleviate a shortage of homes.", "Housing prices are influenced by national interest rates, construction costs, population growth, land availability, and local zoning. No honest analysis can assign every increase to Democratic legislation. That doesn't excuse the governing majority from explaining how its policies affect housing supply and costs.", "The question isn't whether Democrats have produced an impressive collection of housing initiatives. It's whether those initiatives have made housing meaningfully more attainable for ordinary working families. A policy announcement is not a house. A grant program is not a house. A press conference describing the urgent need for more housing is, remarkably, also not a house. Colorado needs more actual homes."]}, {"heading": "Proposition HH: When Voters Read the Fine Print", "lead": "One of the clearest examples of the divide between Colorado's governing establishment and its electorate came in 2023. Gov. Polis and legislative Democrats championed Proposition HH.", "paragraphs": ["The measure was promoted as property-tax relief. And yes, it would have reduced certain property-tax obligations. But it also would have changed Colorado's TABOR revenue limits, allowing the state to retain additional money that otherwise could have been returned to taxpayers. According to *The Colorado Sun*, the proposal could have permitted the government to spend as much as $2.2 billion in additional revenue annually by 2032. Most of that additional revenue was intended for K–12 education.", "This was a complicated arrangement to present to voters as tax relief. Colorado homeowners were dealing with rising property taxes. The proposed solution involved providing some relief while giving state government considerably more long-term financial flexibility.", "Voters weren't impressed. On November 7, 2023, approximately **60% voted against Proposition HH**. The measure failed even with support from the Democratic governor and legislative leadership.", "Polis subsequently acknowledged that the proposal had become too complicated. A fair observation. But complexity wasn't the entire objection. The measure asked voters to accept a longer-term increase in the state's capacity to retain and spend tax revenue in exchange for a particular property-tax arrangement. Many voters decided that was a poor bargain.", "That election demonstrated something important about Colorado's political landscape. Even in a state where Democrats comfortably controlled the legislature, voters could reject the governing majority's fiscal priorities when given a direct choice. The people who built Colorado's progressive political apparatus were exceptionally good at winning elections. Fortunately, they never acquired a monopoly on the ballot box."]}, {"heading": "Energy Policy: Regulate First, Ask About Costs Later", "lead": "Colorado's progressive transformation has also significantly affected energy policy. In 2019, Democrats enacted Senate Bill 181, a major restructuring of oil-and-gas regulation. The legislation shifted the regulatory framework toward prioritizing public health, safety, welfare, and environmental protection, while expanding local governments' authority over aspects of development. That same year, House Bill 1261 established ambitious statewide greenhouse-gas-reduction targets. Neither law was merely symbolic. They changed the framework within which energy producers, regulators, utilities, and other businesses operate.", "paragraphs": ["Environmental protection is a legitimate government responsibility. So is providing an environment in which businesses can invest, employ workers, and produce essential goods at competitive prices. Colorado's energy industry supports jobs, local tax bases, royalty payments, and economic activity. Oil and natural gas are also used in industries and households across the political spectrum—including by people who support policies intended to restrict their production. That creates an obvious tension.", "Government can impose increasingly ambitious requirements on energy production, but it cannot simply wish away the economic consequences of complying with those requirements. Some environmental regulations deliver benefits worth their costs. Others may impose substantial burdens for modest gains. The correct question is whether particular policies deliver measurable results that justify those burdens.", "But Colorado's governing majority has repeatedly shown considerable enthusiasm for additional regulatory authority. It should be equally enthusiastic about demonstrating that the resulting obligations are proportionate, effective, and affordable. A climate target is not an economic analysis. And a press release announcing an ambitious goal does not make its implementation free."]}];
+
 // Stories the newsroom had already flagged breaking before the
 // live store kept the flag (owner's breaking ticker, 2026-11-08):
 // the governor's race call, the Lakewood shooting and the income
@@ -696,8 +715,29 @@ class FileStore {
         a.lastReviewed = reviewFix;
         recategorized = true;
       }
+      const backdate = BACKDATE_EXPLAINED_2026[a.slug];
+      if (backdate && String(a.publishedAt || '').startsWith('2026-11-08')) {
+        a.publishedAt = backdate.publishedAt;
+        a.lastReviewed = backdate.lastReviewed;
+        recategorized = true;
+      }
     }
     if (recategorized) this._save();
+    // Part Two restructure (see PART_TWO_SECTIONS above): swap the
+    // fragment-structured sections for the owner's restructured
+    // text, only while the stored article still has the fragment
+    // structure.
+    const partTwo = this.data.articles.find((a) => a.slug === PART_TWO_SLUG);
+    if (partTwo) {
+      const paraCount = (partTwo.sections || []).reduce(
+        (n, s) => n + 1 + ((s && s.paragraphs) || []).length,
+        0
+      );
+      if (paraCount > 40) {
+        partTwo.sections = JSON.parse(JSON.stringify(PART_TWO_SECTIONS));
+        this._save();
+      }
+    }
     // Breaking-flag backfill (see BREAKING_BACKFILL_SLUGS above):
     // set the flag on the stories the newsroom had already marked
     // breaking, only where it is not already set.
@@ -1023,6 +1063,38 @@ class PgStore {
           WHERE slug = $1 AND last_reviewed LIKE $3`,
         [slug, reviewed, EXPLAINED_REVIEW_SHIFTED + '%']
       );
+    }
+    // Owner-ordered backdates (see BACKDATE_EXPLAINED_2026 above):
+    // lands only while the stored publication date is still Nov 8.
+    for (const [slug, target] of Object.entries(BACKDATE_EXPLAINED_2026)) {
+      await this.pool.query(
+        `UPDATE articles SET published_at = $2, last_reviewed = $3
+          WHERE slug = $1 AND published_at::text LIKE '2026-11-08%'`,
+        [slug, target.publishedAt, target.lastReviewed]
+      );
+    }
+    // Part Two restructure (see PART_TWO_SECTIONS above): swap the
+    // sections only while the stored article still has the
+    // fragment structure (more than 40 paragraphs in total).
+    const p2Row = await this.pool.query(
+      'SELECT sections FROM articles WHERE slug = $1',
+      [PART_TWO_SLUG]
+    );
+    if (p2Row.rows.length) {
+      const secs =
+        typeof p2Row.rows[0].sections === 'string'
+          ? JSON.parse(p2Row.rows[0].sections)
+          : p2Row.rows[0].sections || [];
+      const paraCount = secs.reduce(
+        (n, s) => n + 1 + ((s && s.paragraphs) || []).length,
+        0
+      );
+      if (paraCount > 40) {
+        await this.pool.query(
+          'UPDATE articles SET sections = $2 WHERE slug = $1',
+          [PART_TWO_SLUG, JSON.stringify(PART_TWO_SECTIONS)]
+        );
+      }
     }
     // Breaking-flag backfill (see BREAKING_BACKFILL_SLUGS above):
     // lands only while the flag is unset, so later boots change
