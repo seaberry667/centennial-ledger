@@ -198,7 +198,12 @@ app.get('/', async (req, res) => {
   // superseding the 2026-11-02 different-section rule), each shown
   // directly under the last in the same format. All are pulled out
   // of the shared pool so no story appears twice on the front page.
-  const newsPool = articles.filter((a) => a.section !== 'opinion');
+  // Colorado Explained explainers never take the featured spots
+  // either (owner instruction, 2026-11-08): on the homepage they
+  // appear only in their own module below.
+  const newsPool = articles.filter(
+    (a) => a.section !== 'opinion' && !isExplained(a)
+  );
   const lead = newsPool[0] || null;
   const second = newsPool[1] || null;
   const third = newsPool[2] || null;
@@ -218,7 +223,9 @@ app.get('/', async (req, res) => {
   const railGroups = [];
   for (const slug of ['politics', 'business', 'energy-environment', 'education-health', 'colorado-life']) {
     const inSection = await store.listArticles({ section: slug, limit: 6 });
-    const picks = inSection.filter((a) => !featureSlugs.has(a.slug)).slice(0, 2);
+    const picks = inSection
+      .filter((a) => !featureSlugs.has(a.slug) && !isExplained(a))
+      .slice(0, 2);
     if (picks.length) railGroups.push({ section: slug, articles: picks });
   }
   const railTop = railGroups.flatMap((g) => g.articles);
@@ -229,7 +236,9 @@ app.get('/', async (req, res) => {
   const usedSlugs = new Set(
     [...featureSlugs, ...railTop.map((a) => a.slug)]
   );
-  const latestRow = rest.filter((a) => !usedSlugs.has(a.slug)).slice(0, 3);
+  const latestRow = rest
+    .filter((a) => !usedSlugs.has(a.slug) && !isExplained(a))
+    .slice(0, 3);
   // Local & Statewide (design addendum): the eight most recently
   // published Local stories across all eight regions, newest first.
   const localStories = await store.listArticles({ section: 'local', limit: 8 });
