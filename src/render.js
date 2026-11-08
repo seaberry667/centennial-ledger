@@ -408,11 +408,10 @@ function cardGridWithAd(articles) {
 
 /**
  * Breaking news ticker (owner request, 2026-11-08): a red bar
- * directly under the nav on every page, scrolling the headlines
- * the newsroom has flagged breaking. The server refreshes the
- * contents per request via setTickerItems; when nothing is
- * flagged breaking it supplies the newest headlines and the chip
- * reads THE LATEST instead. Items are { slug, headline } pairs.
+ * directly under the top (weather) bar on every page, scrolling
+ * the six most recent story headlines, newest first — the server
+ * refreshes the contents per request via setTickerItems. Items
+ * are { slug, headline } pairs; the chip reads BREAKING.
  */
 let tickerState = { label: 'BREAKING', items: [] };
 function setTickerItems(state) {
@@ -429,14 +428,12 @@ function tickerHtml() {
     .slice(0, 6);
   if (!items.length) return '';
   const label = tickerState.label === 'LATEST' ? 'THE LATEST' : 'BREAKING';
-  const group =
-    items
-      .map(
-        (i) =>
-          '<a href="/article/' + esc(i.slug) + '">' + esc(i.headline) + '</a>'
-      )
-      .join('<span class="ticker-sep" aria-hidden="true">&bull;</span>') +
-    '<span class="ticker-sep" aria-hidden="true">&bull;</span>';
+  const group = items
+    .map(
+      (i) =>
+        '<a href="/article/' + esc(i.slug) + '">' + esc(i.headline) + '</a>'
+    )
+    .join('');
   const duration = Math.max(24, items.length * 9);
   return (
     '<div class="ticker" aria-label="' +
@@ -605,15 +602,15 @@ nav.main li.nav-search{margin-left:auto;display:flex;align-items:center}
 .nav-search-form{display:flex;align-items:center;gap:.35rem}
 .nav-search-form input[type=search]{padding:.38rem .6rem;border:1px solid #b9b2a0;border-radius:3px;font-size:.95rem;font-family:var(--font-body);width:170px;background:#fff}
 .nav-search-form button{background:none;border:0;cursor:pointer;color:#555;padding:.15rem;display:flex;align-items:center}
-/* Breaking news ticker: red bar under the nav, headlines scrolling
+/* Breaking news ticker: red bar under the top (weather) bar, headlines scrolling
    left; the track is clipped by its viewport so the page itself
    never scrolls sideways. Pauses on hover. */
-.ticker{display:flex;align-items:stretch;background:var(--color-red);color:#fff;overflow:hidden;max-width:100%}
-.ticker-chip{background:var(--color-navy);color:#fff;font-family:var(--font-ui);font-weight:700;font-size:.78rem;letter-spacing:.14em;display:flex;align-items:center;padding:.45rem .8rem;flex:0 0 auto;position:relative;z-index:1}
+.ticker{display:flex;align-items:center;gap:.9rem;background:var(--color-red);color:#fff;overflow:hidden;max-width:100%;font-family:var(--font-ui);padding:.35rem .6rem}
+.ticker-chip{background:#fff;color:var(--color-red);font-family:var(--font-ui);font-weight:700;font-size:.78rem;letter-spacing:.12em;padding:.2rem .55rem;flex:0 0 auto;position:relative;z-index:1}
 .ticker-viewport{overflow:hidden;flex:1 1 auto;display:flex;align-items:center}
 .ticker-track{display:inline-flex;white-space:nowrap;animation-name:ticker-scroll;animation-timing-function:linear;animation-iteration-count:infinite;will-change:transform}
 .ticker-group{display:inline-flex;align-items:center;gap:2.5rem;padding-right:2.5rem}
-.ticker-track a{color:#fff;text-decoration:none;font-weight:600;font-size:.95rem}
+.ticker-track a{color:#fff;text-decoration:none;font-weight:600;font-size:.95rem;font-family:var(--font-ui)}
 .ticker-track a:hover{text-decoration:underline}
 .ticker-sep{opacity:.7}
 .ticker:hover .ticker-track{animation-play-state:paused}
@@ -930,9 +927,14 @@ function layout({ title, description, path, ogType = 'website', ogImage = '', ar
   // latest-news destination. The seven categories stand alone.
   const navItems =
     SECTIONS.map((s) => {
+      // Nav-only short label (owner instruction, 2026-11-08): the
+      // Local section is labeled "Local" in the nav bar; its full
+      // name "Local News" still stands everywhere else (footer,
+      // page titles, kickers).
+      const label = s.slug === 'local' ? 'Local' : s.name;
       const link =
         '<a href="/section/' + s.slug + '"' +
-        (activeNav === s.slug ? ' class="active"' : '') + '>' + s.name + '</a>';
+        (activeNav === s.slug ? ' class="active"' : '') + '>' + label + '</a>';
       return s.slug === 'local'
         ? '<li class="has-dropdown">' + link +
           // Mobile only (hidden on desktop): a separate chevron
@@ -989,6 +991,7 @@ ${adsense}
   <span class="topbar-left">${esc(fmtDate(new Date().toISOString()).toUpperCase())} | ${topbarSegment()}</span>
   <span class="topbar-right"><a href="/signin">Sign In</a><a class="btn-subscribe" href="/subscribe">Subscribe</a></span>
 </div>
+${tickerHtml()}
 <header class="masthead">
   <!-- Masthead banner: the owner's supplied artwork — the engraved
        lettering flanked by both mountain engravings in a single
@@ -998,7 +1001,6 @@ ${adsense}
   <div class="tagline">${TAGLINE}</div>
 </header>
 <nav class="main"><button class="nav-toggle" type="button" aria-expanded="false" aria-controls="main-nav-list">Menu <svg class="nav-toggle-caret" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button><ul class="nav-list" id="main-nav-list">${navItems}</ul></nav>
-${tickerHtml()}
 <main class="wrap">
 ${body}
 </main>

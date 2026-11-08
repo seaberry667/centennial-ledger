@@ -142,10 +142,10 @@ app.post('/api/ingest', async (req, res) => {
 
 // Breaking news ticker (owner request, 2026-11-08): before any
 // public page renders, refresh the ticker contents from the store
-// — the stories the newsroom has flagged breaking, newest first;
-// when none are flagged, the newest headlines under a THE LATEST
-// chip, so the bar is never empty. Satire never appears in it.
-// The ticker is decorative: a failure here must never block a page.
+// — the six most recent stories, newest first (owner instruction,
+// 2026-11-08). Satire never appears in it (standing rule: cartoons
+// are never listed among the site's article listings). The ticker
+// is decorative: a failure here must never block a page.
 app.use(async (req, res, next) => {
   if (
     req.method !== 'GET' ||
@@ -160,18 +160,10 @@ app.use(async (req, res, next) => {
     const pool = (await store.listArticles({ limit: 60 })).filter(
       (a) => !isSatire(a)
     );
-    const breaking = pool.filter((a) => a.breaking === true);
-    if (breaking.length) {
-      render.setTickerItems({
-        label: 'BREAKING',
-        items: breaking.slice(0, 6).map((a) => ({ slug: a.slug, headline: a.headline })),
-      });
-    } else {
-      render.setTickerItems({
-        label: 'LATEST',
-        items: pool.slice(0, 6).map((a) => ({ slug: a.slug, headline: a.headline })),
-      });
-    }
+    render.setTickerItems({
+      label: 'BREAKING',
+      items: pool.slice(0, 6).map((a) => ({ slug: a.slug, headline: a.headline })),
+    });
   } catch (err) {
     /* keep the previous ticker contents */
   }
