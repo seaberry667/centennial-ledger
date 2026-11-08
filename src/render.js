@@ -542,8 +542,8 @@ a{color:inherit}
 .tagline::before,.tagline::after{content:"";flex:1 1 0;height:2px;background:var(--color-red)}
 /* ---------- Navigation: white, thin double black rules, serif labels ---------- */
 nav.main{background:#fff;border-top:4px double var(--color-text);border-bottom:4px double var(--color-text);position:relative}
-nav.main ul.nav-list{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:.2rem 1.3rem;list-style:none;margin:0 auto;padding:.5rem 24px;max-width:1200px}
-nav.main a{text-decoration:none;font-family:var(--font-body);font-weight:600;font-size:1rem;letter-spacing:.02em;display:inline-block;padding:.28rem .65rem;border-radius:3px}
+nav.main ul.nav-list{display:flex;justify-content:flex-start;align-items:center;flex-wrap:wrap;gap:.2rem .55rem;list-style:none;margin:0 auto;padding:.5rem 24px;max-width:1200px}
+nav.main a{text-decoration:none;font-family:var(--font-body);font-weight:600;font-size:1rem;letter-spacing:.02em;display:inline-block;padding:.28rem .45rem;border-radius:3px}
 nav.main a.active{background:var(--color-red);color:#fff}
 nav.main a:focus-visible,nav.main button:focus-visible{outline:2px solid var(--color-red);outline-offset:2px}
 .nav-toggle{display:none}
@@ -560,7 +560,7 @@ nav.main ul.dropdown a:hover{background:var(--color-ivory)}
 }
 nav.main li.nav-search{margin-left:auto;display:flex;align-items:center}
 .nav-search-form{display:flex;align-items:center;gap:.35rem}
-.nav-search-form input[type=search]{padding:.38rem .6rem;border:1px solid #b9b2a0;border-radius:3px;font-size:.95rem;font-family:var(--font-body);width:190px;background:#fff}
+.nav-search-form input[type=search]{padding:.38rem .6rem;border:1px solid #b9b2a0;border-radius:3px;font-size:.95rem;font-family:var(--font-body);width:170px;background:#fff}
 .nav-search-form button{background:none;border:0;cursor:pointer;color:#555;padding:.15rem;display:flex;align-items:center}
 /* Mobile navigation (under 768px): the list collapses behind a real
    toggle button, and the Local submenu is collapsed by default and
