@@ -560,6 +560,10 @@ const CSS = `
   --font-headline:"Playfair Display",Georgia,serif;
   --font-body:"Source Serif 4",Georgia,serif;
   --font-ui:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  /* Even-stroke sans for the top bar and the breaking ticker
+     (owner instruction, 2026-11-08): Inter, whose strokes are a
+     near-uniform weight, instead of the varied-stroke system sans. */
+  --font-bar:"Inter",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   /* Legacy aliases, kept so older rules resolve to the spec palette. */
   --navy:var(--color-navy);--red:var(--color-red);--ink:var(--color-text);
   --paper:var(--color-bg);--rule:var(--color-border)
@@ -568,7 +572,7 @@ const CSS = `
 body{margin:0;background:var(--color-bg);color:var(--color-text);font-family:var(--font-body);line-height:1.55}
 a{color:inherit}
 /* ---------- Top utility bar: navy, gold accent line at the bottom ---------- */
-.topbar{background:var(--color-navy);color:#e8e4d8;font-family:var(--font-ui);font-size:.78rem;min-height:34px;padding:.3rem 1rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;border-bottom:1px solid var(--color-gold)}
+.topbar{background:var(--color-navy);color:#e8e4d8;font-family:var(--font-bar);font-size:.78rem;min-height:34px;padding:.3rem 1rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;border-bottom:1px solid var(--color-gold)}
 .topbar .center{font-style:italic;font-family:var(--font-body);flex:1;text-align:center}
 .topbar .topbar-left{letter-spacing:.05em;font-weight:bold;white-space:nowrap}
 .topbar .topbar-right{display:flex;align-items:center;gap:.9rem;white-space:nowrap}
@@ -605,12 +609,12 @@ nav.main li.nav-search{margin-left:auto;display:flex;align-items:center}
 /* Breaking news ticker: red bar under the top (weather) bar, headlines scrolling
    left; the track is clipped by its viewport so the page itself
    never scrolls sideways. Pauses on hover. */
-.ticker{display:flex;align-items:center;gap:.9rem;background:var(--color-red);color:#fff;overflow:hidden;max-width:100%;font-family:var(--font-ui);padding:.35rem .6rem}
-.ticker-chip{background:#fff;color:var(--color-red);font-family:var(--font-ui);font-weight:700;font-size:.78rem;letter-spacing:.12em;padding:.2rem .55rem;flex:0 0 auto;position:relative;z-index:1}
+.ticker{display:flex;align-items:center;gap:.9rem;background:var(--color-red);color:#fff;overflow:hidden;max-width:100%;font-family:var(--font-bar);padding:.35rem .6rem}
+.ticker-chip{background:#fff;color:var(--color-red);font-family:var(--font-bar);font-weight:700;font-size:.78rem;letter-spacing:.12em;padding:.2rem .55rem;flex:0 0 auto;position:relative;z-index:1}
 .ticker-viewport{overflow:hidden;flex:1 1 auto;display:flex;align-items:center}
 .ticker-track{display:inline-flex;white-space:nowrap;animation-name:ticker-scroll;animation-timing-function:linear;animation-iteration-count:infinite;will-change:transform}
 .ticker-group{display:inline-flex;align-items:center;gap:2.5rem;padding-right:2.5rem}
-.ticker-track a{color:#fff;text-decoration:none;font-weight:600;font-size:.95rem;font-family:var(--font-ui)}
+.ticker-track a{color:#fff;text-decoration:none;font-weight:600;font-size:.95rem;font-family:var(--font-bar)}
 .ticker-track a:hover{text-decoration:underline}
 .ticker-sep{opacity:.7}
 .ticker:hover .ticker-track{animation-play-state:paused}
@@ -981,7 +985,7 @@ ${ogImage ? '<meta name="twitter:image" content="' + esc(ogImage) + '">\n' : ''}
 <meta name="twitter:description" content="${esc(description)}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400;1,8..60,600;1,8..60,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Playfair+Display:wght@600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400;1,8..60,600;1,8..60,700&display=swap" rel="stylesheet">
 <style>${CSS}</style>
 ${ld}
 ${adsense}
@@ -1747,8 +1751,8 @@ function sectionPage({ section, articles }) {
   // No small red section-name label above the title (owner
   // instruction, 2026-11-03): the H1 alone heads the page.
   const body =
-    '<h1 class="headline" style="font-size:2.4rem">' + esc(name) + '</h1>' +
     leaderboardAdSlot() +
+    '<h1 class="headline" style="font-size:2.4rem">' + esc(name) + '</h1>' +
     (articles.length
       ? listing
       : '<p>No stories in this section yet. Check back after the next edition.</p>') +
@@ -1802,9 +1806,9 @@ function collectionJsonLd(name, path, articles) {
 function localHubPage({ articles }) {
   // Same no-kicker rule as the section pages (owner, 2026-11-03).
   const body =
+    leaderboardAdSlot() +
     '<h1 class="headline" style="font-size:2.4rem">Local News</h1>' +
     regionNavList('') +
-    leaderboardAdSlot() +
     (articles.length
       ? cardGridWithAd(articles)
       : '<p>No local stories yet. Check back after the next edition.</p>') +
