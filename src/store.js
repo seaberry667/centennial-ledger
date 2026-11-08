@@ -236,6 +236,19 @@ const REGION_FIX_2026 = {
   'losing-chaffee-county-sheriff-candidate-pays-4-500-for-election-recount-3gw5c': 'Mountains',
 };
 
+// Stories the newsroom had already flagged breaking before the
+// live store kept the flag (owner's breaking ticker, 2026-11-08):
+// the governor's race call, the Lakewood shooting and the income
+// tax result. Both backends set breaking=true for these slugs at
+// boot, only where the flag is not already set, so the ticker
+// launches with the same items the newsroom shows. Future flags
+// arrive through ingest (markBreaking / insert).
+const BREAKING_BACKFILL_SLUGS = [
+  'polls-close-phil-weiser-wins-race-for-colorado-governor-sud7h',
+  'lakewood-police-officer-killed-three-wounded-in-shooting-near-bus-m45e7',
+  'colorado-voters-head-toward-higher-income-taxes-on-top-earners-cut-for-most-3edtp',
+];
+
 /** Slug for a stored free-text region value, e.g. "Northern Colorado" -> "northern-colorado". */
 function regionSlug(name) {
   return slugify(name);
@@ -524,6 +537,10 @@ function normalizeArticle(raw) {
     raw.format === 'satire' || isSatireInput(raw.section) || isSatireInput(raw.format)
       ? 'satire'
       : '';
+  // Breaking flag (owner request, 2026-11-08): the newsroom marks
+  // developing stories breaking; the live site keeps the flag so
+  // the breaking news ticker can lead with them.
+  const breaking = raw.isBreaking === true || raw.breaking === true;
 
   const out = {
     slug,
@@ -534,6 +551,7 @@ function normalizeArticle(raw) {
     modifiedAt,
     section,
     format,
+    breaking,
     topicLabel: String(raw.topicLabel || raw.topic_label || '').trim(),
     region: String(raw.region || '').trim(),
     spotlight,
@@ -651,6 +669,17 @@ class FileStore {
       }
     }
     if (recategorized) this._save();
+    // Breaking-flag backfill (see BREAKING_BACKFILL_SLUGS above):
+    // set the flag on the stories the newsroom had already marked
+    // breaking, only where it is not already set.
+    let breakingFilled = false;
+    for (const a of this.data.articles) {
+      if (BREAKING_BACKFILL_SLUGS.includes(a.slug) && a.breaking !== true) {
+        a.breaking = true;
+        breakingFilled = true;
+      }
+    }
+    if (breakingFilled) this._save();
     // One-time, idempotent schoolmistress cartoon blurb
     // replacement (see SCHOOLMISTRESS_BLURB_UPDATE above).
     const mistress = this.data.articles.find(
@@ -713,6 +742,21 @@ class FileStore {
     if (!existing) return false;
     if (existing.image && existing.image.url) return false;
     existing.image = img;
+    this._save();
+    return true;
+  }
+
+  /**
+   * Breaking-flag fill (2026-11-08): when the newsroom flags an
+   * already-live story as breaking, the ingest handler calls this
+   * so the live record gains the flag. Sets ONLY the breaking
+   * field, and only from false to true; returns true when the
+   * record changed.
+   */
+  async markBreaking(slug) {
+    const existing = this.data.articles.find((a) => a.slug === slug);
+    if (!existing || existing.breaking === true) return false;
+    existing.breaking = true;
     this._save();
     return true;
   }
@@ -855,6 +899,7 @@ class PgStore {
         sources JSONB DEFAULT '[]'::jsonb,
         seo_title TEXT DEFAULT '',
         meta_description TEXT DEFAULT '',
+        breaking BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMPTZ DEFAULT now()
       )`);
     await this.pool.query(`
@@ -881,6 +926,12 @@ class PgStore {
     await this.pool.query(
       "ALTER TABLE articles ADD COLUMN IF NOT EXISTS format TEXT DEFAULT ''"
     );
+    // Migration for databases created before the breaking news
+    // ticker (2026-11-08): the flag the newsroom sets on developing
+    // stories, kept so the ticker can lead with them.
+    await this.pool.query(
+      'ALTER TABLE articles ADD COLUMN IF NOT EXISTS breaking BOOLEAN DEFAULT FALSE'
+    );
     await this.pool.query(
       'CREATE INDEX IF NOT EXISTS idx_articles_section ON articles(section)'
     );
@@ -906,6 +957,14 @@ class PgStore {
         [slug, region]
       );
     }
+    // Breaking-flag backfill (see BREAKING_BACKFILL_SLUGS above):
+    // lands only while the flag is unset, so later boots change
+    // nothing.
+    await this.pool.query(
+      `UPDATE articles SET breaking = TRUE
+        WHERE slug = ANY($1) AND COALESCE(breaking, FALSE) = FALSE`,
+      [BREAKING_BACKFILL_SLUGS]
+    );
     // Same one-time, idempotent Opinion body cleanup as the file
     // store's (owner instruction, 2026-11-03): strip bracketed
     // citation markers from stored Opinion bodies and drop any
@@ -1054,6 +1113,7 @@ class PgStore {
         : new Date(r.published_at).toISOString(),
       section: r.section,
       format: r.format || '',
+      breaking: r.breaking === true,
       topicLabel: r.topic_label || '',
       region: r.region || '',
       spotlight: r.spotlight || null,
@@ -1074,8 +1134,8 @@ class PgStore {
     const res = await this.pool.query(
       `INSERT INTO articles
          (slug, headline, dek, byline, published_at, modified_at, section, format, topic_label, region,
-          spotlight, sections, why_it_matters, image, source_name, source_url, sources, seo_title, meta_description)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)
+          spotlight, sections, why_it_matters, image, source_name, source_url, sources, seo_title, meta_description, breaking)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)
        ON CONFLICT (slug) DO NOTHING
        RETURNING slug`,
       [
@@ -1084,9 +1144,25 @@ class PgStore {
         a.region, a.spotlight, JSON.stringify(a.sections), a.whyItMatters,
         a.image ? JSON.stringify(a.image) : null,
         a.sourceName, a.sourceUrl, JSON.stringify(a.sources || []), a.seoTitle, a.metaDescription,
+        a.breaking === true,
       ]
     );
     return res.rowCount > 0 ? 'inserted' : 'skipped';
+  }
+
+  /**
+   * Same contract as the file store's markBreaking: set ONLY the
+   * breaking flag, only from false to true. The WHERE clause makes
+   * the check-and-set atomic. Returns true when a row changed.
+   */
+  async markBreaking(slug) {
+    const res = await this.pool.query(
+      `UPDATE articles SET breaking = TRUE
+        WHERE slug = $1 AND COALESCE(breaking, FALSE) = FALSE
+        RETURNING slug`,
+      [slug]
+    );
+    return res.rowCount > 0;
   }
 
   /**

@@ -118,6 +118,12 @@ app.post('/api/ingest', async (req, res) => {
       sourced += 1;
       filled = true;
     }
+    // Breaking-flag fill (2026-11-08): a story the newsroom flags
+    // breaking after it is already live gains the flag, so the
+    // breaking news ticker can pick it up.
+    if (article.breaking && (await store.markBreaking(article.slug))) {
+      filled = true;
+    }
     // Opinion pieces: the newsroom's restructured list replaces the
     // stored one whenever it differs (see the route comment above).
     if (
@@ -134,6 +140,44 @@ app.post('/api/ingest', async (req, res) => {
 
 /* --------------------------- Public pages ------------------------- */
 
+// Breaking news ticker (owner request, 2026-11-08): before any
+// public page renders, refresh the ticker contents from the store
+// — the stories the newsroom has flagged breaking, newest first;
+// when none are flagged, the newest headlines under a THE LATEST
+// chip, so the bar is never empty. Satire never appears in it.
+// The ticker is decorative: a failure here must never block a page.
+app.use(async (req, res, next) => {
+  if (
+    req.method !== 'GET' ||
+    req.path.startsWith('/api/') ||
+    req.path.startsWith('/img/') ||
+    req.path.endsWith('.xml') ||
+    req.path.endsWith('.txt')
+  ) {
+    return next();
+  }
+  try {
+    const pool = (await store.listArticles({ limit: 60 })).filter(
+      (a) => !isSatire(a)
+    );
+    const breaking = pool.filter((a) => a.breaking === true);
+    if (breaking.length) {
+      render.setTickerItems({
+        label: 'BREAKING',
+        items: breaking.slice(0, 6).map((a) => ({ slug: a.slug, headline: a.headline })),
+      });
+    } else {
+      render.setTickerItems({
+        label: 'LATEST',
+        items: pool.slice(0, 6).map((a) => ({ slug: a.slug, headline: a.headline })),
+      });
+    }
+  } catch (err) {
+    /* keep the previous ticker contents */
+  }
+  next();
+});
+
 app.get('/', async (req, res) => {
   // Fetch 32: the lead, second and third features, and the pool the
   // rail rows and Latest cards draw from. (The per-section rail picks
@@ -149,28 +193,15 @@ app.get('/', async (req, res) => {
   // news only: Opinion pieces never take them (owner instruction,
   // 2026-11-02). Opinion reaches the homepage through the Editorial
   // Desk strip below, and Satire is already filtered out of the pool
-  // above. The lead is the newest news story; the second feature is
-  // the most recent news story from a different section than the
-  // lead's, and the third is the most recent from a section
-  // different from both (owner instruction, 2026-11-02: three
-  // features), each shown directly under the last in the same
-  // format. All are pulled out of the shared pool so no story
-  // appears twice on the front page. A feature is null when no
-  // different-section story exists for its spot (the homepage then
-  // renders the features it has, exactly as before).
+  // above. The features are simply the three most recent news
+  // stories, newest first (owner instruction, 2026-11-08,
+  // superseding the 2026-11-02 different-section rule), each shown
+  // directly under the last in the same format. All are pulled out
+  // of the shared pool so no story appears twice on the front page.
   const newsPool = articles.filter((a) => a.section !== 'opinion');
   const lead = newsPool[0] || null;
-  let second = null;
-  let third = null;
-  if (lead) {
-    second = newsPool.find((a) => a.section !== lead.section) || null;
-    if (second) {
-      third =
-        newsPool.find(
-          (a) => a.section !== lead.section && a.section !== second.section
-        ) || null;
-    }
-  }
+  const second = newsPool[1] || null;
+  const third = newsPool[2] || null;
   const featuredSlugs = new Set(
     [lead, second, third].filter(Boolean).map((a) => a.slug)
   );

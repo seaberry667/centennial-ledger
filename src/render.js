@@ -407,6 +407,49 @@ function cardGridWithAd(articles) {
 }
 
 /**
+ * Breaking news ticker (owner request, 2026-11-08): a red bar
+ * directly under the nav on every page, scrolling the headlines
+ * the newsroom has flagged breaking. The server refreshes the
+ * contents per request via setTickerItems; when nothing is
+ * flagged breaking it supplies the newest headlines and the chip
+ * reads THE LATEST instead. Items are { slug, headline } pairs.
+ */
+let tickerState = { label: 'BREAKING', items: [] };
+function setTickerItems(state) {
+  if (state && Array.isArray(state.items)) {
+    tickerState = {
+      label: state.label === 'LATEST' ? 'LATEST' : 'BREAKING',
+      items: state.items,
+    };
+  }
+}
+function tickerHtml() {
+  const items = (tickerState.items || [])
+    .filter((i) => i && i.slug && i.headline)
+    .slice(0, 6);
+  if (!items.length) return '';
+  const label = tickerState.label === 'LATEST' ? 'THE LATEST' : 'BREAKING';
+  const group =
+    items
+      .map(
+        (i) =>
+          '<a href="/article/' + esc(i.slug) + '">' + esc(i.headline) + '</a>'
+      )
+      .join('<span class="ticker-sep" aria-hidden="true">&bull;</span>') +
+    '<span class="ticker-sep" aria-hidden="true">&bull;</span>';
+  const duration = Math.max(24, items.length * 9);
+  return (
+    '<div class="ticker" aria-label="' +
+    (label === 'BREAKING' ? 'Breaking news' : 'The latest news') +
+    '"><span class="ticker-chip">' + label + '</span>' +
+    '<div class="ticker-viewport"><div class="ticker-track" style="animation-duration:' +
+    duration +
+    's"><span class="ticker-group">' + group + '</span>' +
+    '<span class="ticker-group" aria-hidden="true">' + group + '</span></div></div></div>'
+  );
+}
+
+/**
  * "Local & Statewide" sidebar box, shared by the homepage and article
  * pages (design addendum): the most recently published Local stories
  * (all eight regions), newest first, up to eight, with red circular
@@ -562,6 +605,20 @@ nav.main li.nav-search{margin-left:auto;display:flex;align-items:center}
 .nav-search-form{display:flex;align-items:center;gap:.35rem}
 .nav-search-form input[type=search]{padding:.38rem .6rem;border:1px solid #b9b2a0;border-radius:3px;font-size:.95rem;font-family:var(--font-body);width:170px;background:#fff}
 .nav-search-form button{background:none;border:0;cursor:pointer;color:#555;padding:.15rem;display:flex;align-items:center}
+/* Breaking news ticker: red bar under the nav, headlines scrolling
+   left; the track is clipped by its viewport so the page itself
+   never scrolls sideways. Pauses on hover. */
+.ticker{display:flex;align-items:stretch;background:var(--color-red);color:#fff;overflow:hidden;max-width:100%}
+.ticker-chip{background:var(--color-navy);color:#fff;font-family:var(--font-ui);font-weight:700;font-size:.78rem;letter-spacing:.14em;display:flex;align-items:center;padding:.45rem .8rem;flex:0 0 auto;position:relative;z-index:1}
+.ticker-viewport{overflow:hidden;flex:1 1 auto;display:flex;align-items:center}
+.ticker-track{display:inline-flex;white-space:nowrap;animation-name:ticker-scroll;animation-timing-function:linear;animation-iteration-count:infinite;will-change:transform}
+.ticker-group{display:inline-flex;align-items:center;gap:2.5rem;padding-right:2.5rem}
+.ticker-track a{color:#fff;text-decoration:none;font-weight:600;font-size:.95rem}
+.ticker-track a:hover{text-decoration:underline}
+.ticker-sep{opacity:.7}
+.ticker:hover .ticker-track{animation-play-state:paused}
+@keyframes ticker-scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion: reduce){.ticker-track{animation:none}}
 /* Mobile navigation (under 768px): the list collapses behind a real
    toggle button, and the Local submenu is collapsed by default and
    driven by an explicit open state on the list item — never by
@@ -941,6 +998,7 @@ ${adsense}
   <div class="tagline">${TAGLINE}</div>
 </header>
 <nav class="main"><button class="nav-toggle" type="button" aria-expanded="false" aria-controls="main-nav-list">Menu <svg class="nav-toggle-caret" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button><ul class="nav-list" id="main-nav-list">${navItems}</ul></nav>
+${tickerHtml()}
 <main class="wrap">
 ${body}
 </main>
@@ -2259,4 +2317,5 @@ module.exports = {
   staticPage,
   aboutPage,
   simplePage,
+  setTickerItems,
 };
