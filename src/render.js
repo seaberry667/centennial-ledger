@@ -73,12 +73,16 @@ function inline(s) {
  */
 function fmtDateShort(iso) {
   try {
+    // Take the recorded calendar date (the first 10 chars) at face
+    // value and format it in UTC; any time-of-day the pipeline
+    // attached along the way is not part of a review date.
+    const d = String(iso || '').slice(0, 10);
     return new Intl.DateTimeFormat('en-US', {
       timeZone: 'UTC',
       year: 'numeric',
       month: 'long',
       day: 'numeric',
-    }).format(new Date(iso));
+    }).format(new Date(d + 'T12:00:00Z'));
   } catch {
     return '';
   }
