@@ -24,19 +24,18 @@ const fs = require('fs');
 const path = require('path');
 
 const SECTIONS = [
+  // The seven primary editorial categories (owner restructure,
+  // 2026-11-08), in navigation order. Satire and political cartoons
+  // are no longer a section of their own: they live under Opinion
+  // with format 'satire' on the article record, and their bare
+  // presentation is keyed off that format, not the section.
   { slug: 'politics', name: 'Politics' },
-  { slug: 'rights', name: 'Rights' },
-  { slug: 'taxes', name: 'Taxes' },
-  { slug: 'energy', name: 'Energy' },
-  { slug: 'schools', name: 'Schools' },
-  { slug: 'local', name: 'Local' },
-  // Opinion is a live section: the owner lifted the hold on 2026-11-01
-  // and Opinion pieces are ingested under their own slug. Satire became
-  // a live section on 2026-11-02: the owner is publishing one-frame
-  // political cartoons with a short blurb there, ingested as
-  // article-shaped items under their own slug.
+  { slug: 'business', name: 'Business' },
+  { slug: 'energy-environment', name: 'Energy & Environment' },
+  { slug: 'education-health', name: 'Education & Health' },
+  { slug: 'colorado-life', name: 'Colorado Life' },
+  { slug: 'local', name: 'Local News' },
   { slug: 'opinion', name: 'Opinion' },
-  { slug: 'satire', name: 'Satire' },
 ];
 
 // Parts of the state, used by the Local dropdown nav and region pages.
@@ -51,42 +50,61 @@ const REGIONS = [
   { slug: 'san-luis-valley', name: 'San Luis Valley' },
 ];
 
-// Legacy / newsroom topic names collapse into the live sections.
+// Newsroom section names collapse into the seven live categories
+// (owner restructure, 2026-11-08). The old Rights/Taxes/Energy/
+// Schools sections are retired: rights and courts coverage belongs
+// to Politics, taxes and budgets to Business, energy to Energy &
+// Environment, schools and health to Education & Health. Sports,
+// outdoors and history now have a home in Colorado Life, so nothing
+// is dropped at ingest anymore. 'satire' still maps to Opinion, and
+// the satire FORMAT is carried separately (see isSatireInput).
 const SECTION_ALIASES = {
   politics: 'politics',
   capitol: 'politics',
   governor: 'politics',
   elections: 'politics',
+  rights: 'politics',
+  'second amendment': 'politics',
+  courts: 'politics',
   opinion: 'opinion',
-  satire: 'satire',
-  rights: 'rights',
-  'second amendment': 'rights',
-  taxes: 'taxes',
-  'taxes & tabor': 'taxes',
-  'taxes-rights': 'taxes',
-  'taxes & rights': 'taxes',
-  tabor: 'taxes',
-  energy: 'energy',
-  schools: 'schools',
-  education: 'schools',
+  satire: 'opinion',
+  taxes: 'business',
+  'taxes & tabor': 'business',
+  'taxes-rights': 'business',
+  'taxes & rights': 'business',
+  tabor: 'business',
+  business: 'business',
+  money: 'business',
+  economy: 'business',
+  'money & taxes': 'business',
+  energy: 'energy-environment',
+  environment: 'energy-environment',
+  'energy & environment': 'energy-environment',
+  schools: 'education-health',
+  education: 'education-health',
+  health: 'education-health',
+  healthcare: 'education-health',
+  'education & health': 'education-health',
+  life: 'colorado-life',
+  'colorado life': 'colorado-life',
+  sports: 'colorado-life',
+  outdoors: 'colorado-life',
+  'sports & outdoors': 'colorado-life',
+  history: 'colorado-life',
   local: 'local',
+  'local news': 'local',
   counties: 'local',
   'local & schools': 'local',
   'local-schools': 'local',
 };
 
-// Coverage the owner has dropped entirely: ingest skips these stories.
-const DROPPED_SECTION_KEYS = new Set([
-  'sports',
-  'outdoors',
-  'sports & outdoors',
-  'sports-outdoors',
-]);
+// No coverage is dropped at ingest under the seven-category system.
+const DROPPED_SECTION_KEYS = new Set([]);
 
 /**
  * Resolve an incoming section value to a live section slug.
- * Returns null for dropped coverage (Sports & Outdoors), which ingest
- * counts as skipped and never inserts.
+ * Returns null only for keys in DROPPED_SECTION_KEYS (empty since
+ * the 2026-11-08 restructure); ingest counts those as skipped.
  */
 function normalizeSection(input) {
   if (!input) return 'politics';
@@ -99,6 +117,122 @@ function sectionName(slug) {
   const s = SECTIONS.find((x) => x.slug === slug);
   return s ? s.name : 'Politics';
 }
+
+// Satire / political cartoons are a FORMAT, not a section, since
+// the 2026-11-08 restructure: they carry primary category Opinion
+// plus format 'satire', which keys their bare presentation.
+const SATIRE_INPUT_KEYS = new Set([
+  'satire',
+  'political cartoon',
+  'political cartoons',
+  'cartoon',
+  'cartoons',
+  'editorial cartoon',
+  'editorial cartoons',
+]);
+
+/** True when an incoming section/format value marks a piece as satire. */
+function isSatireInput(input) {
+  if (!input) return false;
+  return SATIRE_INPUT_KEYS.has(String(input).trim().toLowerCase());
+}
+
+/** True when a stored article is a satire piece / political cartoon. */
+function isSatire(a) {
+  return !!a && (a.format === 'satire' || a.section === 'satire');
+}
+
+// One-time recategorization (owner restructure, 2026-11-08): every
+// article published under the retired taxonomy, mapped by slug to
+// its new primary category — and, for the six cartoons, its satire
+// format. Applied once by both store backends at boot; the guards
+// (only rewrite while the stored values differ) make later boots
+// no-ops. Assignments were made story by story from each article's
+// actual subject, per the owner's category definitions; the audit
+// lives in the restructure working notes.
+const RECATEGORIZE_2026 = {
+  '14-san-luis-valley-school-leaders-unite-for-school-money-lower-taxes-1ptrq': ['education-health'],
+  'a-real-sheet-show-lauren-boeberts-sex-scandal-goes-limp': ['opinion'],
+  'alamosa-approves-2026-pay-plan-holds-line-on-broad-raise-for-city-workers-gcvej': ['local'],
+  'alamosa-council-approves-2026-city-pay-plan-skips-broad-raise-u3apc': ['local'],
+  'archuleta-county-charts-next-steps-on-growth-water-plans-0m4l7': ['local'],
+  'aurora-panel-backs-cutting-murphy-creek-home-cap-by-162-c1han': ['local'],
+  'aurora-voters-to-decide-three-new-sales-tax-measures-for-libraries-safety-roads-itgb3': ['local'],
+  'boulder-valley-school-closures-move-ahead-colorado-supreme-court-rejects-parents-plea-3cfxz': ['education-health'],
+  'breckenridge-rental-owner-takes-756-per-bedroom-fee-fight-to-colorado-top-court-h0pbp': ['local'],
+  'colorado-delivery-fee-climbs-to-31-cents-on-orders-with-taxable-goods-3i7j1': ['business'],
+  'colorado-gun-buyers-challenge-the-new-state-permit-law-in-federal-court-xe9w2': ['politics'],
+  'colorado-gun-buyers-must-get-a-permit-first-and-a-lawsuit-asks-a-judge-to-pause-it-uppg1': ['politics'],
+  'colorado-keeps-losing-first-amendment-cases-taxpayers-keep-getting-the-bill': ['opinion'],
+  'colorado-lawmakers-pitch-10-years-for-schools-permanent-cut-to-tax-refunds-phv3c': ['business'],
+  'colorado-legislature-2026-session-ends-as-critics-target-taxes-tabor-and-bargaining-bills-gbmrf': ['politics'],
+  'colorado-made-an-example-of-tina-peters-then-its-own-appeals-court-exposed-the-problem': ['opinion'],
+  'colorado-right-to-repair-law-faces-broad-exemption-in-senate-bill-26-090-2im9l': ['politics'],
+  'colorado-schoolmistress-teaches-tolerance-all-beliefs-are-equal-some-less-so': ['opinion', 'satire'],
+  'colorado-ski-season-lifts-off-as-resorts-open-through-december-401vd': ['colorado-life'],
+  'colorado-taxpayers-face-817-million-cut-in-refunds-under-november-ballot-plan-kh94l': ['business'],
+  'colorado-taxpayers-pick-up-the-tab': ['opinion', 'satire'],
+  'colorado-to-take-over-permits-for-carbon-storage-wells-pqkij': ['energy-environment'],
+  'colorado-trims-state-test-time-for-grades-3-to-8-fr27r': ['education-health'],
+  'colorado-voters-decide-whether-state-keeps-tax-refunds-for-schools-77nfl': ['business'],
+  'colorado-voters-face-rival-income-tax-plans-pulling-opposite-ways-xh8ge': ['business'],
+  'colorado-voters-head-toward-higher-income-taxes-on-top-earners-cut-for-most-3edtp': ['business'],
+  'colorado-voters-to-decide-if-gas-cooking-home-heating-become-state-constitutional-right-7hb0b': ['energy-environment'],
+  'colorado-voters-to-decide-tax-cut-for-most-hike-for-wealthiest-alwcn': ['business'],
+  'colorado-votes-for-the-story-not-the-state': ['opinion'],
+  'colorado-wants-small-businesses-it-just-makes-them-pay-for-the-privilege': ['opinion'],
+  'colorado-wasnt-just-flipped-it-was-engineered-part-one': ['opinion'],
+  'colorados-bicycle-safety-stop-law-signed-by-polis-in-2022': ['opinion', 'satire'],
+  'colorados-supreme-court-loyalty-card-one-more-defeat-and-the-next-appeal-is-free': ['opinion', 'satire'],
+  'colorados-war-on-crayons-and-the-catechism': ['opinion'],
+  'democratic-bus-tour-arrives-late-in-alamosa-draws-about-100-to-society-hall-sfsn1': ['local'],
+  'democratic-trojan-horse-at-the-capitol': ['opinion', 'satire'],
+  'denver-can-force-sidewalk-land-deals-with-39-east-colfax-owners-if-talks-fail-s4ma9': ['local'],
+  'douglas-county-republicans-pull-page-promising-to-publish-petition-signers-names-e7wjd': ['politics'],
+  'fort-collins-boulder-lawmakers-drop-business-tax-break-rollback-after-governor-veto-threat-e6nuj': ['business'],
+  'grand-junction-hashes-out-2027-city-spending-monday-before-public-hearing-x327u': ['local'],
+  'judge-tosses-pueblo-school-board-secret-pick-for-fifth-seat-pdubc': ['local'],
+  'lakewood-police-officer-killed-three-wounded-in-shooting-near-bus-m45e7': ['local'],
+  'lakewood-voters-to-scrap-outdated-property-tax-hike-power-in-city-rulebook-ef9mk': ['local'],
+  'lamar-council-pulls-plug-on-city-social-media-comments-9xtzb': ['local'],
+  'larimer-county-voters-to-pick-seven-local-leaders-who-handle-taxes-budgets-7o0y9': ['local'],
+  'logan-county-delays-data-center-rules-as-farmers-defend-prairie-a1szj': ['local'],
+  'longmont-council-to-meet-in-private-on-fatal-shooting-of-dariss-yearby-5trzc': ['local'],
+  'losing-chaffee-county-sheriff-candidate-pays-4-500-for-election-recount-3gw5c': ['local'],
+  'loveland-hunts-nationwide-for-city-manager-to-run-city-hall-bkrs0': ['local'],
+  'melat-kiros-is-going-to-congress-that-should-tell-colorado-something': ['opinion'],
+  'mesa-county-backs-lease-plan-covering-6-400-local-acres-cm37a': ['energy-environment'],
+  'mesa-county-phone-line-helps-voters-track-down-100-refund-checks-14hpf': ['business'],
+  'millions-pour-into-pueblo-state-senate-race-candidates-spend-far-less-qbz2n': ['politics'],
+  'montrose-council-shuffle-opens-one-seat-to-whole-city-j0jpq': ['local'],
+  'montrose-county-fights-bids-to-end-prairie-dog-hunting-ban-lead-ammo-s3uqu': ['local'],
+  'nonresidents-sue-denver-argue-handgun-rights-cross-state-lines-xzknj': ['politics'],
+  'outside-groups-pour-14-million-into-fight-over-colorado-tax-votes-timwg': ['politics'],
+  'pagosa-springs-faces-up-to-100-million-in-damage-from-second-flood-in-a-year-kqnt6': ['local'],
+  'parents-warn-poudre-closure-plan-hits-special-needs-students-hardest-r414w': ['education-health'],
+  'polis-makes-first-visit-to-southern-ute-gasoline-spill-site': ['opinion', 'satire'],
+  'polls-close-phil-weiser-wins-race-for-colorado-governor-sud7h': ['politics'],
+  'poudre-school-board-closes-four-schools-in-vote-past-midnight-6xzxi': ['education-health'],
+  'pueblo-council-fights-electric-bill-hikes-topping-22-etbk8': ['energy-environment'],
+  'pueblo-declares-oct-27-day-for-school-built-around-flexible-diplomas-biqrg': ['local'],
+  'pueblo-insiders-climb-aboard-train-tax-push-rail-chief-pay-hinges-on-vote-komrv': ['business'],
+  'pueblo-train-plan-ties-manager-pay-to-sales-tax-ballot-push-w4xmb': ['business'],
+  'supreme-court-hears-case-of-catholic-families-shut-out-of-colorado-free-preschool-bpkk8': ['politics'],
+  'the-weiser-guy-colorados-new-boss-dishing-out-same-old-nonsense': ['opinion'],
+  'three-new-colorado-gun-rules-become-law-fourth-barrel-rule-dies-at-capitol-6s6fm': ['politics'],
+  'timnath-parents-fight-closure-plan-for-school-at-95-full-7dmuz': ['education-health'],
+  'vail-to-cut-4-45-million-from-town-budget-as-low-snow-hurts-winter-sales-gydvm': ['local'],
+  'weld-county-clears-oil-lease-transfers-to-vitesse-energy-pk370': ['energy-environment'],
+};
+
+// One stored article carries no region at all: the Chaffee County
+// sheriff recount. Chaffee County belongs to the site's Mountains
+// region under the established definitions; the backends fill the
+// region in only while it is empty (flagged for the owner's review
+// in the restructure report).
+const REGION_FIX_2026 = {
+  'losing-chaffee-county-sheriff-candidate-pays-4-500-for-election-recount-3gw5c': 'Mountains',
+};
 
 /** Slug for a stored free-text region value, e.g. "Northern Colorado" -> "northern-colorado". */
 function regionSlug(name) {
@@ -380,6 +514,14 @@ function normalizeArticle(raw) {
   // Dropped coverage (Sports & Outdoors): reject so ingest skips it.
   if (!section) return null;
   const spotlight = normalizeSpotlight(raw.spotlight);
+  // Satire is a format, not a section (2026-11-08 restructure): a
+  // piece the newsroom files as Satire / a political cartoon lands
+  // in Opinion with format 'satire'; an explicit format on the
+  // payload is honored the same way.
+  const format =
+    raw.format === 'satire' || isSatireInput(raw.section) || isSatireInput(raw.format)
+      ? 'satire'
+      : '';
 
   const out = {
     slug,
@@ -389,6 +531,7 @@ function normalizeArticle(raw) {
     publishedAt,
     modifiedAt,
     section,
+    format,
     topicLabel: String(raw.topicLabel || raw.topic_label || '').trim(),
     region: String(raw.region || '').trim(),
     spotlight,
@@ -483,6 +626,29 @@ class FileStore {
       (x) => x.slug === MIDTERM_FIX.slug
     );
     if (midterm && applyMidtermFix(midterm)) this._save();
+    // One-time, idempotent recategorization into the seven primary
+    // categories (see RECATEGORIZE_2026 above): each article is
+    // rewritten only while its stored section/format differ from
+    // the mapped values, so later boots change nothing. The one
+    // region repair (REGION_FIX_2026) fills an empty region only.
+    let recategorized = false;
+    for (const a of this.data.articles) {
+      const target = RECATEGORIZE_2026[a.slug];
+      if (target) {
+        const [newSection, newFormat] = target;
+        if (a.section !== newSection || (a.format || '') !== (newFormat || '')) {
+          a.section = newSection;
+          a.format = newFormat || '';
+          recategorized = true;
+        }
+      }
+      const regionFix = REGION_FIX_2026[a.slug];
+      if (regionFix && !String(a.region || '').trim()) {
+        a.region = regionFix;
+        recategorized = true;
+      }
+    }
+    if (recategorized) this._save();
     // One-time, idempotent schoolmistress cartoon blurb
     // replacement (see SCHOOLMISTRESS_BLURB_UPDATE above).
     const mistress = this.data.articles.find(
@@ -675,6 +841,7 @@ class PgStore {
         published_at TIMESTAMPTZ NOT NULL,
         modified_at TIMESTAMPTZ,
         section TEXT NOT NULL,
+        format TEXT DEFAULT '',
         topic_label TEXT DEFAULT '',
         region TEXT DEFAULT '',
         spotlight TEXT,
@@ -706,12 +873,37 @@ class PgStore {
     await this.pool.query(
       "ALTER TABLE articles ADD COLUMN IF NOT EXISTS sources JSONB DEFAULT '[]'::jsonb"
     );
+    // Migration for databases created before the 2026-11-08
+    // restructure split satire out of the section taxonomy into a
+    // format flag ('' for ordinary articles, 'satire' for cartoons).
+    await this.pool.query(
+      "ALTER TABLE articles ADD COLUMN IF NOT EXISTS format TEXT DEFAULT ''"
+    );
     await this.pool.query(
       'CREATE INDEX IF NOT EXISTS idx_articles_section ON articles(section)'
     );
     await this.pool.query(
       'CREATE INDEX IF NOT EXISTS idx_articles_published ON articles(published_at DESC)'
     );
+    // One-time, idempotent recategorization into the seven primary
+    // categories (see RECATEGORIZE_2026 above): each UPDATE lands
+    // only while the stored section/format differ from the mapped
+    // values, so later boots change nothing. The one region repair
+    // (REGION_FIX_2026) fills an empty region only.
+    for (const [slug, target] of Object.entries(RECATEGORIZE_2026)) {
+      await this.pool.query(
+        `UPDATE articles SET section = $2, format = $3
+          WHERE slug = $1 AND (section <> $2 OR COALESCE(format, '') <> $3)`,
+        [slug, target[0], target[1] || '']
+      );
+    }
+    for (const [slug, region] of Object.entries(REGION_FIX_2026)) {
+      await this.pool.query(
+        `UPDATE articles SET region = $2
+          WHERE slug = $1 AND (region IS NULL OR region = '')`,
+        [slug, region]
+      );
+    }
     // Same one-time, idempotent Opinion body cleanup as the file
     // store's (owner instruction, 2026-11-03): strip bracketed
     // citation markers from stored Opinion bodies and drop any
@@ -859,6 +1051,7 @@ class PgStore {
         ? new Date(r.modified_at).toISOString()
         : new Date(r.published_at).toISOString(),
       section: r.section,
+      format: r.format || '',
       topicLabel: r.topic_label || '',
       region: r.region || '',
       spotlight: r.spotlight || null,
@@ -878,14 +1071,14 @@ class PgStore {
   async insertArticle(a) {
     const res = await this.pool.query(
       `INSERT INTO articles
-         (slug, headline, dek, byline, published_at, modified_at, section, topic_label, region,
+         (slug, headline, dek, byline, published_at, modified_at, section, format, topic_label, region,
           spotlight, sections, why_it_matters, image, source_name, source_url, sources, seo_title, meta_description)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)
        ON CONFLICT (slug) DO NOTHING
        RETURNING slug`,
       [
         a.slug, a.headline, a.dek, a.byline, a.publishedAt, a.modifiedAt || a.publishedAt,
-        a.section, a.topicLabel,
+        a.section, a.format || '', a.topicLabel,
         a.region, a.spotlight, JSON.stringify(a.sections), a.whyItMatters,
         a.image ? JSON.stringify(a.image) : null,
         a.sourceName, a.sourceUrl, JSON.stringify(a.sources || []), a.seoTitle, a.metaDescription,
@@ -1050,6 +1243,8 @@ module.exports = {
   REGIONS,
   normalizeSection,
   sectionName,
+  isSatire,
+  isSatireInput,
   regionSlug,
   regionName,
   normalizeArticle,

@@ -10,7 +10,7 @@
 const express = require('express');
 const path = require('path');
 const sharp = require('sharp');
-const { createStore, SECTIONS, REGIONS, normalizeArticle } = require('./store');
+const { createStore, SECTIONS, REGIONS, normalizeArticle, isSatire } = require('./store');
 const render = require('./render');
 const { startWeatherUpdates } = require('./weather');
 
@@ -139,11 +139,11 @@ app.get('/', async (req, res) => {
   // rail rows and Latest cards draw from. (The per-section rail picks
   // and the Local & Statewide list are fetched separately, below.)
   // Satire pieces are never featured or listed among the homepage
-  // articles (owner instruction, 2026-11-02): they live on their
-  // own section page and are reached from there, so they are
+  // articles (owner instruction, 2026-11-02): they live on the
+  // Opinion page and are reached from there, so they are
   // filtered out of the homepage pool before anything is picked.
   const articles = (await store.listArticles({ limit: 32 })).filter(
-    (a) => a.section !== 'satire'
+    (a) => !isSatire(a)
   );
   // The three featured spots (lead, second and third feature) are
   // news only: Opinion pieces never take them (owner instruction,
@@ -176,15 +176,16 @@ app.get('/', async (req, res) => {
   );
   const rest = articles.filter((a) => !featuredSlugs.has(a.slug));
   // Rail groups (owner instruction, 2026-11-02): the right column
-  // groups the five news sections — Politics, Rights, Taxes, Energy
-  // and Schools, in that order — with the TWO most recent stories
+  // groups the five subject sections — Politics, Business, Energy
+  // & Environment, Education & Health and Colorado Life, in that
+  // order (2026-11-08 restructure) — with the TWO most recent stories
   // from each section under that section's heading, excluding the
   // features. A section whose newest stories are features
   // contributes its next stories instead; a section with nothing
   // left has no group.
   const featureSlugs = new Set([lead, second, third].filter(Boolean).map((a) => a.slug));
   const railGroups = [];
-  for (const slug of ['politics', 'rights', 'taxes', 'energy', 'schools']) {
+  for (const slug of ['politics', 'business', 'energy-environment', 'education-health', 'colorado-life']) {
     const inSection = await store.listArticles({ section: slug, limit: 6 });
     const picks = inSection.filter((a) => !featureSlugs.has(a.slug)).slice(0, 2);
     if (picks.length) railGroups.push({ section: slug, articles: picks });
@@ -221,7 +222,20 @@ app.get('/', async (req, res) => {
   );
 });
 
+// Retired section URLs (owner restructure, 2026-11-08): permanent
+// redirects to the replacement category pages, so existing links
+// and search results keep their equity.
+const SECTION_REDIRECTS = {
+  rights: 'politics',
+  taxes: 'business',
+  energy: 'energy-environment',
+  schools: 'education-health',
+  satire: 'opinion',
+};
+
 app.get('/section/:slug', async (req, res) => {
+  const redirect = SECTION_REDIRECTS[req.params.slug];
+  if (redirect) return res.redirect(301, '/section/' + redirect);
   const section = SECTIONS.find((s) => s.slug === req.params.slug);
   if (!section) return res.status(404).type('html').send(notFound());
   const articles = await store.listArticles({ section: section.slug, limit: 60 });
@@ -234,7 +248,11 @@ app.get('/section/:slug', async (req, res) => {
 app.get('/local/:region', async (req, res) => {
   const region = REGIONS.find((r) => r.slug === req.params.region);
   if (!region) return res.status(404).type('html').send(notFound());
-  const articles = await store.listArticles({ section: 'local', region: region.slug, limit: 60 });
+  // Region pages list every story carrying the region, whatever its
+  // primary category (owner restructure, 2026-11-08): a statewide
+  // subject story keeps its regional association, and the region
+  // page is where that association shows.
+  const articles = await store.listArticles({ region: region.slug, limit: 60 });
   res.type('html').send(render.localRegionPage({ region, articles }));
 });
 
@@ -336,8 +354,8 @@ app.get('/article/:slug', async (req, res) => {
   // previous/next buttons to move between comics. Neighbors come
   // from the Satire list, newest first: "previous" is the older
   // comic, "next" is the newer one.
-  if (article.section === 'satire') {
-    const comics = await store.listArticles({ section: 'satire', limit: 60 });
+  if (isSatire(article)) {
+    const comics = (await store.listArticles({ section: 'opinion', limit: 60 })).filter(isSatire);
     const idx = comics.findIndex((c) => c.slug === article.slug);
     const newer = idx > 0 ? comics[idx - 1] : null;
     const older = idx >= 0 && idx < comics.length - 1 ? comics[idx + 1] : null;

@@ -7,7 +7,7 @@
  * is centralized in layout().
  */
 
-const { SECTIONS, REGIONS, sectionName } = require('./store');
+const { SECTIONS, REGIONS, sectionName, isSatire } = require('./store');
 const { topbarSegment } = require('./weather');
 
 const SITE_NAME = 'The Centennial Ledger';
@@ -658,6 +658,7 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 .satire-nav a{display:inline-block;font-family:var(--font-ui);font-weight:bold;font-size:.95rem;text-decoration:none;padding:.55rem 1.15rem;border-radius:3px;border:1px solid var(--color-red);color:var(--color-red);background:#fff}
 .satire-nav a.prev{margin-right:auto}
 .satire-nav a.next{background:var(--color-red);color:#fff;margin-left:auto}
+.section-subhead{font-family:var(--font-headline);font-size:1.5rem;margin:1.8rem 0 .9rem}
 .satire-list{display:grid;grid-template-columns:1fr 1fr;gap:2.4rem 2rem}
 @media (max-width:767px){.satire-list{grid-template-columns:1fr}}
 .satire-list figure.art-figure{margin:0}
@@ -827,8 +828,10 @@ function layout({ title, description, path, ogType = 'website', ogImage = '', ar
     '<ul class="dropdown" id="local-submenu">' +
     REGIONS.map((r) => '<li><a href="/local/' + r.slug + '">' + r.name + '</a></li>').join('') +
     '</ul>';
+  // No Home item in the primary navigation (owner restructure,
+  // 2026-11-08): the masthead links to the homepage, which is the
+  // latest-news destination. The seven categories stand alone.
   const navItems =
-    '<li><a href="/"' + (activeNav === 'home' ? ' class="active"' : '') + '>Home</a></li>' +
     SECTIONS.map((s) => {
       const link =
         '<a href="/section/' + s.slug + '"' +
@@ -912,13 +915,12 @@ ${body}
         <h3>Sections</h3>
         <ul>
           <li><a href="/section/politics">Politics</a></li>
-          <li><a href="/section/rights">Rights</a></li>
-          <li><a href="/section/taxes">Taxes</a></li>
-          <li><a href="/section/energy">Energy</a></li>
-          <li><a href="/section/schools">Schools</a></li>
-          <li><a href="/section/local">Local</a></li>
+          <li><a href="/section/business">Business</a></li>
+          <li><a href="/section/energy-environment">Energy &amp; Environment</a></li>
+          <li><a href="/section/education-health">Education &amp; Health</a></li>
+          <li><a href="/section/colorado-life">Colorado Life</a></li>
+          <li><a href="/section/local">Local News</a></li>
           <li><a href="/section/opinion">Opinion</a></li>
-          <li><a href="/section/satire">Satire</a></li>
         </ul>
       </nav>
       <nav class="footer-col" aria-label="Colorado regions">
@@ -1228,35 +1230,35 @@ const SECTION_META = {
     description:
       'Colorado politics news from the Capitol: the legislature, the governor, elections, courts and the state budget, reported with the original sources linked. Read the latest.',
   },
-  rights: {
-    title: 'Colorado gun rights news: firearms laws, courts and permits',
+  business: {
+    title: 'Colorado business news: economy, taxes, jobs and real estate',
     description:
-      'Colorado gun rights news: Second Amendment laws, permit rules, court challenges and sheriff policies across the state, with the source records linked. Read more.',
+      'Colorado business news: companies, jobs, housing, taxes, TABOR refunds and state spending across the state, with the original sources linked. Read the latest.',
   },
-  taxes: {
-    title: "Colorado tax news: Taxpayer's Bill of Rights and refunds",
+  'energy-environment': {
+    title: 'Colorado energy and environment news: oil, gas, water, climate',
     description:
-      'Colorado tax news: Taxpayer\'s Bill of Rights refunds, property taxes, fees and fines and the state budget fight in Denver, with the official documents linked. Read the latest.',
+      'Colorado energy and environment news: oil and gas, electricity rates, water rights, wildfire and public lands, with the original records linked. Read more.',
   },
-  energy: {
-    title: 'Colorado energy news: oil, gas, utilities and power costs',
+  'education-health': {
+    title: 'Colorado education and health news: schools, hospitals, policy',
     description:
-      'Colorado energy news: oil and gas permits, utility rates, electricity costs and land fights in producing counties, with the original records linked. Read more.',
+      'Colorado education and healthcare news: school boards, closures, funding, hospitals, insurance costs and public health, with sources linked. Read the latest.',
   },
-  schools: {
-    title: 'Colorado school news: districts, boards, closures, results',
+  'colorado-life': {
+    title: 'Colorado life: sports, outdoors, history, travel and culture',
     description:
-      'Colorado school news: district budgets, school board votes, school closures and student test results across the state, with district documents linked. Read more.',
+      'Colorado life: Broncos, Avalanche and college sports, skiing, hiking, history, travel and the people of the Centennial State. Read the latest stories here.',
+  },
+  local: {
+    title: 'Colorado local news: counties, cities and school boards',
+    description:
+      'Colorado local news from all eight regions: county commissions, city councils, sheriffs and school boards, with the original sources linked. Read the latest.',
   },
   opinion: {
     title: 'Colorado opinion and commentary: politics, taxes, schools',
     description:
-      'Colorado opinion and commentary on state politics, taxes, schools and energy, examining what the governing majority in Denver delivers. Read the latest columns.',
-  },
-  satire: {
-    title: 'Colorado political satire: a lighter look at state politics',
-    description:
-      'Colorado political satire: the lighter side of the state Capitol, county courthouses and city halls across the state, written for a laugh, not a lecture.',
+      'Colorado opinion, editorials and satire on state politics, taxes, schools and energy, examining what the governing majority in Denver delivers. Read more.',
   },
 };
 
@@ -1293,67 +1295,120 @@ const LOCAL_HUB = {
 };
 
 /**
- * Bottom-of-page section descriptions (owner-supplied copy,
- * 2026-11-05): each section page ends with this heading and
- * these two paragraphs in the hub box. The same box closes
- * article pages, so the copy stays consistent site-wide.
- * Page <title>/meta tags still come from SECTION_META.
+ * Bottom-of-page section and region descriptions (owner-supplied
+ * copy, 2026-11-08 restructure): each category page ends with this
+ * heading and these two paragraphs in the hub box, and each Local
+ * region page ends with its own. The same box closes article
+ * pages, so the copy stays consistent site-wide. Page <title>/meta
+ * tags still come from SECTION_META / REGION_META.
  */
 const SECTION_DESCRIPTIONS = {
-  politics: {
-    title: "Colorado Politics News, Elections & State Government",
+  "politics": {
+    title: "Colorado Politics News, Elections, Government & Civil Rights",
     paragraphs: [
-      "Stay informed with the latest Colorado political news, covering the governor's office, Colorado General Assembly, state elections, political parties, and the decisions shaping government in Denver. The Centennial Ledger follows legislative bills, state House and Senate races, campaign financing, ballot initiatives, election results, and political controversies affecting communities throughout Colorado.",
-      "Our political coverage examines the people, policies, and power struggles behind Colorado government, from the state budget and executive orders to voting laws, election integrity, and government accountability. Whether you're following Colorado's governor, tracking new state legislation, or researching where elected officials stand on important issues, explore political reporting that connects what happens at the Capitol to its consequences for Colorado residents.",
+      "Follow Colorado politics news, state government developments, and election coverage from the Colorado State Capitol to communities across the Centennial State. The Centennial Ledger reports on the Colorado governor, General Assembly, state House and Senate legislation, political campaigns, ballot initiatives, election results, and decisions by elected officials. Our reporting examines government spending, proposed laws, political controversies, campaign finance, and the policies shaping Colorado's future.",
+      "Explore Colorado Supreme Court decisions, constitutional rights, First and Second Amendment disputes, religious liberty cases, parental rights, and challenges to government authority. From legislative debates and judicial rulings to political investigations, ethics complaints, and government accountability, our coverage explains how decisions by Colorado politicians, lawmakers, and courts affect residents, businesses, and individual freedoms.",
     ],
   },
-  rights: {
-    title: "Colorado Constitutional Rights, Gun Laws & Civil Liberties News",
+  "business": {
+    title: "Colorado Business News, Economy, Taxes, Jobs & Real Estate",
     paragraphs: [
-      "Colorado rights news covers the constitutional freedoms, civil liberties, and legal challenges affecting residents across the state. From Second Amendment gun rights and Colorado firearm legislation to First Amendment free speech protections, religious liberty, parental rights, and private property disputes, The Centennial Ledger examines where government authority meets individual freedom.",
-      "Follow Colorado gun control laws, concealed carry regulations, firearm permit requirements, federal and state court rulings, and lawsuits challenging government restrictions. Our coverage also explores religious discrimination cases, freedom of expression, eminent domain, and conflicts involving constitutional protections under Colorado and federal law. Stay informed about the legislation, legal battles, and judicial decisions defining the rights of Colorado citizens.",
+      "Colorado business news covers the companies, industries, and economic developments driving the state's economy. The Centennial Ledger follows Colorado businesses, entrepreneurship, employment trends, job growth, commercial development, banking, finance, agriculture, and the real estate market. Explore reporting on Denver-area businesses, emerging industries, construction projects, housing affordability, inflation, and the economic challenges facing employers, workers, and consumers throughout Colorado.",
+      "Our coverage also examines Colorado income taxes, property taxes, TABOR refunds, sales taxes, government budgets, public spending, and the financial impact of state and local regulations. From Colorado housing prices and small business developments to economic forecasts, labor markets, and agricultural policy, stay informed about the decisions and market conditions affecting Colorado's cost of living, business climate, and financial future.",
     ],
   },
-  taxes: {
-    title: "Colorado Tax News, TABOR Refunds & Government Spending",
+  "energy-environment": {
+    title: "Colorado Energy & Environment News, Oil, Gas, Water & Climate",
     paragraphs: [
-      "Colorado tax news examines the taxes, fees, government budgets, and fiscal policies affecting homeowners, businesses, and taxpayers throughout the state. The Centennial Ledger covers Colorado income taxes, property tax assessments, sales taxes, the Taxpayer's Bill of Rights (TABOR), state tax refunds, and proposals to increase or reduce the cost of government.",
-      "Follow changes to Colorado tax laws, property tax relief, local tax increases, ballot measures, state budget deficits, and spending decisions by lawmakers and local governments. We also examine business taxes, regulatory fees, tax credits, and the financial consequences of new public programs. Whether you're researching Colorado TABOR refunds, proposed tax increases, or why government spending continues to grow, find reporting on where taxpayer money comes from and how it is spent.",
+      "Colorado energy and environment news covers the natural resources, industries, and environmental issues shaping the state's economy and landscape. The Centennial Ledger reports on Colorado oil and gas development, natural gas production, renewable energy projects, electricity rates, utility companies, energy regulations, and the transition toward wind, solar, and other power sources. Follow developments involving Xcel Energy, oil and gas permits, electricity costs, electric grid reliability, and energy affordability.",
+      "Our environmental reporting examines Colorado water rights, Colorado River issues, drought conditions, wildfires, forest management, wildlife conservation, public lands, air quality, and climate-related policies. From Front Range energy development and Western Slope water disputes to national forest management and environmental protection regulations, explore the economic, scientific, and public-policy questions affecting Colorado's land, water, wildlife, and energy future.",
     ],
   },
-  energy: {
-    title: "Colorado Energy News, Oil & Gas, Electricity Rates & Policy",
+  "education-health": {
+    title: "Colorado Education & Healthcare News, Schools, Hospitals & Policy",
     paragraphs: [
-      "Colorado energy news covers the industries, regulations, and economic decisions shaping electricity production, natural gas, oil development, and utility costs across the state. The Centennial Ledger follows Colorado oil and gas drilling, energy legislation, renewable power projects, public utility regulations, and the changing policies governing domestic energy production.",
-      "Explore reporting on Colorado electricity rates, natural gas prices, Xcel Energy rate increases, oil and gas permits, renewable energy mandates, and disputes over land use and environmental regulations. Our coverage examines energy affordability, electric grid reliability, fossil fuels, wind and solar development, and the economic effects of state climate policies. From Weld County drilling operations to household utility bills, we follow the decisions influencing Colorado's energy future.",
+      "Colorado education and healthcare news covers two essential parts of everyday life for families across the state. The Centennial Ledger reports on Colorado public schools, private education, charter schools, school choice, school board elections, district budgets, curriculum debates, school closures, and student academic performance. Follow education legislation, parental rights, school funding, teacher shortages, higher education, and developments at Colorado colleges and universities.",
+      "Our Colorado healthcare coverage examines hospitals, medical providers, health insurance costs, healthcare legislation, Medicaid, public health programs, and access to medical care. From rural hospital funding and healthcare staffing shortages to insurance premiums, medical research, and state health regulations, we follow the decisions affecting patients, healthcare professionals, students, parents, and communities throughout Colorado.",
     ],
   },
-  schools: {
-    title: "Colorado Education News, School Districts & School Board Decisions",
+  "colorado-life": {
+    title: "Colorado Sports, Outdoors, History, Travel & Lifestyle News",
     paragraphs: [
-      "Colorado education news follows the policies, budgets, and school board decisions affecting public schools, students, teachers, and families throughout the state. The Centennial Ledger covers Colorado school districts, education funding, school closures, student achievement, standardized testing, curriculum debates, and legislative changes to K–12 education.",
-      "Stay informed about school board elections, parental rights in education, school choice, charter schools, special education services, and disputes over classroom policies. Our reporting examines school district budgets, declining enrollment, teacher staffing, academic performance, and how state education policies affect local classrooms. From Denver-area districts to rural Colorado schools, we follow the decisions shaping educational opportunities, accountability, and the future of public education.",
+      "Discover Colorado life through the sports, outdoor adventures, history, culture, and people that make the Centennial State distinctive. The Centennial Ledger covers Colorado sports news, including the Denver Broncos, Colorado Avalanche, Denver Nuggets, Colorado Rockies, college athletics, and high school sports. Explore Colorado skiing and snowboarding, hiking trails, camping, hunting, fishing, outdoor recreation, and adventures in the Rocky Mountains.",
+      "Our lifestyle coverage also explores Colorado history, Old West legends, historic towns, famous Coloradans, travel destinations, arts and entertainment, festivals, food, and local traditions. From Colorado ski resort news and national park travel to historical events, unusual discoveries, and inspiring human-interest stories, Colorado Life celebrates the places, personalities, pastimes, and remarkable stories that define living in Colorado.",
     ],
   },
-  local: {
-    title: "Colorado Local News, County Government & Community Headlines",
+  "local": {
+    title: "Colorado Local News, City & County Government, Communities & Events",
     paragraphs: [
-      "Colorado local news covers the government decisions, community developments, and public issues shaping cities, towns, and counties throughout the state. The Centennial Ledger follows city councils, county commissioners, sheriffs, school boards, local elections, and municipal budgets, bringing attention to stories that affect residents beyond the headlines coming out of Denver.",
-      "Explore local Colorado news involving property taxes, housing development, zoning disputes, public safety, infrastructure projects, water rights, and government accountability. Our regional coverage spans the Denver metro area, Northern and Southern Colorado, the Western Slope, Southwest Colorado, mountain communities, the Eastern Plains, and the San Luis Valley. Discover what local officials are deciding, how public money is being spent, and what those decisions mean for your community.",
+      "Colorado local news brings together the community stories, government decisions, and regional developments affecting residents throughout the state's 64 counties. The Centennial Ledger covers city councils, county commissioners, local elections, public safety, sheriffs' offices, school boards, infrastructure projects, community events, and municipal spending. Follow local government news, housing developments, property tax decisions, zoning controversies, and issues affecting Colorado neighborhoods, businesses, and families.",
+      "Explore regional news from Denver Metro, Northern Colorado, Southern Colorado, the Western Slope, Southwest Colorado, mountain communities, the Eastern Plains, and the San Luis Valley. Whether you're following Fort Collins city government, Pueblo community news, Grand Junction development, or small-town decisions elsewhere in Colorado, our local coverage connects readers with the people, places, and issues shaping their communities.",
     ],
   },
-  opinion: {
-    title: "Colorado Political Opinion, Editorials & Conservative Commentary",
+  "opinion": {
+    title: "Colorado Political Opinion, Editorials, Satire & Commentary",
     paragraphs: [
-      "Explore Colorado political opinion, editorial commentary, and provocative analysis of the people and policies shaping the Centennial State. The Centennial Ledger publishes opinion columns examining state government, elections, taxation, individual liberty, education, energy policy, and the growing influence of political institutions on everyday life in Colorado.",
-      "Our editorials look beyond political talking points to question government spending, regulatory overreach, partisan maneuvering, and the promises made by elected officials. From the Colorado governor and state legislature to local controversies and national political developments with Colorado consequences, expect pointed arguments, historical perspective, and a healthy skepticism of political power. Read Colorado political commentary that challenges conventional wisdom and gives readers something worth debating.",
+      "Explore Colorado opinion articles, political commentary, editorials, and thought-provoking perspectives on the issues shaping the Centennial State. The Centennial Ledger publishes opinion columns and analysis examining Colorado politics, government spending, taxation, constitutional rights, education, healthcare, energy policy, and the decisions of elected officials. Our editorial coverage offers arguments, criticism, historical context, and perspectives on state and local controversies.",
+      "The Opinion section also features Colorado political satire, editorial cartoons, political humor, guest commentary, and satirical takes on government, public policy, and everyday life. From Colorado legislative debates and election controversies to cultural issues, political hypocrisy, and the occasional absurdity of government bureaucracy, discover commentary designed to challenge assumptions, encourage discussion, and give readers something worth thinking about.",
     ],
   },
-  satire: {
-    title: "Colorado Political Satire, Editorial Cartoons & Political Humor",
+};
+
+const REGION_DESCRIPTIONS = {
+  "denver-metro": {
+    title: "Denver Metro Local News, Aurora, Lakewood & County Government",
     paragraphs: [
-      "Colorado political satire offers a humorous, irreverent look at state politics, government spending, elected officials, and the peculiarities of life under the gold dome. The Centennial Ledger combines political cartoons, satirical commentary, and sharp political humor to expose the contradictions, questionable priorities, and occasional absurdities of Colorado government.",
-      "Explore Colorado editorial cartoons, political parody, and humorous takes on the governor, state lawmakers, elections, taxes, regulations, and cultural controversies. From government bureaucracy and extravagant campaign promises to political hypocrisy and legislative misadventures, our satire finds the punchline in stories that sometimes seem to write themselves. The issues behind the jokes are real, even when the humor takes a few liberties.",
+      "Denver metro news covers local government, community developments, and public issues affecting Denver, Aurora, Lakewood, and surrounding Front Range communities. The Centennial Ledger follows Denver City Council, Aurora city government, Jefferson County, Arapahoe County, Adams County, local elections, school boards, and municipal decisions affecting Colorado's largest metropolitan area.",
+      "Explore Denver local news involving housing development, property taxes, crime and public safety, transportation projects, zoning regulations, and infrastructure spending. From Aurora community developments and Lakewood politics to Denver-area business growth, school district decisions, and neighborhood controversies, our coverage examines the people, policies, and events shaping life throughout the Denver metropolitan region.",
+    ],
+  },
+  "northern-colorado": {
+    title: "Northern Colorado News, Fort Collins, Loveland, Greeley & Longmont",
+    paragraphs: [
+      "Northern Colorado news covers the latest community developments, local politics, and government decisions affecting Fort Collins, Loveland, Greeley, Longmont, and surrounding communities. The Centennial Ledger reports on Larimer County news, Weld County government, Fort Collins City Council, Loveland city politics, Greeley development, local elections, and school board decisions throughout the region.",
+      "Follow Northern Colorado local news involving housing growth, water rights, property taxes, road construction, public safety, education funding, and economic development. From Poudre School District controversies and Colorado State University developments to oil and gas activity, agricultural issues, and municipal spending, explore the stories affecting Northern Colorado residents, businesses, and communities along the northern Front Range.",
+    ],
+  },
+  "southern-colorado": {
+    title: "Southern Colorado News, Colorado Springs, Pueblo & Local Government",
+    paragraphs: [
+      "Southern Colorado news covers local government, community events, and regional developments affecting Colorado Springs, Pueblo, and surrounding communities. The Centennial Ledger follows Colorado Springs City Council, Pueblo city government, El Paso County, Pueblo County, local elections, school districts, and the public officials making decisions throughout Southern Colorado.",
+      "Explore Colorado Springs news and Pueblo local news involving housing, property taxes, public safety, business development, infrastructure, healthcare, and education. Our reporting examines municipal budgets, economic growth, utility costs, transportation projects, and the changing needs of Southern Colorado communities. From school board decisions and county government controversies to major construction projects and regional economic issues, stay informed about the developments shaping life south of the Denver metro area.",
+    ],
+  },
+  "western-slope": {
+    title: "Western Slope Colorado News, Grand Junction, Montrose & Delta",
+    paragraphs: [
+      "Western Slope Colorado news covers local politics, community developments, and regional issues affecting Grand Junction, Montrose, Delta, and surrounding Western Colorado communities. The Centennial Ledger reports on Mesa County news, Montrose County government, Delta County developments, city council decisions, local elections, and school board activities across the region.",
+      "Follow Grand Junction news and Western Slope developments involving water rights, agriculture, oil and gas production, public lands, housing growth, and economic development. Our coverage examines county budgets, land use regulations, infrastructure investments, environmental issues, and the policies affecting rural communities. From Grand Junction city politics to Montrose development projects and Colorado River water issues, explore the stories shaping life on Colorado's Western Slope.",
+    ],
+  },
+  "southwest": {
+    title: "Southwest Colorado News, Durango, Cortez & Pagosa Springs",
+    paragraphs: [
+      "Southwest Colorado news covers local government, community developments, and regional issues affecting Durango, Cortez, Pagosa Springs, and the surrounding Four Corners region. The Centennial Ledger follows La Plata County news, Montezuma County government, Archuleta County developments, municipal elections, city council decisions, and school boards across southwestern Colorado.",
+      "Explore Durango local news, Pagosa Springs community updates, and regional reporting involving water rights, wildfire risks, drought, tourism, housing development, and public lands. Our coverage examines local government spending, economic growth, transportation infrastructure, agriculture, and environmental concerns affecting Southwest Colorado communities. From county commission decisions to local business developments and public safety issues, stay informed about life in Colorado's southwestern corner.",
+    ],
+  },
+  "mountains": {
+    title: "Colorado Mountain News, Aspen, Vail, Breckenridge & Ski Towns",
+    paragraphs: [
+      "Colorado mountain news covers the communities, businesses, and government decisions shaping life in the Rocky Mountains. The Centennial Ledger follows Aspen, Vail, Breckenridge, Steamboat Springs, and surrounding mountain towns, including Summit County, Eagle County, Pitkin County, and Routt County developments, local elections, municipal budgets, and town council decisions.",
+      "Explore Colorado ski resort news, mountain town real estate, tourism, short-term rental regulations, workforce housing, transportation, and the economic challenges facing resort communities. Our local reporting also examines public lands, wildlife, wildfire preparedness, water resources, and outdoor recreation. From Vail government decisions and Breckenridge development disputes to Aspen community issues, follow the stories affecting Colorado's mountain residents, businesses, and visitors.",
+    ],
+  },
+  "eastern-plains": {
+    title: "Eastern Plains Colorado News, Sterling, Fort Morgan & Lamar",
+    paragraphs: [
+      "Eastern Plains Colorado news covers local government, agriculture, economic development, and community life throughout eastern Colorado. The Centennial Ledger follows Sterling, Fort Morgan, Lamar, Burlington, and surrounding rural communities, reporting on county commissioners, municipal elections, school boards, public safety, and decisions affecting small towns across the plains.",
+      "Explore Eastern Colorado news involving farming and ranching, agricultural water rights, irrigation, wind energy development, rural infrastructure, property taxes, and local business growth. Our reporting examines Logan County, Morgan County, Prowers County, and neighboring communities, including school funding, agricultural policy, land use regulations, and government spending. From rural economic challenges to new development projects, stay informed about the issues shaping Colorado's Eastern Plains.",
+    ],
+  },
+  "san-luis-valley": {
+    title: "San Luis Valley Colorado News, Alamosa, Monte Vista & Water Rights",
+    paragraphs: [
+      "San Luis Valley news covers local government, agriculture, community developments, and public issues affecting Alamosa, Monte Vista, Del Norte, and surrounding southern Colorado communities. The Centennial Ledger follows Alamosa County news, Rio Grande County government, Conejos County developments, local elections, school boards, and city council decisions throughout the valley.",
+      "Explore San Luis Valley Colorado news involving water rights, groundwater conservation, irrigation, farming, ranching, rural healthcare, and economic development. Our reporting examines government budgets, infrastructure improvements, property taxes, education funding, and policies affecting residents and agricultural businesses. From Alamosa local politics and Monte Vista community developments to regional water management and land use disputes, follow the stories shaping the future of the San Luis Valley.",
     ],
   },
 };
@@ -1389,6 +1444,16 @@ function hubBox(section) {
 
 /** Region variant of the hub box for Local region pages. */
 function regionHubBox(region) {
+  const d = REGION_DESCRIPTIONS[region.slug];
+  if (d) {
+    return (
+      '<aside class="hub-box"><h2>' +
+      esc(d.title) +
+      '</h2>' +
+      d.paragraphs.map((p) => '<p>' + esc(p) + '</p>').join('') +
+      '</aside>'
+    );
+  }
   const title = region.name + ' local news hub: counties, cities and schools';
   const text =
     REGION_META[region.slug] ||
@@ -1562,13 +1627,25 @@ function sectionPage({ section, articles }) {
     description:
       'Colorado ' + name.toLowerCase() + ' news reported with the facts first and the original sources linked, from communities across the state. Read the latest stories here.',
   };
-  // Satire lists its comics bare (owner instruction, 2026-11-02):
-  // each entry is the comic itself, linked to its page, with the
-  // owner's long caption under it — no headline, no byline, no date.
+  // Opinion carries the satire cartoons too (owner restructure,
+  // 2026-11-08): editorials list as ordinary cards, and the comics
+  // keep their bare listing (owner instruction, 2026-11-02 — the
+  // comic itself, linked to its page, with the owner's long caption
+  // under it; no headline, no byline, no date) under their own
+  // subhead at the bottom of the Opinion page.
+  const satireItems = section === 'opinion' ? articles.filter(isSatire) : [];
+  const cardItems =
+    section === 'opinion' ? articles.filter((a) => !isSatire(a)) : articles;
   const listing =
-    section === 'satire'
-      ? '<div class="satire-list">' + articles.map(satireListItem).join('') + '</div>'
-      : '<div class="grid">' + articles.map(articleCard).join('') + '</div>';
+    (cardItems.length
+      ? '<div class="grid">' + cardItems.map(articleCard).join('') + '</div>'
+      : '') +
+    (satireItems.length
+      ? '<h2 class="section-subhead">Satire &amp; Editorial Cartoons</h2>' +
+        '<div class="satire-list">' +
+        satireItems.map(satireListItem).join('') +
+        '</div>'
+      : '');
   // No small red section-name label above the title (owner
   // instruction, 2026-11-03): the H1 alone heads the page.
   const body =
@@ -1626,7 +1703,7 @@ function collectionJsonLd(name, path, articles) {
 function localHubPage({ articles }) {
   // Same no-kicker rule as the section pages (owner, 2026-11-03).
   const body =
-    '<h1 class="headline" style="font-size:2.4rem">Local</h1>' +
+    '<h1 class="headline" style="font-size:2.4rem">Local News</h1>' +
     regionNavList('') +
     (articles.length
       ? '<div class="grid">' + articles.map(articleCard).join('') + '</div>'
@@ -1634,12 +1711,10 @@ function localHubPage({ articles }) {
     hubBox('local');
 
   return layout({
-    title: fitTitle('Colorado local news: counties, cities and school boards', 70),
-    description: fitDescription(
-      'Colorado local news from all eight regions: county commissions, city councils, sheriffs and school boards, with the original sources linked. Read the latest.'
-    ),
+    title: fitTitle(SECTION_META.local.title, 70),
+    description: fitDescription(SECTION_META.local.description),
     path: '/section/local',
-    jsonLd: collectionJsonLd('Local | ' + SITE_NAME, '/section/local', articles),
+    jsonLd: collectionJsonLd('Local News | ' + SITE_NAME, '/section/local', articles),
     activeNav: 'local',
     body,
   });
@@ -1649,7 +1724,7 @@ function localHubPage({ articles }) {
 function localRegionPage({ region, articles }) {
   const path = '/local/' + region.slug;
   const body =
-    '<div class="breadcrumb"><a href="/">Home</a> &rsaquo; <a href="/section/local">Local</a> &rsaquo; ' +
+    '<div class="breadcrumb"><a href="/">Home</a> &rsaquo; <a href="/section/local">Local News</a> &rsaquo; ' +
     esc(region.name) + '</div>' +
     '<h1 class="headline" style="font-size:2.4rem">' + esc(region.name) + '</h1>' +
     regionNavList(region.slug) +
@@ -1762,7 +1837,7 @@ function satirePage(a, prev, next) {
         url: siteUrl() + '/',
       },
       mainEntityOfPage: { '@type': 'WebPage', '@id': url },
-      articleSection: 'Satire',
+      articleSection: 'Opinion',
     },
   ];
   let nav = '';
@@ -1792,10 +1867,10 @@ function satirePage(a, prev, next) {
     articleMeta: {
       published: a.publishedAt,
       modified: a.modifiedAt || a.publishedAt,
-      section: 'Satire',
+      section: 'Opinion',
     },
     jsonLd,
-    activeNav: 'satire',
+    activeNav: 'opinion',
     body,
   });
 }
