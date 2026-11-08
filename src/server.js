@@ -634,10 +634,34 @@ app.get('/ads.txt', (req, res) => {
 });
 
 app.get('/robots.txt', (req, res) => {
+  // Owner policy (2026-11-08): the public site is open to readers,
+  // search engines, AI search and AI agent crawlers. AI TRAINING
+  // crawlers are disallowed by name. Multipurpose crawlers that
+  // also power search or answer products (Meta-ExternalAgent,
+  // Amazonbot and peers) are NOT listed: their discovery value
+  // outweighs the training concern. Disallowing Google-Extended
+  // and Applebot-Extended affects only AI training products, not
+  // Google Search, AI Overviews, or Apple search results.
   res
     .type('text/plain')
     .send(
-      'User-agent: *\nAllow: /\nDisallow: /api/\n\nSitemap: ' + render.siteUrl() + '/sitemap.xml\n' +
+      '# The Centennial Ledger: the public site is open to readers, search\n' +
+      '# engines, AI search and AI agent crawlers. AI training crawlers are\n' +
+      '# not permitted.\n' +
+      'User-agent: GPTBot\n' +
+      'User-agent: ClaudeBot\n' +
+      'User-agent: anthropic-ai\n' +
+      'User-agent: CCBot\n' +
+      'User-agent: Google-Extended\n' +
+      'User-agent: Applebot-Extended\n' +
+      'User-agent: cohere-ai\n' +
+      'User-agent: Bytespider\n' +
+      'Disallow: /\n\n' +
+      'User-agent: *\n' +
+      'Content-Signal: search=yes, ai-input=yes, ai-train=no\n' +
+      'Allow: /\n' +
+      'Disallow: /api/\n\n' +
+      'Sitemap: ' + render.siteUrl() + '/sitemap.xml\n' +
       'Sitemap: ' + render.siteUrl() + '/news-sitemap.xml\n'
     );
 });
