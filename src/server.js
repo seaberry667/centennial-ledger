@@ -225,11 +225,15 @@ app.get('/', async (req, res) => {
   // Local & Statewide (design addendum): the eight most recently
   // published Local stories across all eight regions, newest first.
   const localStories = await store.listArticles({ section: 'local', limit: 8 });
-  // The newest Opinion piece feeds the "From Our Editorial Desk"
-  // strip; null while the store holds none, and the strip is then
-  // absent from the page.
+  // The newest Opinion EDITORIAL feeds the "From Our Editorial
+  // Desk" strip — never a satire piece (owner instruction,
+  // 2026-11-08: cartoons live under Opinion since the restructure
+  // but must not take the featured editorial spot). Null while the
+  // store holds no editorial, and the strip is then absent.
   const opinion =
-    (await store.listArticles({ section: 'opinion', limit: 1 }))[0] || null;
+    (await store.listArticles({ section: 'opinion', limit: 10 })).find(
+      (a) => !isSatire(a)
+    ) || null;
   res.type('html').send(
     render.homePage({
       lead: lead || null,

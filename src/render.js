@@ -675,7 +675,7 @@ figure.art-figure{margin:1.1rem 0;background:#ffffff;padding:0}
 figure.art-figure img{display:block;width:100%;height:auto;filter:grayscale(1) contrast(1.06);background:#ffffff}
 figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.4;color:#444;text-align:center;padding:.45rem .3rem .15rem}
 .card figure.art-figure{margin:0 0 .55rem}
-.card figure.art-figure img{aspect-ratio:16/9;object-fit:cover}
+.card figure.art-figure img{height:auto}
 /* ---------- Briefing signup panel ---------- */
 .briefing{background:var(--color-ivory);border:1px solid var(--color-gold);padding:18px;margin:1.4rem 0}
 .briefing .briefing-kicker{color:var(--color-red);font-family:var(--font-ui);font-size:.82rem;font-weight:bold;letter-spacing:.14em;text-transform:uppercase}
@@ -771,7 +771,7 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 .rail-row:first-child{padding-top:0}
 .rail-row:last-child{border-bottom:0;padding-bottom:0}
 .rail-thumb{flex:0 0 100px;width:100px;height:70px;overflow:hidden;background:#fff}
-.rail-thumb img{display:block;width:100%;height:100%;object-fit:cover;object-position:center;filter:grayscale(1) contrast(1.06);background:#fff}
+.rail-thumb img{display:block;width:100%;height:100%;object-fit:contain;object-position:center;filter:grayscale(1) contrast(1.06);background:#fff}
 .rail-group{margin:0 0 1.15rem}
 .rail-group:last-child{margin-bottom:0}
 .rail-group-title{font-family:var(--font-ui);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--color-red);margin:0 0 .2rem;display:flex;align-items:center;gap:.7rem}
@@ -803,7 +803,7 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 .editorial-strip{background:var(--color-ivory);border:1px solid var(--color-border);padding:1rem 1.2rem;margin-top:1.8rem}
 .editorial-strip-row{display:flex;align-items:flex-start;gap:1.2rem;flex-wrap:wrap}
 .editorial-strip figure.art-figure{flex:0 0 240px;margin:0}
-.editorial-strip figure.art-figure img{aspect-ratio:16/9;object-fit:cover;border:1px solid #000}
+.editorial-strip figure.art-figure img{border:1px solid #000}
 .editorial-strip .editorial-text{flex:1;min-width:220px}
 .editorial-strip .editorial-label{color:var(--color-red);font-family:var(--font-ui);font-size:.82rem;font-weight:bold;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap}
 .editorial-strip .editorial-headline{display:block;font-family:var(--font-headline);font-weight:700;font-size:2.3rem;line-height:1.12;margin:0 0 .9rem}
@@ -823,7 +823,7 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 .latest-card h3 a{text-decoration:none}
 .latest-card p{color:#444;font-size:.95rem;margin:.3rem 0}
 .latest-card figure.art-figure{margin:0 0 .55rem}
-.latest-card figure.art-figure img{aspect-ratio:16/9;object-fit:cover}
+.latest-card figure.art-figure img{height:auto}
 /* Reader-facing topic navigation module (homepage) and the topic
    hub boxes on article/section pages: ivory, fine border, no
    internal SEO terminology in the visible copy. */
