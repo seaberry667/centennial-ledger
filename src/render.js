@@ -352,16 +352,58 @@ function shareImageUrl(a) {
   return siteUrl() + '/img/' + a.slug + '.png';
 }
 
+// AdSense unit IDs per placement (owner request, 2026-11-08: spots
+// on section pages and in articles, joining the homepage units).
+// Real IDs are the defaults once the units exist in the Ledger's
+// AdSense account; env vars override. A placement with no unit ID
+// renders its labeled house placeholder instead of sending Google
+// a bogus slot, so the layout holds its shape until the unit is
+// wired in.
+const ADSENSE_SLOTS = {
+  leaderboard: process.env.ADSENSE_SLOT_LEADERBOARD || '',
+  incontent: process.env.ADSENSE_SLOT_INCONTENT || '',
+  rectangle: process.env.ADSENSE_SLOT_RECTANGLE || '',
+};
+
+/** One AdSense display unit: the ins tag plus its push call. */
+function adsenseIns(slotId, format) {
+  return (
+    '<ins class="adsbygoogle" style="display:block" ' +
+    'data-ad-client="' + esc(ADSENSE_CLIENT) + '" ' +
+    'data-ad-slot="' + esc(slotId) + '" ' +
+    'data-ad-format="' + format + '" data-full-width-responsive="true"></ins>' +
+    '<script>(adsbygoogle = window.adsbygoogle || []).push({});</script>'
+  );
+}
+
+/**
+ * In-content ad slot: inside article bodies and between the card
+ * groups on section, Local hub and region pages. A real AdSense
+ * unit when its ID is configured, the dashed house placeholder
+ * otherwise.
+ */
 function adSlot(label) {
-  const pub = process.env.ADSENSE_PUBLISHER_ID;
-  if (pub) {
-    return (
-      '<div class="ad-slot"><ins class="adsbygoogle" style="display:block" ' +
-      'data-ad-client="' + esc(pub) + '" data-ad-slot="0000000000" ' +
-      'data-ad-format="auto" data-full-width-responsive="true"></ins></div>'
-    );
+  if (ADSENSE_SLOTS.incontent) {
+    return '<div class="ad-slot">' + adsenseIns(ADSENSE_SLOTS.incontent, 'auto') + '</div>';
   }
   return '<div class="ad-slot ad-placeholder" aria-hidden="true">Advertisement</div>';
+}
+
+/**
+ * Card grid with an in-content ad slot between the first six cards
+ * and the rest, on pages long enough to carry one. Shorter lists
+ * render as a single plain grid.
+ */
+function cardGridWithAd(articles) {
+  if (!articles.length) return '';
+  if (articles.length <= 6) {
+    return '<div class="grid">' + articles.map(articleCard).join('') + '</div>';
+  }
+  return (
+    '<div class="grid">' + articles.slice(0, 6).map(articleCard).join('') + '</div>' +
+    adSlot() +
+    '<div class="grid">' + articles.slice(6).map(articleCard).join('') + '</div>'
+  );
 }
 
 /**
@@ -396,12 +438,11 @@ function localStatewideBox(items) {
  * otherwise, dressed as in dev.
  */
 function leaderboardAdSlot() {
-  const pub = process.env.ADSENSE_PUBLISHER_ID;
-  if (pub) {
+  if (ADSENSE_SLOTS.leaderboard) {
     return (
-      '<div class="ad-slot ad-leaderboard"><ins class="adsbygoogle" style="display:block" ' +
-      'data-ad-client="' + esc(pub) + '" data-ad-slot="0000000000" ' +
-      'data-ad-format="horizontal" data-full-width-responsive="true"></ins></div>'
+      '<div class="ad-slot ad-leaderboard">' +
+      adsenseIns(ADSENSE_SLOTS.leaderboard, 'horizontal') +
+      '</div>'
     );
   }
   return (
@@ -420,12 +461,11 @@ function leaderboardAdSlot() {
  * placeholder otherwise.
  */
 function rectangleAdSlot() {
-  const pub = process.env.ADSENSE_PUBLISHER_ID;
-  if (pub) {
+  if (ADSENSE_SLOTS.rectangle) {
     return (
-      '<div class="ad-slot ad-rectangle"><ins class="adsbygoogle" style="display:block" ' +
-      'data-ad-client="' + esc(pub) + '" data-ad-slot="0000000000" ' +
-      'data-ad-format="rectangle" data-full-width-responsive="false"></ins></div>'
+      '<div class="ad-slot ad-rectangle">' +
+      adsenseIns(ADSENSE_SLOTS.rectangle, 'auto') +
+      '</div>'
     );
   }
   return (
@@ -1637,9 +1677,7 @@ function sectionPage({ section, articles }) {
   const cardItems =
     section === 'opinion' ? articles.filter((a) => !isSatire(a)) : articles;
   const listing =
-    (cardItems.length
-      ? '<div class="grid">' + cardItems.map(articleCard).join('') + '</div>'
-      : '') +
+    cardGridWithAd(cardItems) +
     (satireItems.length
       ? '<h2 class="section-subhead">Satire &amp; Editorial Cartoons</h2>' +
         '<div class="satire-list">' +
@@ -1650,6 +1688,7 @@ function sectionPage({ section, articles }) {
   // instruction, 2026-11-03): the H1 alone heads the page.
   const body =
     '<h1 class="headline" style="font-size:2.4rem">' + esc(name) + '</h1>' +
+    leaderboardAdSlot() +
     (articles.length
       ? listing
       : '<p>No stories in this section yet. Check back after the next edition.</p>') +
@@ -1705,8 +1744,9 @@ function localHubPage({ articles }) {
   const body =
     '<h1 class="headline" style="font-size:2.4rem">Local News</h1>' +
     regionNavList('') +
+    leaderboardAdSlot() +
     (articles.length
-      ? '<div class="grid">' + articles.map(articleCard).join('') + '</div>'
+      ? cardGridWithAd(articles)
       : '<p>No local stories yet. Check back after the next edition.</p>') +
     hubBox('local');
 
@@ -1728,8 +1768,9 @@ function localRegionPage({ region, articles }) {
     esc(region.name) + '</div>' +
     '<h1 class="headline" style="font-size:2.4rem">' + esc(region.name) + '</h1>' +
     regionNavList(region.slug) +
+    leaderboardAdSlot() +
     (articles.length
-      ? '<div class="grid">' + articles.map(articleCard).join('') + '</div>'
+      ? cardGridWithAd(articles)
       : '<p>No local stories from ' + esc(region.name) + ' yet. Check back after the next edition.</p>') +
     regionHubBox(region);
 
@@ -1951,9 +1992,9 @@ function articlePage(a, related, localStories) {
     // The Why It Matters callout goes after the first complete
     // section (also when it is the only section), before the
     // second H2.
-    if (i === 0) body += whyBox;
+    if (i === 0) body += whyBox + adSlot();
   });
-  if (!sections.length) body += whyBox;
+  if (!sections.length) body += whyBox + adSlot();
 
   // Sources block: the article's full stored source list, one link
   // per source (owner instruction, 2026-11-03: list them all — the
