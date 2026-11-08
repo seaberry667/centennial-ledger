@@ -126,7 +126,13 @@ function fmtDate(iso) {
   }
 }
 
-function fmtDateShort(iso) {
+/**
+ * Card meta date: the article's publication date in Denver time.
+ * (This formatter previously shared the name fmtDateShort with the
+ * last-reviewed formatter above; the duplicate declaration silently
+ * overrode it, which is why the review date printed a day early.)
+ */
+function fmtMetaDate(iso) {
   try {
     return new Intl.DateTimeFormat('en-US', {
       timeZone: 'America/Denver',
@@ -1167,7 +1173,7 @@ function articleCard(a) {
     articleFigure(a, '', { noCaption: true, link: true, width: 600 }) +
     '<div class="kicker">' + esc(a.topicLabel || sectionName(a.section)) + '</div>' +
     '<h3><a href="/article/' + esc(a.slug) + '">' + esc(a.headline) + '</a></h3>' +
-    '<div class="meta">' + esc(fmtDateShort(a.publishedAt)) +
+    '<div class="meta">' + esc(fmtMetaDate(a.publishedAt)) +
     ' &middot; ' + readTimeMinutes(a) + ' min read</div>' +
     '</div>'
   );
@@ -1220,7 +1226,7 @@ function latestCard(a) {
     '<div class="kicker">' + esc(a.topicLabel || sectionName(a.section)) + '</div>' +
     '<h3><a href="/article/' + esc(a.slug) + '">' + esc(a.headline) + '</a></h3>' +
     (excerpt ? '<p>' + inline(excerpt) + '</p>' : '') +
-    '<div class="meta">' + esc(fmtDateShort(a.publishedAt)) +
+    '<div class="meta">' + esc(fmtMetaDate(a.publishedAt)) +
     ' &middot; ' + readTimeMinutes(a) + ' min read</div>' +
     '</div>'
   );
