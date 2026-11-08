@@ -339,6 +339,17 @@ const RETRACTED_SLUGS = new Set([
   'el-paso-county-party-vote-stands-state-republicans-scrap-do-over-despite-sham-warning-q4pxl',
 ]);
 
+// Owner order (2026-11-08): Opinion and Satire are removed from
+// public view. Every Opinion-section article — editorials and
+// satire-format pieces alike — is hidden at the read layer,
+// exactly like a retracted slug: its page 404s and it leaves the
+// homepage, sections, search and sitemaps. The records stay
+// stored and ingest is unaffected; removing this check restores
+// them exactly as stored.
+function isHiddenArticle(a) {
+  return RETRACTED_SLUGS.has(a.slug) || a.section === 'opinion';
+}
+
 /**
  * Owner-ordered Satire display swap (2026-11-05): on the Satire page
  * the gasoline-spill comic sits in the middle and the bicycle comic
@@ -910,12 +921,12 @@ class FileStore {
   }
 
   async getArticle(slug) {
-    if (RETRACTED_SLUGS.has(slug)) return null;
-    return this.data.articles.find((a) => a.slug === slug) || null;
+    const a = this.data.articles.find((x) => x.slug === slug);
+    return a && !isHiddenArticle(a) ? a : null;
   }
 
   async listArticles({ section = null, region = null, spotlight = null, search = null, limit = 50 } = {}) {
-    let rows = this.data.articles.filter((a) => !RETRACTED_SLUGS.has(a.slug));
+    let rows = this.data.articles.filter((a) => !isHiddenArticle(a));
     if (section) rows = rows.filter((a) => a.section === section);
     if (region) rows = rows.filter((a) => slugify(a.region) === region);
     if (spotlight) rows = rows.filter((a) => a.spotlight === spotlight);
@@ -934,7 +945,7 @@ class FileStore {
   }
 
   async countArticles() {
-    return this.data.articles.filter((a) => !RETRACTED_SLUGS.has(a.slug)).length;
+    return this.data.articles.filter((a) => !isHiddenArticle(a)).length;
   }
 
   async addSubscriber(email) {
@@ -1413,7 +1424,8 @@ class PgStore {
   async getArticle(slug) {
     if (RETRACTED_SLUGS.has(slug)) return null;
     const res = await this.pool.query('SELECT * FROM articles WHERE slug = $1', [slug]);
-    return this._row(res.rows[0]);
+    const row = this._row(res.rows[0]);
+    return row && row.section !== 'opinion' ? row : null;
   }
 
   async listArticles({ section = null, region = null, spotlight = null, search = null, limit = 50 } = {}) {
@@ -1434,6 +1446,9 @@ class PgStore {
       params.push([...RETRACTED_SLUGS]);
       where.push(`slug <> ALL($${params.length})`);
     }
+    // Opinion and Satire are not public (owner order, 2026-11-08;
+    // see isHiddenArticle above).
+    where.push("section <> 'opinion'");
     params.push(limit);
     const sql =
       'SELECT * FROM articles' +
@@ -1445,10 +1460,11 @@ class PgStore {
 
   async countArticles() {
     const res = RETRACTED_SLUGS.size
-      ? await this.pool.query('SELECT COUNT(*)::int AS n FROM articles WHERE slug <> ALL($1)', [
-          [...RETRACTED_SLUGS],
-        ])
-      : await this.pool.query('SELECT COUNT(*)::int AS n FROM articles');
+      ? await this.pool.query(
+          "SELECT COUNT(*)::int AS n FROM articles WHERE slug <> ALL($1) AND section <> 'opinion'",
+          [[...RETRACTED_SLUGS]]
+        )
+      : await this.pool.query("SELECT COUNT(*)::int AS n FROM articles WHERE section <> 'opinion'");
     return res.rows[0].n;
   }
 

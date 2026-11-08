@@ -1010,11 +1010,13 @@ function layout({ title, description, path, ogType = 'website', ogImage = '', ar
     '<ul class="dropdown" id="local-submenu">' +
     REGIONS.map((r) => '<li><a href="/local/' + r.slug + '">' + r.name + '</a></li>').join('') +
     '</ul>';
-  // No Home item in the primary navigation (owner restructure,
-  // 2026-11-08): the masthead links to the homepage, which is the
-  // latest-news destination. The seven categories stand alone.
+  // Home returns as the first nav item, at the left (owner order,
+  // 2026-11-08, superseding the same morning's restructure, which
+  // had removed it). Opinion leaves the nav the same day: Opinion
+  // and Satire are no longer public (see the store's read layer).
   const navItems =
-    SECTIONS.map((s) => {
+    '<li><a href="/"' + (activeNav === 'home' ? ' class="active"' : '') + '>Home</a></li>' +
+    SECTIONS.filter((s) => s.slug !== 'opinion').map((s) => {
       // Nav-only short label (owner instruction, 2026-11-08): the
       // Local section is labeled "Local" in the nav bar; its full
       // name "Local News" still stands everywhere else (footer,
@@ -1108,7 +1110,6 @@ ${body}
           <li><a href="/section/education-health">Education &amp; Health</a></li>
           <li><a href="/section/colorado-life">Colorado Life</a></li>
           <li><a href="/section/local">Local News</a></li>
-          <li><a href="/section/opinion">Opinion</a></li>
         </ul>
       </nav>
       <nav class="footer-col" aria-label="Colorado regions">

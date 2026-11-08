@@ -306,10 +306,15 @@ const SECTION_REDIRECTS = {
   taxes: 'business',
   energy: 'energy-environment',
   schools: 'education-health',
-  satire: 'opinion',
 };
 
 app.get('/section/:slug', async (req, res) => {
+  // Opinion and Satire are not public (owner order, 2026-11-08):
+  // their section URLs go home, and their articles 404 at the
+  // store's read layer.
+  if (req.params.slug === 'opinion' || req.params.slug === 'satire') {
+    return res.redirect(301, '/');
+  }
   const redirect = SECTION_REDIRECTS[req.params.slug];
   if (redirect) return res.redirect(301, '/section/' + redirect);
   const section = SECTIONS.find((s) => s.slug === req.params.slug);
@@ -537,7 +542,7 @@ app.get('/sitemap.xml', async (req, res) => {
   const base = render.siteUrl();
   const urls = [
     { loc: base + '/', changefreq: 'hourly', priority: '1.0' },
-    ...SECTIONS.map((s) => ({
+    ...SECTIONS.filter((s) => s.slug !== 'opinion').map((s) => ({
       loc: base + '/section/' + s.slug,
       changefreq: 'hourly',
       priority: '0.8',
