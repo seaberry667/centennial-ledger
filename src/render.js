@@ -866,6 +866,9 @@ function layout({ title, description, path, ogType = 'website', ogImage = '', ar
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
 <link rel="canonical" href="${esc(canonical)}">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta property="og:type" content="${esc(ogType)}">
 <meta property="og:site_name" content="${SITE_NAME}">
 <meta property="og:title" content="${esc(title)}">
@@ -2095,7 +2098,7 @@ function aboutPage() {
     "<h2>Corrections &amp; Accountability</h2>" +
     "<p>Accuracy matters. When we get something wrong, we want to make it right.</p>" +
     "<p>Readers are encouraged to report factual errors, misleading context, broken source links, or questionable attributions. Substantive corrections should be made promptly and identified within the affected article. Significant developments may also warrant an updated story.</p>" +
-    "<p>To request a correction or submit feedback, contact us at <a href=\"mailto:centennialledger@gmail.com\">centennialledger@gmail.com</a>. Please include the article URL and a brief explanation of the issue, along with supporting documentation when available.</p>" +
+    "<p>To request a correction or submit feedback, contact us at <a href=\"mailto:news@centennialledger.com\">news@centennialledger.com</a>. Please include the article URL and a brief explanation of the issue, along with supporting documentation when available.</p>" +
     "<h2>Stay Informed</h2>" +
     "<p>Colorado never runs out of stories worth telling.</p>" +
     "<p>Subscribe to <strong>The Colorado Daily Briefing</strong> for a concise roundup of the day's important developments, from the Capitol to communities across the state.</p>" +
