@@ -143,9 +143,11 @@ app.post('/api/ingest', async (req, res) => {
 // Breaking news ticker (owner request, 2026-11-08): before any
 // public page renders, refresh the ticker contents from the store
 // — the six most recent stories, newest first (owner instruction,
-// 2026-11-08). Satire never appears in it (standing rule: cartoons
-// are never listed among the site's article listings). The ticker
-// is decorative: a failure here must never block a page.
+// 2026-11-08). News stories only: no Opinion/editorial pieces and
+// no satire ever appears in it (owner instruction, 2026-11-08;
+// cartoons are likewise never listed among the site's article
+// listings). The ticker is decorative: a failure here must never
+// block a page.
 app.use(async (req, res, next) => {
   if (
     req.method !== 'GET' ||
@@ -158,7 +160,7 @@ app.use(async (req, res, next) => {
   }
   try {
     const pool = (await store.listArticles({ limit: 60 })).filter(
-      (a) => !isSatire(a)
+      (a) => a.section !== 'opinion' && !isSatire(a)
     );
     render.setTickerItems({
       label: 'BREAKING',
