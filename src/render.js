@@ -879,6 +879,9 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 @media (max-width:900px){.explained-grid{grid-template-columns:1fr}}
 .explained-more{margin-top:1rem;text-align:right}
 .explained-more a{font-family:var(--font-ui);font-weight:700;font-size:.9rem;color:var(--color-red);text-decoration:none}
+.explained-intro{max-width:840px;margin:0 0 1.6rem}
+.explained-intro h2{font-family:var(--font-display);font-weight:700;font-size:1.65rem;line-height:1.2;margin:.6rem 0 .8rem}
+.explained-intro p{font-size:1.06rem;line-height:1.58;margin:.7rem 0}
 .explained-chips{display:flex;gap:.5rem;flex-wrap:wrap;margin:0 0 1.4rem}
 .explained-chips a{font-family:var(--font-ui);font-size:.8rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--color-border);padding:.35rem .7rem;color:#333;text-decoration:none}
 .explained-chips a.active{background:var(--color-navy);color:#fff;border-color:var(--color-navy)}
@@ -1754,7 +1757,14 @@ function explainedPage({ articles, featured, category, cats }) {
   body +=
     '<h1 class="headline" style="font-size:2.4rem">Colorado Explained</h1>' +
     '<p class="dek">The laws, institutions, history, and peculiarities that make Colorado tick.</p>' +
-    '<p>Daily news tells you what is happening in Colorado. Colorado Explained tells you how it works and why it matters: the tax rules, water law, school funding formulas, and local governments that shape everyday life here, researched from primary sources and reviewed on a regular cycle so the answers stay current.</p>';
+    // Owner-supplied top-of-page copy for the series archive
+    // (John, 2026-11-08), verbatim.
+    '<div class="explained-intro">' +
+    '<h2>Colorado Explained: Understanding the Centennial State</h2>' +
+    '<p>Colorado is a state of complicated laws, unique institutions, remarkable geography, and often-confusing public policies. <strong>Colorado Explained</strong>, an ongoing editorial series from <em>The Centennial Ledger</em>, breaks down the issues, systems, and questions that shape everyday life in the Centennial State. From Colorado\'s TABOR law, property taxes, and state government to water rights, energy policy, education, healthcare, housing, and public lands, our in-depth explainers make complex subjects easier to understand.</p>' +
+    '<p>Explore thoroughly researched Colorado guides covering how state and local government works, where taxpayer dollars go, why certain laws exist, and how public policies affect Colorado residents and businesses. We examine the history, facts, competing arguments, and practical consequences behind important Colorado issues, providing clear answers without unnecessary political spin or bureaucratic jargon.</p>' +
+    '<p>Whether you\'re trying to understand a ballot measure, decipher your property tax bill, navigate Colorado regulations, or learn something surprising about the state\'s history and geography, <strong>Colorado Explained helps you make sense of Colorado, one question at a time.</strong></p>' +
+    '</div>';
   const chips = Array.isArray(cats) ? cats : [];
   if (chips.length > 1) {
     body +=
