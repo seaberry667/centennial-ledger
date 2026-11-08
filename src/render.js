@@ -1717,7 +1717,7 @@ function explainedFeature(a) {
   if (excerpt) s += '<div class="feature-excerpt">' + excerpt + '</div>';
   s +=
     '<div class="feature-actions"><a class="btn-read" href="/article/' +
-    esc(a.slug) + '">Read the Explainer &rarr;</a></div>';
+    esc(a.slug) + '">Read More &rarr;</a></div>';
   s += '</div></article>';
   return s;
 }
