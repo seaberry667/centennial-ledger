@@ -557,7 +557,7 @@ const INTERNAL_LINKS_2026_11_09 = [
   },
   {
     slug: "pueblo-insiders-climb-aboard-train-tax-push-rail-chief-pay-hinges-on-vote-komrv",
-    anchor: "the modeled 0.333% sales and use tax",
+    anchor: "a 0.333% sales and use tax",
     target: "pueblo-train-plan-ties-manager-pay-to-sales-tax-ballot-push-w4xmb",
   },
   {
@@ -587,7 +587,7 @@ const INTERNAL_LINKS_2026_11_09 = [
   },
   {
     slug: "14-san-luis-valley-school-leaders-unite-for-school-money-lower-taxes-1ptrq",
-    anchor: "a yes vote on Amendment 87",
+    anchor: "jointly asked voters to support Amendment 87",
     target: "colorado-voters-to-decide-tax-cut-for-most-hike-for-wealthiest-alwcn",
   },
   {
