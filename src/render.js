@@ -866,7 +866,7 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 .editorial-strip .editorial-headline{display:block;font-family:var(--font-headline);font-weight:700;font-size:2.3rem;line-height:1.12;margin:0 0 .9rem}
 .editorial-strip .editorial-excerpt{margin-top:.45rem}
 .editorial-strip .editorial-excerpt p{font-size:1.14rem;margin:0 0 .8em}
-/* ---------- Colorado Explained (series, 2026-11-08) ---------- */
+/* ---------- How Colorado Works (series; launched 2026-11-08 as Colorado Explained, renamed the same day) ---------- */
 .series-label{font-family:var(--font-ui);font-size:.82rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;margin:0 0 .4rem}
 .series-label a{color:var(--color-red);text-decoration:none}
 .short-answer{background:var(--color-ivory);border:1px solid var(--color-border);border-left:4px solid var(--color-gold);padding:1rem 1.2rem;margin:1.4rem 0}
