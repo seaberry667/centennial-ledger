@@ -508,6 +508,187 @@ function applyMidtermFix(article) {
   return changed;
 }
 
+/**
+ * Internal cross-links (owner order, 2026-11-09): in-text links
+ * from an article to earlier Ledger coverage of the same
+ * subject, stored as [anchor](/article/slug) in the body
+ * text, which the renderer turns into a link. Each entry
+ * wraps the FIRST occurrence of its anchor phrase in the
+ * named article's section text. Idempotent: an entry is
+ * skipped once its link is present, so later boots change
+ * nothing. At most 4 internal links per article, counting
+ * the explainer cross-links already in the text when this ran.
+ */
+const INTERNAL_LINKS_2026_11_09 = [
+  {
+    slug: "colorado-gun-buyers-challenge-the-new-state-permit-law-in-federal-court-xe9w2",
+    anchor: "Colorado State Shooting Association",
+    target: "colorado-gun-buyers-must-get-a-permit-first-and-a-lawsuit-asks-a-judge-to-pause-it-uppg1",
+  },
+  {
+    slug: "breckenridge-rental-owner-takes-756-per-bedroom-fee-fight-to-colorado-top-court-h0pbp",
+    anchor: "Colorado's Taxpayer's Bill of Rights",
+    target: "colorado-taxpayers-face-817-million-cut-in-refunds-under-november-ballot-plan-kh94l",
+  },
+  {
+    slug: "weld-county-clears-oil-lease-transfers-to-vitesse-energy-pk370",
+    anchor: "the Mesa County lease plan",
+    target: "mesa-county-backs-lease-plan-covering-6-400-local-acres-cm37a",
+  },
+  {
+    slug: "logan-county-delays-data-center-rules-as-farmers-defend-prairie-a1szj",
+    anchor: "Taxpayer's Bill of Rights (TABOR)",
+    target: "colorado-voters-decide-whether-state-keeps-tax-refunds-for-schools-77nfl",
+  },
+  {
+    slug: "denver-can-force-sidewalk-land-deals-with-39-east-colfax-owners-if-talks-fail-s4ma9",
+    anchor: "condemnation under Colorado law",
+    target: "logan-county-delays-data-center-rules-as-farmers-defend-prairie-a1szj",
+  },
+  {
+    slug: "colorado-river-water-shortage-forces-rethink-of-how-west-shares-water-r8rm2",
+    anchor: "The Colorado River Compact of 1922",
+    target: "who-owns-colorados-water",
+  },
+  {
+    slug: "colorado-river-water-shortage-forces-rethink-of-how-west-shares-water-r8rm2",
+    anchor: "growth and water plans",
+    target: "archuleta-county-charts-next-steps-on-growth-water-plans-0m4l7",
+  },
+  {
+    slug: "pueblo-insiders-climb-aboard-train-tax-push-rail-chief-pay-hinges-on-vote-komrv",
+    anchor: "the modeled 0.333% sales and use tax",
+    target: "pueblo-train-plan-ties-manager-pay-to-sales-tax-ballot-push-w4xmb",
+  },
+  {
+    slug: "polls-close-phil-weiser-wins-race-for-colorado-governor-sud7h",
+    anchor: "the race for Colorado governor",
+    target: "democratic-bus-tour-arrives-late-in-alamosa-draws-about-100-to-society-hall-sfsn1",
+  },
+  {
+    slug: "colorados-nonpartisan-newsrooms-have-a-democratic-donor-problem",
+    anchor: "The Colorado Times Recorder presents",
+    target: "douglas-county-republicans-pull-page-promising-to-publish-petition-signers-names-e7wjd",
+  },
+  {
+    slug: "timnath-parents-fight-closure-plan-for-school-at-95-full-7dmuz",
+    anchor: "Poudre closure plan hits special needs students hardest",
+    target: "parents-warn-poudre-closure-plan-hits-special-needs-students-hardest-r414w",
+  },
+  {
+    slug: "poudre-school-board-closes-four-schools-in-vote-past-midnight-6xzxi",
+    anchor: "Timnath parents fought the closure plan",
+    target: "timnath-parents-fight-closure-plan-for-school-at-95-full-7dmuz",
+  },
+  {
+    slug: "poudre-school-board-closes-four-schools-in-vote-past-midnight-6xzxi",
+    anchor: "the closure plan hits special needs students hardest",
+    target: "parents-warn-poudre-closure-plan-hits-special-needs-students-hardest-r414w",
+  },
+  {
+    slug: "14-san-luis-valley-school-leaders-unite-for-school-money-lower-taxes-1ptrq",
+    anchor: "a yes vote on Amendment 87",
+    target: "colorado-voters-to-decide-tax-cut-for-most-hike-for-wealthiest-alwcn",
+  },
+  {
+    slug: "boulder-valley-school-closures-move-ahead-colorado-supreme-court-rejects-parents-plea-3cfxz",
+    anchor: "Oct. 27, 2026, school closure decision",
+    target: "poudre-school-board-closes-four-schools-in-vote-past-midnight-6xzxi",
+  },
+  {
+    slug: "colorado-taxpayers-face-817-million-cut-in-refunds-under-november-ballot-plan-kh94l",
+    anchor: "the Taxpayer's Bill of Rights",
+    target: "colorado-legislature-2026-session-ends-as-critics-target-taxes-tabor-and-bargaining-bills-gbmrf",
+  },
+  {
+    slug: "colorado-lawmakers-pitch-10-years-for-schools-permanent-cut-to-tax-refunds-phv3c",
+    anchor: "Senate Bill 26-135",
+    target: "colorado-taxpayers-face-817-million-cut-in-refunds-under-november-ballot-plan-kh94l",
+  },
+  {
+    slug: "colorado-voters-to-decide-tax-cut-for-most-hike-for-wealthiest-alwcn",
+    anchor: "flat 4.4% state income tax",
+    target: "colorado-voters-face-rival-income-tax-plans-pulling-opposite-ways-xh8ge",
+  },
+  {
+    slug: "colorado-voters-to-decide-tax-cut-for-most-hike-for-wealthiest-alwcn",
+    anchor: "$817 million cut in refunds",
+    target: "colorado-taxpayers-face-817-million-cut-in-refunds-under-november-ballot-plan-kh94l",
+  },
+  {
+    slug: "fort-collins-boulder-lawmakers-drop-business-tax-break-rollback-after-governor-veto-threat-e6nuj",
+    anchor: "House Bills 1221 and 1222",
+    target: "colorado-legislature-2026-session-ends-as-critics-target-taxes-tabor-and-bargaining-bills-gbmrf",
+  },
+  {
+    slug: "colorado-voters-decide-whether-state-keeps-tax-refunds-for-schools-77nfl",
+    anchor: "Senate Bill 135",
+    target: "colorado-taxpayers-face-817-million-cut-in-refunds-under-november-ballot-plan-kh94l",
+  },
+  {
+    slug: "outside-groups-pour-14-million-into-fight-over-colorado-tax-votes-timwg",
+    anchor: "raise school funding by about $500 million a year",
+    target: "colorado-voters-decide-whether-state-keeps-tax-refunds-for-schools-77nfl",
+  },
+  {
+    slug: "outside-groups-pour-14-million-into-fight-over-colorado-tax-votes-timwg",
+    anchor: "Proposition 136",
+    target: "colorado-voters-face-rival-income-tax-plans-pulling-opposite-ways-xh8ge",
+  },
+  {
+    slug: "how-colorados-tabor-law-actually-works",
+    anchor: "Referendum C, approved in 2005",
+    target: "colorado-taxpayers-face-817-million-cut-in-refunds-under-november-ballot-plan-kh94l",
+  },
+  {
+    slug: "colorado-voters-head-toward-higher-income-taxes-on-top-earners-cut-for-most-3edtp",
+    anchor: "Initiative 232, or Proposition 136",
+    target: "colorado-voters-face-rival-income-tax-plans-pulling-opposite-ways-xh8ge",
+  },
+  {
+    slug: "colorado-voters-head-toward-higher-income-taxes-on-top-earners-cut-for-most-3edtp",
+    anchor: "flat personal and corporate income tax rates",
+    target: "colorado-voters-to-decide-tax-cut-for-most-hike-for-wealthiest-alwcn",
+  },
+  {
+    slug: "mesa-county-phone-line-helps-voters-track-down-100-refund-checks-14hpf",
+    anchor: "Colorado's Taxpayer's Bill of Rights (TABOR)",
+    target: "how-colorados-tabor-law-actually-works",
+  },
+];
+
+function applyInternalLinks(article) {
+  if (!article || !Array.isArray(article.sections)) return false;
+  let changed = false;
+  for (const L of INTERNAL_LINKS_2026_11_09) {
+    if (article.slug !== L.slug) continue;
+    const marker = '](/article/' + L.target + ')';
+    const cells = [];
+    for (const sec of article.sections) {
+      if (!sec) continue;
+      if (typeof sec.lead === 'string') cells.push([sec, 'lead']);
+      if (Array.isArray(sec.paragraphs)) {
+        for (let i = 0; i < sec.paragraphs.length; i++) cells.push([sec.paragraphs, i]);
+      }
+    }
+    let already = false;
+    for (const cell of cells) {
+      if (String(cell[0][cell[1]]).includes(marker)) { already = true; break; }
+    }
+    if (already) continue;
+    for (const cell of cells) {
+      const t = String(cell[0][cell[1]]);
+      const at = t.indexOf(L.anchor);
+      if (at >= 0) {
+        cell[0][cell[1]] = t.slice(0, at) + '[' + L.anchor + '](/article/' + L.target + ')' + t.slice(at + L.anchor.length);
+        changed = true;
+        break;
+      }
+    }
+  }
+  return changed;
+}
+
 const SCHOOLMISTRESS_BLURB_V3 = {
   slug: 'colorado-schoolmistress-teaches-tolerance-all-beliefs-are-equal-some-less-so',
   fromMarker: 'provided nobody takes religion too seriously',
@@ -879,6 +1060,12 @@ class FileStore {
       mistress3.sections[0].lead = SCHOOLMISTRESS_BLURB_V3.toLead;
       this._save();
     }
+    // Internal cross-links (see INTERNAL_LINKS_2026_11_09 above).
+    let linksChanged = false;
+    for (const a of this.data.articles) {
+      if (applyInternalLinks(a)) linksChanged = true;
+    }
+    if (linksChanged) this._save();
   }
 
   _save() {
@@ -1279,6 +1466,31 @@ class PgStore {
       "UPDATE articles SET why_it_matters = $2 WHERE slug = $1 AND COALESCE(why_it_matters, '') = ''",
       [DONOR_WHY_2026.slug, DONOR_WHY_2026.whyItMatters]
     );
+    // Internal cross-links (see INTERNAL_LINKS_2026_11_09 above):
+    // read each named row, wrap the anchor phrases in its section
+    // text, and write back only the rows that changed.
+    const linkSlugs = [
+      ...new Set(INTERNAL_LINKS_2026_11_09.map((l) => l.slug)),
+    ];
+    const linkRows = await this.pool.query(
+      'SELECT slug, sections FROM articles WHERE slug = ANY($1)',
+      [linkSlugs]
+    );
+    for (const row of linkRows.rows) {
+      const probe = {
+        slug: row.slug,
+        sections:
+          typeof row.sections === 'string'
+            ? JSON.parse(row.sections)
+            : row.sections || [],
+      };
+      if (applyInternalLinks(probe)) {
+        await this.pool.query(
+          'UPDATE articles SET sections = $2 WHERE slug = $1',
+          [row.slug, JSON.stringify(probe.sections)]
+        );
+      }
+    }
     // One-time, idempotent series rename (owner order, 2026-11-08):
     // "Colorado Explained" became "How Colorado Works"; the WHERE
     // guard keeps later boots from changing anything.
