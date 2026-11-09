@@ -736,6 +736,18 @@ class FileStore {
       donorWhy.whyItMatters = DONOR_WHY_2026.whyItMatters;
       this._save();
     }
+    // One-time, idempotent series rename (owner order, 2026-11-08):
+    // "Colorado Explained" became "How Colorado Works"; stored rows
+    // are rewritten only while they carry the old name, so later
+    // boots change nothing.
+    let seriesRenamed = false;
+    for (const a of this.data.articles) {
+      if (a.series === 'Colorado Explained') {
+        a.series = 'How Colorado Works';
+        seriesRenamed = true;
+      }
+    }
+    if (seriesRenamed) this._save();
     // One-time, idempotent midterm Opinion accuracy fixes (see
     // MIDTERM_FIX above).
     const midterm = this.data.articles.find(
@@ -1266,6 +1278,12 @@ class PgStore {
     await this.pool.query(
       "UPDATE articles SET why_it_matters = $2 WHERE slug = $1 AND COALESCE(why_it_matters, '') = ''",
       [DONOR_WHY_2026.slug, DONOR_WHY_2026.whyItMatters]
+    );
+    // One-time, idempotent series rename (owner order, 2026-11-08):
+    // "Colorado Explained" became "How Colorado Works"; the WHERE
+    // guard keeps later boots from changing anything.
+    await this.pool.query(
+      "UPDATE articles SET series = 'How Colorado Works' WHERE series = 'Colorado Explained'"
     );
     // One-time, idempotent midterm Opinion accuracy fixes (see
     // MIDTERM_FIX above): read the row, swap the two strings only

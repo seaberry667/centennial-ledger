@@ -153,7 +153,11 @@ app.post('/api/ingest', async (req, res) => {
 // 2026-11-08): an article carries the series designation in
 // addition to its one primary section.
 const isExplained = (a) =>
-  String((a && a.series) || '').trim().toLowerCase() === 'colorado explained';
+  // Series renamed "How Colorado Works" (owner order, 2026-11-08);
+  // membership accepts the old stored name too (boot migration
+  // renames stored rows; stragglers still count as members).
+  ['colorado explained', 'how colorado works'].includes(
+    String((a && a.series) || '').trim().toLowerCase());
 
 // Breaking news ticker (owner request, 2026-11-08): before any
 // public page renders, refresh the ticker contents from the store

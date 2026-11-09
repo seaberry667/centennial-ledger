@@ -94,7 +94,11 @@ function fmtDateShort(iso) {
  * article's primary section.
  */
 function isExplained(a) {
-  return String((a && a.series) || '').trim().toLowerCase() === 'colorado explained';
+  // The series was renamed "How Colorado Works" (owner order,
+  // 2026-11-08); stored rows may still carry the old name (the
+  // store migrates them at boot), so membership accepts both.
+  return ['colorado explained', 'how colorado works'].includes(
+    String((a && a.series) || '').trim().toLowerCase());
 }
 
 /**
@@ -648,7 +652,10 @@ nav.main ul.dropdown a:hover{background:var(--color-ivory)}
 @media (min-width:768px){
   nav.main li.has-dropdown>a::after{content:" \\25BE";font-size:.8em}
 }
-nav.main li.nav-search{margin-left:auto;display:flex;align-items:center}
+nav.main li.nav-search{display:flex;align-items:center}
+nav.main li.nav-hcw{margin-left:auto;display:flex;align-items:center}
+nav.main a.nav-hcw-btn{background:var(--color-red);color:#fff;border-radius:3px;padding:.34rem .7rem;white-space:nowrap}
+nav.main a.nav-hcw-btn:hover{background:#7d181e}
 .nav-search-form{display:flex;align-items:center;gap:.35rem}
 .nav-search-form input[type=search]{padding:.38rem .6rem;border:1px solid #b9b2a0;border-radius:3px;font-size:.95rem;font-family:var(--font-body);width:170px;background:#fff}
 .nav-search-form button{background:none;border:0;cursor:pointer;color:#555;padding:.15rem;display:flex;align-items:center}
@@ -1010,22 +1017,22 @@ function layout({ title, description, path, ogType = 'website', ogImage = '', ar
     '<ul class="dropdown" id="local-submenu">' +
     REGIONS.map((r) => '<li><a href="/local/' + r.slug + '">' + r.name + '</a></li>').join('') +
     '</ul>';
-  // Home returns as the first nav item, at the left (owner order,
-  // 2026-11-08, superseding the same morning's restructure, which
-  // had removed it). Opinion leaves the nav the same day: Opinion
-  // and Satire are no longer public (see the store's read layer).
+  // Nav composition (owner orders, 2026-11-08): no Home link
+  // (removed in the evening, superseding its same-day return);
+  // Opinion is out (no longer public, see the store's read layer);
+  // a "How Colorado Works" button sits at the right, before the
+  // search box — the series (renamed from Colorado Explained the
+  // same evening) joins the nav for the first time.
   const navItems =
-    '<li><a href="/"' + (activeNav === 'home' ? ' class="active"' : '') + '>Home</a></li>' +
     SECTIONS.filter((s) => s.slug !== 'opinion').map((s) => {
       // Nav-only short label (owner instruction, 2026-11-08): the
       // Local section is labeled "Local" in the nav bar; its full
       // name "Local News" still stands everywhere else (footer,
-      // page titles, kickers).
-      // Nav-only labels (owner instructions, 2026-11-08): Local
-      // News shows as "Local" and Politics as "Colorado Politics"
-      // in the nav bar; both full names stand everywhere else.
+      // page titles, kickers). Politics shows under its plain
+      // section name (the nav-only "Colorado Politics" label was
+      // retired the same evening).
       const label =
-        s.slug === 'local' ? 'Local' : s.slug === 'politics' ? 'Colorado Politics' : s.name;
+        s.slug === 'local' ? 'Local' : s.name;
       const link =
         '<a href="/section/' + s.slug + '"' +
         (activeNav === s.slug ? ' class="active"' : '') + '>' + label + '</a>';
@@ -1038,6 +1045,11 @@ function layout({ title, description, path, ogType = 'website', ogImage = '', ar
           chevronSvg + '</button>' + localDropdown + '</li>'
         : '<li>' + link + '</li>';
     }).join('') +
+    // How Colorado Works button at the right side of the nav
+    // (owner order, 2026-11-08), linking to the series archive;
+    // its li carries the auto left margin that pushes the whole
+    // right-side group (button + search) to the right end.
+    '<li class="nav-hcw"><a class="nav-hcw-btn" href="/explained">How Colorado Works</a></li>' +
     // Search box at the right end of the nav row, as in dev: a GET
     // form on the existing /search route, which reads ?q=.
     '<li class="nav-search"><form class="nav-search-form" method="get" action="/search" role="search">' +
@@ -1730,15 +1742,15 @@ function explainedFeature(a) {
  */
 function explainedModule(ex) {
   let s =
-    '<section class="explained-home" aria-label="Colorado Explained">' +
-    '<h2 class="explained-heading">Colorado Explained</h2>';
+    '<section class="explained-home" aria-label="How Colorado Works">' +
+    '<h2 class="explained-heading">How Colorado Works</h2>';
   s += explainedFeature(ex.featured);
   const items = (ex.items || []).filter(Boolean).slice(0, 4);
   if (items.length) {
     s += '<div class="explained-grid">' + items.map(articleCard).join('') + '</div>';
   }
   s +=
-    '<div class="explained-more"><a href="/explained">Explore Colorado Explained &rarr;</a></div></section>';
+    '<div class="explained-more"><a href="/explained">Explore How Colorado Works &rarr;</a></div></section>';
   return s;
 }
 
@@ -1753,7 +1765,7 @@ function explainedPage({ articles, featured, category, cats }) {
     {
       '@context': 'https://schema.org',
       '@type': 'CollectionPage',
-      name: 'Colorado Explained | ' + SITE_NAME,
+      name: 'How Colorado Works | ' + SITE_NAME,
       url: absUrl('/explained'),
       isPartOf: { '@type': 'WebSite', name: SITE_NAME, url: siteUrl() + '/' },
     },
@@ -1770,15 +1782,15 @@ function explainedPage({ articles, featured, category, cats }) {
   ];
   let body = leaderboardAdSlot();
   body +=
-    '<h1 class="headline" style="font-size:2.4rem">Colorado Explained</h1>' +
+    '<h1 class="headline" style="font-size:2.4rem">How Colorado Works</h1>' +
     '<p class="dek">The laws, institutions, history, and peculiarities that make Colorado tick.</p>' +
     // Owner-supplied top-of-page copy for the series archive
     // (John, 2026-11-08), verbatim.
     '<div class="explained-intro">' +
-    '<h2>Colorado Explained: Understanding the Centennial State</h2>' +
-    '<p>Colorado is a state of complicated laws, unique institutions, remarkable geography, and often-confusing public policies. <strong>Colorado Explained</strong>, an ongoing editorial series from <em>The Centennial Ledger</em>, breaks down the issues, systems, and questions that shape everyday life in the Centennial State. From Colorado\'s TABOR law, property taxes, and state government to water rights, energy policy, education, healthcare, housing, and public lands, our in-depth explainers make complex subjects easier to understand.</p>' +
+    '<h2>How Colorado Works: Understanding the Centennial State</h2>' +
+    '<p>Colorado is a state of complicated laws, unique institutions, remarkable geography, and often-confusing public policies. <strong>How Colorado Works</strong>, an ongoing editorial series from <em>The Centennial Ledger</em>, breaks down the issues, systems, and questions that shape everyday life in the Centennial State. From Colorado\'s TABOR law, property taxes, and state government to water rights, energy policy, education, healthcare, housing, and public lands, our in-depth explainers make complex subjects easier to understand.</p>' +
     '<p>Explore thoroughly researched Colorado guides covering how state and local government works, where taxpayer dollars go, why certain laws exist, and how public policies affect Colorado residents and businesses. We examine the history, facts, competing arguments, and practical consequences behind important Colorado issues, providing clear answers without unnecessary political spin or bureaucratic jargon.</p>' +
-    '<p>Whether you\'re trying to understand a ballot measure, decipher your property tax bill, navigate Colorado regulations, or learn something surprising about the state\'s history and geography, <strong>Colorado Explained helps you make sense of Colorado, one question at a time.</strong></p>' +
+    '<p>Whether you\'re trying to understand a ballot measure, decipher your property tax bill, navigate Colorado regulations, or learn something surprising about the state\'s history and geography, <strong>How Colorado Works helps you make sense of Colorado, one question at a time.</strong></p>' +
     '</div>';
   const chips = Array.isArray(cats) ? cats : [];
   if (chips.length > 1) {
@@ -1804,9 +1816,9 @@ function explainedPage({ articles, featured, category, cats }) {
   body +=
     '<p class="last-reviewed">New explainers arrive every Tuesday and Friday. Each article lists its sources and the date it was last reviewed; explainers on law, taxes, and healthcare are rechecked at least every six months, and sooner when the law changes.</p>';
   return layout({
-    title: fitTitle('Colorado Explained: how Colorado laws, water and taxes work', 70),
+    title: fitTitle('How Colorado Works: how Colorado laws, water and taxes work', 70),
     description: fitDescription(
-      'Colorado Explained answers how Colorado works: TABOR, property taxes, water rights, school funding, local government and more, in plain language.'
+      'How Colorado Works answers how Colorado works: TABOR, property taxes, water rights, school funding, local government and more, in plain language.'
     ),
     path: '/explained',
     jsonLd,
@@ -2247,7 +2259,7 @@ function articlePage(a, related, localStories, explainedRelated) {
     '<div class="article-layout"><article class="full">' +
     leaderboardAdSlot() +
     (isExplained(a)
-      ? '<div class="series-label"><a href="/explained">Colorado Explained</a></div>'
+      ? '<div class="series-label"><a href="/explained">How Colorado Works</a></div>'
       : '') +
     '<div class="breadcrumb"><a href="/">Home</a> &rsaquo; <a href="/section/' + a.section + '">' +
     esc(sectionName(a.section)) + '</a> &rsaquo; ' + esc(a.topicLabel || sectionName(a.section)) + '</div>' +
@@ -2364,7 +2376,7 @@ function articlePage(a, related, localStories, explainedRelated) {
       .slice(0, 3);
     if (rel.length) {
       body +=
-        '<section class="explained-related"><h2>More From Colorado Explained</h2><ul>' +
+        '<section class="explained-related"><h2>More From How Colorado Works</h2><ul>' +
         rel
           .map(
             (r) =>
@@ -2378,7 +2390,7 @@ function articlePage(a, related, localStories, explainedRelated) {
     body +=
       '<p class="last-reviewed">Last reviewed ' +
       esc(fmtDateShort(a.lastReviewed || a.publishedAt)) +
-      ' &middot; Part of the <a href="/explained">Colorado Explained</a> series</p>';
+      ' &middot; Part of the <a href="/explained">How Colorado Works</a> series</p>';
   }
   body += '</div></article>';
   // Article sidebar (spec 5): the Briefing signup first, then
