@@ -652,10 +652,7 @@ nav.main ul.dropdown a:hover{background:var(--color-ivory)}
 @media (min-width:768px){
   nav.main li.has-dropdown>a::after{content:" \\25BE";font-size:.8em}
 }
-nav.main li.nav-search{display:flex;align-items:center}
-nav.main li.nav-hcw{margin-left:auto;display:flex;align-items:center}
-nav.main a.nav-hcw-btn{background:var(--color-red);color:#fff;border-radius:3px;padding:.34rem .7rem;white-space:nowrap}
-nav.main a.nav-hcw-btn:hover{background:#7d181e}
+nav.main li.nav-search{margin-left:auto;display:flex;align-items:center}
 .nav-search-form{display:flex;align-items:center;gap:.35rem}
 .nav-search-form input[type=search]{padding:.38rem .6rem;border:1px solid #b9b2a0;border-radius:3px;font-size:.95rem;font-family:var(--font-body);width:170px;background:#fff}
 .nav-search-form button{background:none;border:0;cursor:pointer;color:#555;padding:.15rem;display:flex;align-items:center}
@@ -1020,9 +1017,11 @@ function layout({ title, description, path, ogType = 'website', ogImage = '', ar
   // Nav composition (owner orders, 2026-11-08): no Home link
   // (removed in the evening, superseding its same-day return);
   // Opinion is out (no longer public, see the store's read layer);
-  // a "How Colorado Works" button sits at the right, before the
-  // search box — the series (renamed from Colorado Explained the
-  // same evening) joins the nav for the first time.
+  // "How Colorado Works" — the series renamed from Colorado
+  // Explained the same evening — joins the nav as a plain
+  // left-justified link like the section links, after Local
+  // (an earlier same-evening red button at the right was
+  // corrected by the owner to match the other links).
   const navItems =
     SECTIONS.filter((s) => s.slug !== 'opinion').map((s) => {
       // Nav-only short label (owner instruction, 2026-11-08): the
@@ -1045,11 +1044,11 @@ function layout({ title, description, path, ogType = 'website', ogImage = '', ar
           chevronSvg + '</button>' + localDropdown + '</li>'
         : '<li>' + link + '</li>';
     }).join('') +
-    // How Colorado Works button at the right side of the nav
-    // (owner order, 2026-11-08), linking to the series archive;
-    // its li carries the auto left margin that pushes the whole
-    // right-side group (button + search) to the right end.
-    '<li class="nav-hcw"><a class="nav-hcw-btn" href="/explained">How Colorado Works</a></li>' +
+    // How Colorado Works: a plain nav link like the section
+    // links (owner correction, 2026-11-08), left-justified with
+    // them and highlighted on the series archive like a section
+    // link on its section page.
+    '<li><a href="/explained"' + (activeNav === 'explained' ? ' class="active"' : '') + '>How Colorado Works</a></li>' +
     // Search box at the right end of the nav row, as in dev: a GET
     // form on the existing /search route, which reads ?q=.
     '<li class="nav-search"><form class="nav-search-form" method="get" action="/search" role="search">' +
@@ -1821,6 +1820,7 @@ function explainedPage({ articles, featured, category, cats }) {
       'How Colorado Works answers how Colorado works: TABOR, property taxes, water rights, school funding, local government and more, in plain language.'
     ),
     path: '/explained',
+    activeNav: 'explained',
     jsonLd,
     body,
   });
