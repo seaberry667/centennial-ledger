@@ -361,6 +361,11 @@ function slugify(text) {
  */
 const RETRACTED_SLUGS = new Set([
   'el-paso-county-party-vote-stands-state-republicans-scrap-do-over-despite-sham-warning-q4pxl',
+  // Retracted 2026-11-10 (owner flagged): a Northern Colorado weekend
+  // events guide for Saturday Nov. 7 – Sunday Nov. 8 that the story
+  // cycle published on Tuesday Nov. 10 as if the weekend were still
+  // ahead. Every event in it had already happened.
+  'northern-colorado-families-pack-saturday-with-football-music-free-festivals-93kcl',
 ]);
 
 // Owner order (2026-11-08): Opinion and Satire are removed from
