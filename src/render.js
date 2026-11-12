@@ -999,38 +999,41 @@ article.full figure.article-hero{margin:1.1rem 0}
 .static-page li{margin-bottom:.45em;line-height:1.55}
 .about-tagline{font-size:1.3rem;color:var(--color-navy);margin-bottom:1.2rem}
 .static-page.about-page p,.static-page.about-page li{font-size:1.12rem;line-height:1.65}
-/* About page layout (owner request, 2026-11-12): the page runs the
-   full .wrap width — an ivory hero band, a wide lead with a fact
-   panel beside it, and a two-column grid of ivory section panels.
-   Every rule below is scoped to .about-page; the other static
-   pages keep the narrow .static-page column above. */
+/* About page (owner redesign v2, 2026-11-12): a classic newspaper
+   editorial page at the full .wrap width — a centered nameplate
+   header closed by a traditional double rule (thick over thin),
+   the prose flowing in two ruled text columns with red-caps
+   chapter headings spanning the measure, a centered pull-quote,
+   and a closing two-column band under its own double rule. No
+   boxes or cards. Every rule is scoped to .about-page; the other
+   static pages keep the narrow .static-page column above. */
 .about-page .about-kicker{color:var(--color-red);font-family:var(--font-ui);font-size:.82rem;font-weight:bold;letter-spacing:.14em;text-transform:uppercase}
-.about-hero{background:var(--color-ivory);border:1px solid var(--color-gold);border-bottom:3px solid var(--color-gold);padding:1.9rem 2rem 1.6rem;margin-bottom:1.8rem}
-.about-hero h1{font-size:2.7rem;line-height:1.08;margin:.45rem 0 .55rem}
-.about-hero .about-tagline{font-size:1.5rem;margin:0}
-.about-lead{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:2.2rem;align-items:start}
-.about-lead-text p:first-child{margin-top:0}
-.about-facts{background:var(--color-ivory);border:1px solid var(--color-gold);padding:18px}
-.about-facts ul{list-style:none;margin:.4rem 0 0;padding:0}
-.static-page.about-page .about-facts li{border-top:1px solid var(--color-border);padding:.55rem 0;margin:0;font-family:var(--font-headline);font-size:1.05rem;line-height:1.35}
-.static-page.about-page .about-facts li:first-child{border-top:0;padding-top:.2rem}
-.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.4rem;margin-top:1.8rem}
-.about-panel{background:var(--color-ivory);border:1px solid var(--color-gold);padding:1.3rem 1.4rem 1.1rem}
-.about-page .about-panel h2{color:var(--color-red);font-family:var(--font-ui);font-size:.98rem;font-weight:bold;letter-spacing:.14em;text-transform:uppercase;line-height:1.4;margin:0 0 .7rem}
-.about-panel p{margin:.65em 0}
-.about-panel p:last-child{margin-bottom:0}
-.about-panel ul{margin:.65em 0}
-.about-panel-wide{grid-column:1/-1}
-.about-panel-links{font-family:var(--font-ui);font-size:1rem}
+.about-nameplate{text-align:center;padding-top:.6rem;border-bottom:1px solid var(--color-text)}
+.about-nameplate::after{content:"";display:block;border-bottom:3px solid var(--color-text);margin:1.15rem 0 2px}
+.about-nameplate h1{font-size:3rem;line-height:1.05;margin:.45rem 0 .55rem}
+.about-nameplate .about-tagline{font-size:1.45rem;color:var(--color-navy);margin:0}
+.about-columns{margin-top:1.9rem}
+.about-columns p{margin:0 0 1em}
+.about-dropcap::first-letter{font-family:var(--font-headline);font-weight:700;font-size:3.3em;float:left;line-height:.82;padding:.05em .14em 0 0}
+.static-page.about-page .about-columns h2,.static-page.about-page .about-closing h2{font-family:var(--font-ui);color:var(--color-red);font-size:1rem;font-weight:bold;letter-spacing:.13em;text-transform:uppercase;line-height:1.4;border-bottom:1px solid var(--color-border);padding-bottom:.45rem;margin:1.8em 0 .85em;column-span:all;break-after:avoid}
+.about-standards{list-style:none;margin:0 0 1em;padding:0}
+.static-page.about-page .about-standards li{border-top:1px solid var(--color-border);padding:.6rem 0;margin:0}
+.static-page.about-page .about-standards li:first-child{border-top:0;padding-top:.1rem}
+.about-pullquote{column-span:all;text-align:center;font-family:var(--font-headline);font-style:italic;font-size:1.75rem;line-height:1.35;color:var(--color-navy);border-top:1px solid var(--color-border);border-bottom:1px solid var(--color-border);padding:1.5rem 2rem;margin:2.2rem 0 0}
+.about-closing{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:2.6rem;margin-top:2.8rem;border-top:1px solid var(--color-text);padding-top:1.7rem}
+.about-closing::before{content:"";position:absolute;left:0;right:0;top:-7px;border-top:3px solid var(--color-text)}
+.about-closing p{margin:0 0 1em}
+.static-page.about-page .about-closing h2{margin-top:0}
+@media (min-width:900px){
+.about-columns{column-count:2;column-gap:2.6rem;column-rule:1px solid var(--color-border)}
+}
 @media (max-width:900px){
-.about-lead{grid-template-columns:1fr}
-.about-grid{grid-template-columns:1fr}
-.about-panel-wide{grid-column:auto}
+.about-closing{grid-template-columns:1fr;gap:.4rem}
 }
 @media (max-width:767px){
-.about-hero{padding:1.3rem 1.1rem 1.1rem}
-.about-hero h1{font-size:2rem}
-.about-hero .about-tagline{font-size:1.3rem}
+.about-nameplate h1{font-size:2.1rem}
+.about-nameplate .about-tagline{font-size:1.25rem}
+.about-pullquote{font-size:1.35rem;padding:1.1rem .4rem}
 }
 /* ---------- Footer ---------- */
 footer{background:#fff;color:#3d3d3d;border-top:4px double var(--color-text);font-family:var(--font-body);font-size:.92rem;margin-top:2rem;position:relative}
@@ -3158,45 +3161,29 @@ function staticPage(kind) {
  * in the owner's draft.
  */
 function aboutPage() {
-  const hero =
-    '<header class="about-hero">' +
+  const nameplate =
+    '<header class="about-nameplate">' +
     '<div class="about-kicker">About Us</div>' +
     '<h1>About The Centennial Ledger</h1>' +
     "<p class=\"about-tagline\"><em>A Clear View of Colorado.</em></p>" +
     '</header>';
-  const lead =
-    '<div class="about-lead"><div class="about-lead-text">' +
-    "<p>Colorado deserves a closer look.</p>" +
+  const columns =
+    '<div class="about-columns">' +
+    "<p class=\"about-dropcap\">Colorado deserves a closer look.</p>" +
     "<p>From the State Capitol in Denver to county courthouses, school board meetings, and city halls across all 64 counties, the decisions shaping our state deserve attention, scrutiny, and a little healthy skepticism.</p>" +
     "<p><strong>The Centennial Ledger</strong> is an independent digital newspaper dedicated to Colorado politics, government, public policy, and local affairs. We cover the stories that affect how Coloradans live, work, raise families, spend their money, and exercise their freedoms.</p>" +
     "<p>Our mission is straightforward: make Colorado news accessible, informative, and worth reading.</p>" +
     "<p>We believe good journalism should ask difficult questions, follow the public's money, challenge official narratives, and explain why events matter. We also believe a newspaper should have some personality. Serious reporting and a sharp editorial wit have shared newspaper pages for centuries. We see no reason to abandon that tradition.</p>" +
-    '</div>' +
-    '<aside class="about-facts">' +
-    '<div class="about-kicker">At a Glance</div>' +
-    '<ul>' +
-    '<li>Statewide — all 64 counties</li>' +
-    '<li>Six news sections</li>' +
-    '<li>Eight local regions</li>' +
-    '<li>A free weekday newsletter</li>' +
-    '<li>A daily podcast</li>' +
-    '</ul>' +
-    '</aside></div>';
-  const panels =
-    '<div class="about-grid">' +
-    '<section class="about-panel">' +
     "<h2>Statewide Coverage, Local Perspective</h2>" +
     "<p>Colorado is more than Denver, and the stories that matter don't always make the evening news.</p>" +
     "<p>Our coverage spans state politics, constitutional rights, taxation, energy, education, elections, and local government. We pay particular attention to public decisions that may receive little attention outside the communities they affect.</p>" +
     "<p>Whether it's a Supreme Court case, a contentious school board vote, a county budget, or a new regulation from the Capitol, our goal is to explain what happened, who's responsible, and what it means for Coloradans.</p>" +
-    '</section>' +
-    '<section class="about-panel">' +
     "<h2>How Our Stories Are Produced</h2>" +
     "<p>We believe readers deserve to know how their news is made.</p>" +
     "<p>The Centennial Ledger uses artificial intelligence to research, organize, and write much of its news coverage from publicly available sources, including government documents, court records, legislative materials, official announcements, and reporting by established news organizations.</p>" +
     "<p><strong>We are transparent about this process.</strong> AI-generated writing is not a substitute for firsthand reporting or independent verification, and it can contain errors. We encourage readers to consult the original materials linked in our articles, particularly when evaluating disputed claims or developing stories.</p>" +
     "<p>Our editorial standards emphasize:</p>" +
-    "<ul>" +
+    "<ul class=\"about-standards\">" +
     "<li><strong>Source transparency:</strong> We aim to link directly to the documents, records, and original reporting supporting our coverage.</li>" +
     "<li><strong>Accurate attribution:</strong> Information originating with another news organization should be properly credited.</li>" +
     "<li><strong>Facts before conclusions:</strong> Allegations, opinions, and established facts should be clearly distinguished.</li>" +
@@ -3204,35 +3191,32 @@ function aboutPage() {
     "<li><strong>Accountability:</strong> Errors should be acknowledged and corrected, not quietly ignored.</li>" +
     "</ul>" +
     "<p>We do not present AI-generated material as firsthand eyewitness reporting or fabricate interviews, quotations, or sources.</p>" +
-    '</section>' +
-    '<section class="about-panel">' +
     "<h2>News, Opinion &amp; Satire</h2>" +
     "<p>Our news coverage is intended to inform. Our opinion pages are intended to provoke thought, encourage debate, and occasionally raise an eyebrow.</p>" +
     "<p>Editorials and commentary may take strong positions on the issues and personalities shaping Colorado. Those views belong in clearly identified opinion content, not disguised as impartial reporting.</p>" +
     "<p>Our satire and political cartoons draw on the long tradition of American newspaper commentary, where humor, caricature, and pointed criticism have always had a place.</p>" +
     "<p>Illustrations, including AI-generated imagery, are used to complement our coverage. Such images are illustrative representations, not documentary photographs of actual events, unless explicitly identified otherwise.</p>" +
-    '</section>' +
-    '<section class="about-panel">' +
     "<h2>Editorial Mission</h2>" +
     "<p>The Centennial Ledger is an independent Colorado news publication covering the people, policies, institutions, and decisions shaping our state. We believe in fiscal accountability, individual liberty, limited government, public transparency, and responsible stewardship of taxpayer resources. Through original reporting, thoughtful analysis, and commentary, we aim to help Coloradans better understand the issues affecting their communities.</p>" +
-    '</section>' +
-    '<section class="about-panel">' +
     "<h2>Independence &amp; Ownership</h2>" +
     "<p>The Centennial Ledger is an independently operated publication. We are not affiliated with any political party, candidate, political campaign, or government agency.</p>" +
     "<p>Editorial independence does not require the absence of opinions. It requires the freedom to question powerful institutions, scrutinize public officials, and follow the facts regardless of whom they favor.</p>" +
     "<p>Our allegiance is to our readers and to Colorado.</p>" +
-    '</section>' +
-    '<section class="about-panel">' +
+    '<blockquote class="about-pullquote">Our allegiance is to our readers and to Colorado.</blockquote>' +
+    '</div>';
+  const closing =
+    '<div class="about-closing">' +
+    '<section>' +
     "<h2>Corrections &amp; Accountability</h2>" +
     "<p>Accuracy matters. When we get something wrong, we want to make it right.</p>" +
     "<p>Readers are encouraged to report factual errors, misleading context, broken source links, or questionable attributions. Substantive corrections should be made promptly and identified within the affected article. Significant developments may also warrant an updated story.</p>" +
     "<p>To request a correction or submit feedback, contact us at <a href=\"mailto:news@centennialledger.com\">news@centennialledger.com</a>. Please include the article URL and a brief explanation of the issue, along with supporting documentation when available.</p>" +
     '</section>' +
-    '<section class="about-panel about-panel-wide">' +
+    '<section>' +
     "<h2>Stay Informed</h2>" +
     "<p>Colorado never runs out of stories worth telling.</p>" +
-    "<p>Subscribe to <strong>The Colorado Daily Briefing</strong> for a concise roundup of the day's important developments, from the Capitol to communities across the state.</p>" +
-    "<p class=\"about-panel-links\"><a href=\"/subscribe\">Subscribe to the newsletter</a> &middot; <a href=\"https://open.spotify.com/show/5r0ObdqenGKnYskuKRxWrX\" target=\"_blank\" rel=\"noopener\">The daily podcast on Spotify</a></p>" +
+    "<p>Subscribe to our free weekday newsletter for a concise roundup of the day's important developments, from the Capitol to communities across the state.</p>" +
+    "<p><a href=\"/subscribe\">Subscribe to the newsletter</a> &middot; <a href=\"https://open.spotify.com/show/5r0ObdqenGKnYskuKRxWrX\" target=\"_blank\" rel=\"noopener\">The daily podcast on Spotify</a></p>" +
     "<p><strong>The Centennial Ledger. A Clear View of Colorado.</strong></p>" +
     '</section>' +
     '</div>';
@@ -3242,7 +3226,7 @@ function aboutPage() {
       'The Centennial Ledger is an independent Colorado digital newspaper covering politics, rights, taxes, energy, schools and local news in all 64 counties.'
     ),
     path: '/about',
-    body: '<div class="static-page about-page">' + hero + lead + panels + '</div>',
+    body: '<div class="static-page about-page">' + nameplate + columns + closing + '</div>',
   });
 }
 
