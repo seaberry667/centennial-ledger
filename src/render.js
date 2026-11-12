@@ -7,7 +7,7 @@
  * is centralized in layout().
  */
 
-const { SECTIONS, REGIONS, sectionName, isSatire } = require('./store');
+const { SECTIONS, REGIONS, sectionName, isSatire, regionSlug } = require('./store');
 const { topbarSegment } = require('./weather');
 
 const SITE_NAME = 'The Centennial Ledger';
@@ -990,6 +990,43 @@ footer::before{content:"";position:absolute;top:-8px;left:0;right:0;height:1px;b
   .footer-inner{padding-left:16px;padding-right:16px}
   .footer-bar-inner{padding-left:16px;padding-right:16px}
 }
+/* Newsletter signup and preference center (2026-11-12): built on the
+   .briefing panel language, minimal additions in the same style. */
+.nl-module .briefing-title{font-size:1.4rem}
+.nl-panel{background:var(--color-ivory);border:1px solid var(--color-gold);padding:22px;max-width:760px;margin:1rem 0}
+.nl-panel h2{font-family:var(--font-headline);font-size:1.3rem;margin:1.2rem 0 .5rem}
+.nl-panel h2:first-of-type{margin-top:.4rem}
+.nl-field{margin-bottom:1rem}
+.nl-field label{display:block;font-family:var(--font-ui);font-weight:600;font-size:.92rem;margin-bottom:.35rem}
+.nl-field input[type="email"],.nl-field input[type="text"]{width:100%;padding:.55rem;border:1px solid #b9b2a0;font-family:var(--font-body);font-size:1rem;background:#fff}
+.nl-checks{display:grid;grid-template-columns:1fr 1fr;gap:.35rem .9rem;margin:.3rem 0 .6rem}
+.nl-check{display:flex;gap:.5rem;align-items:flex-start;font-size:1rem;line-height:1.35}
+.nl-check input{margin-top:.25rem}
+.nl-radio{display:flex;gap:.5rem;align-items:flex-start;font-size:1rem;margin:.25rem 0}
+.nl-radio input{margin-top:.25rem}
+.nl-primary{display:block;width:100%;background:var(--color-red);color:#fff;border:0;padding:.6rem;font-family:var(--font-ui);font-size:1rem;font-weight:600;cursor:pointer}
+.nl-primary:hover{background:#7d181e}
+.nl-note-small{font-size:.9rem;color:#555;margin:.6rem 0 0}
+.nl-notice{border:1px solid var(--color-gold);background:var(--color-ivory);padding:.8rem 1rem;margin:0 0 1rem;max-width:760px}
+.nl-danger{background:#fff;border:1.5px solid var(--color-red);color:var(--color-red);font-family:var(--font-ui);font-weight:600;padding:.5rem 1rem;cursor:pointer}
+.nl-danger:hover{background:var(--color-red);color:#fff}
+.footer-signup{display:flex;gap:.4rem;margin:.4rem 0 .2rem}
+.footer-signup input{flex:1;min-width:0;padding:.45rem;border:1px solid #b9b2a0;font-family:var(--font-body);font-size:.95rem;background:#fff}
+.footer-signup button{background:var(--color-red);color:#fff;border:0;padding:.45rem .8rem;font-family:var(--font-ui);font-weight:600;cursor:pointer}
+.footer-pref-link{font-size:.88rem;margin:.3rem 0 0}
+.admin-cards{display:flex;gap:.8rem;flex-wrap:wrap;margin:.8rem 0 1.2rem}
+.admin-card{border:1px solid var(--color-border);background:var(--color-ivory);padding:.7rem 1rem;min-width:140px}
+.admin-card .num{font-family:var(--font-headline);font-size:1.55rem;line-height:1.1}
+.admin-card .lbl{font-family:var(--font-ui);font-size:.8rem;color:#555}
+table.admin-table{border-collapse:collapse;width:100%;margin:.5rem 0 1.4rem}
+.admin-table th,.admin-table td{border:1px solid var(--color-border);padding:.35rem .5rem;text-align:left;font-size:.92rem;vertical-align:top}
+.admin-table th{font-family:var(--font-ui);background:var(--color-ivory)}
+.admin-preview{border:1px solid var(--color-border);margin:.6rem 0 1rem;background:#fff}
+.admin-section{margin:1.6rem 0}
+@media (max-width:767px){
+  .nl-checks{grid-template-columns:1fr}
+  .nl-panel{padding:16px}
+}
 `;
 
 function layout({ title, description, path, ogType = 'website', ogImage = '', articleMeta = null, jsonLd = [], activeNav = '', body }) {
@@ -1141,8 +1178,13 @@ ${body}
           <li><a href="https://www.instagram.com/centennialledger" target="_blank" rel="noopener">Instagram</a></li>
         </ul>
         <img class="footer-ornament" src="/section-break.png" alt="" width="642" height="26">
-        <p class="footer-stay-text">The Colorado Daily Briefing in your inbox.</p>
-        <a class="btn-signup" href="/subscribe">Sign Up &rarr;</a>
+        <p class="footer-stay-text">The Colorado Daily Brief, free in your inbox Monday to Friday.</p>
+        <form class="footer-signup" method="post" action="/briefing">
+          <input type="hidden" name="source" value="footer">
+          <input type="email" name="email" required placeholder="Your email address" aria-label="Email address">
+          <button type="submit">Subscribe</button>
+        </form>
+        <p class="footer-pref-link"><a href="/preferences">Manage your email preferences</a></p>
       </div>
     </div>
   </div>
@@ -1253,17 +1295,83 @@ function latestCard(a) {
   );
 }
 
-function briefingBox(thanks) {
+function briefingBox(thanks, source) {
   return (
     '<section class="briefing">' +
-    '<div class="briefing-kicker">The Colorado Briefing</div>' +
-    '<h2 class="briefing-title">The Colorado Daily Briefing</h2>' +
-    '<p class="briefing-tag">A smart, concise roundup of the day\'s top Colorado news, plus what to watch next across the state.</p>' +
+    '<div class="briefing-kicker">Free Weekday Newsletter</div>' +
+    '<h2 class="briefing-title">The Colorado Daily Brief</h2>' +
+    '<p class="briefing-tag">The day\'s top Colorado stories, in your inbox before the workday starts.</p>' +
     (thanks
-      ? '<p><strong>Thank you. You are on the list.</strong></p>'
-      : '<form method="post" action="/briefing"><input type="email" name="email" required placeholder="Your email address" aria-label="Email address"><button type="submit">Subscribe</button></form>') +
-    '<p class="briefing-note">Get the briefing in your inbox, Monday-Friday.</p>' +
+      ? '<p><strong>Thank you. Please check your inbox to confirm your subscription.</strong></p>'
+      : '<form method="post" action="/briefing"><input type="hidden" name="source" value="' +
+        esc(source || 'briefing-box') +
+        '"><input type="email" name="email" required placeholder="Your email address" aria-label="Email address"><button type="submit">Subscribe</button></form>') +
+    '<p class="briefing-note">Free to subscribe. No spam. Unsubscribe or change your preferences anytime. Monday to Friday.</p>' +
     '</section>'
+  );
+}
+
+/**
+ * Compact contextual signup module: an email field plus hidden
+ * topic/region preselections, posting to /subscribe-quick. Used at
+ * the end of articles and on section and region pages. After the
+ * reader confirms from their inbox they can adjust everything in
+ * the preference center, so skipping customization never blocks
+ * the signup.
+ */
+function signupModule({ heading, text, source, topic, region, returnTo }) {
+  return (
+    '<section class="briefing nl-module">' +
+    '<div class="briefing-kicker">Newsletter</div>' +
+    '<h2 class="briefing-title">' + esc(heading) + '</h2>' +
+    '<p class="briefing-tag">' + esc(text) + '</p>' +
+    '<form method="post" action="/subscribe-quick">' +
+    '<input type="hidden" name="source" value="' + esc(source || 'module') + '">' +
+    (topic ? '<input type="hidden" name="topics" value="' + esc(topic) + '">' : '') +
+    (region ? '<input type="hidden" name="regions" value="' + esc(region) + '">' : '') +
+    (returnTo ? '<input type="hidden" name="return" value="' + esc(returnTo) + '">' : '') +
+    '<input type="email" name="email" required placeholder="Your email address" aria-label="Email address">' +
+    '<button type="submit">Subscribe for Free</button></form>' +
+    '<p class="briefing-note">Free to subscribe. No spam. Unsubscribe or change your preferences anytime.</p>' +
+    '</section>'
+  );
+}
+
+/** Checkbox grid of the site's topics (its sections), for forms. */
+function topicCheckboxes(selected) {
+  const sel = new Set(selected || []);
+  return (
+    '<div class="nl-checks">' +
+    SECTIONS.map(
+      (s) =>
+        '<label class="nl-check"><input type="checkbox" name="topics" value="' +
+        esc(s.slug) +
+        '"' +
+        (sel.has(s.slug) ? ' checked' : '') +
+        '> <span>' +
+        esc(s.name) +
+        '</span></label>'
+    ).join('') +
+    '</div>'
+  );
+}
+
+/** Checkbox grid of the site's regions, for forms. */
+function regionCheckboxes(selected) {
+  const sel = new Set(selected || []);
+  return (
+    '<div class="nl-checks">' +
+    REGIONS.map(
+      (r) =>
+        '<label class="nl-check"><input type="checkbox" name="regions" value="' +
+        esc(r.slug) +
+        '"' +
+        (sel.has(r.slug) ? ' checked' : '') +
+        '> <span>' +
+        esc(r.name) +
+        '</span></label>'
+    ).join('') +
+    '</div>'
   );
 }
 
@@ -1894,7 +2002,7 @@ function homePage({ lead, second, third, latest, railGroups, latestRow, localSto
         ? '<section class="rail-latest" aria-label="Latest stories by section">' +
           groups.map(railSectionGroup).join('') + '</section>'
         : '') +
-      briefingBox(briefingThanks) +
+      briefingBox(briefingThanks, 'homepage') +
       localStatewideBox(localStories) +
       rectangleAdSlot() +
       '</aside></div>';
@@ -1917,7 +2025,7 @@ function homePage({ lead, second, third, latest, railGroups, latestRow, localSto
     body += SAVE_SCRIPT + SHARE_SCRIPT;
   } else {
     body += '<section class="lead-story"><h1 class="headline">Colorado news, reported plainly.</h1><p class="dek">New stories are on the way.</p></section>';
-    body += briefingBox(briefingThanks);
+    body += briefingBox(briefingThanks, 'homepage');
   }
 
   return layout({
@@ -1983,6 +2091,13 @@ function sectionPage({ section, articles }) {
     (articles.length
       ? listing
       : '<p>No stories in this section yet. Check back after the next edition.</p>') +
+    signupModule({
+      heading: 'Follow ' + name + ' News by Email',
+      text: 'New ' + name + ' stories from The Centennial Ledger, delivered when they publish.',
+      source: 'section-' + section,
+      topic: section,
+      returnTo: '/section/' + section,
+    }) +
     hubBox(section);
   return layout({
     title: fitTitle(meta.title, 70),
@@ -2039,6 +2154,13 @@ function localHubPage({ articles }) {
     (articles.length
       ? cardGridWithAd(articles, { kicker: false })
       : '<p>No local stories yet. Check back after the next edition.</p>') +
+    signupModule({
+      heading: 'Follow Local News by Email',
+      text: 'Local stories from across Colorado, delivered when they publish.',
+      source: 'section-local',
+      topic: 'local',
+      returnTo: '/section/local',
+    }) +
     hubBox('local');
 
   return layout({
@@ -2063,6 +2185,13 @@ function localRegionPage({ region, articles }) {
     (articles.length
       ? cardGridWithAd(articles, { kicker: false })
       : '<p>No local stories from ' + esc(region.name) + ' yet. Check back after the next edition.</p>') +
+    signupModule({
+      heading: 'Get ' + region.name + ' News Alerts',
+      text: 'Local stories from ' + region.name + ', delivered when they publish.',
+      source: 'region-' + region.slug,
+      region: region.slug,
+      returnTo: path,
+    }) +
     regionHubBox(region);
 
   return layout({
@@ -2397,10 +2526,41 @@ function articlePage(a, related, localStories, explainedRelated) {
   // Local & Statewide, then a single rectangle advertisement.
   body +=
     '<aside class="article-rail" aria-label="Sidebar">' +
-    briefingBox(false) +
+    briefingBox(false, 'article') +
     localStatewideBox(localStories) +
     rectangleAdSlot() +
     '</aside></div>';
+
+  // Contextual newsletter module at the end of the article: the
+  // article's section is preselected as a topic, and a Local
+  // article's region too. The heading names the place or section
+  // so the offer matches the story the reader just finished.
+  if (!isSatire(a)) {
+    const regionOfArticle = a.region ? regionSlug(a.region) : '';
+    const regionEntry = REGIONS.find((r) => r.slug === regionOfArticle);
+    let moduleHeading;
+    let moduleText;
+    if (a.section === 'local' && regionEntry) {
+      moduleHeading = 'Get ' + regionEntry.name + ' News Delivered to Your Inbox';
+      moduleText =
+        'Local stories from ' + regionEntry.name +
+        ', plus the day\'s top Colorado news, by email.';
+    } else {
+      moduleHeading =
+        'Get ' + sectionName(a.section) + ' News Delivered to Your Inbox';
+      moduleText =
+        'New ' + sectionName(a.section) +
+        ' stories from The Centennial Ledger, plus the day\'s top Colorado news, by email.';
+    }
+    body += signupModule({
+      heading: moduleHeading,
+      text: moduleText,
+      source: 'article-' + a.section,
+      topic: a.section,
+      region: a.section === 'local' && regionEntry ? regionEntry.slug : '',
+      returnTo: '/article/' + a.slug,
+    });
+  }
 
   if (related && related.length) {
     body += '<h2 style="font-family:\'Playfair Display\',Georgia,serif">More in ' + esc(sectionName(a.section)) +
@@ -2427,32 +2587,327 @@ function articlePage(a, related, localStories, explainedRelated) {
   });
 }
 
-function subscribePage() {
-  const tiers = [
-    { name: 'Free', price: '$0', per: '', features: ['Front page and section headlines', 'The Colorado Briefing, Monday to Friday', 'Breaking news alerts'], key: 'free' },
-    { name: 'Patriot', price: '$6.99', per: '/month', features: ['Full access to every story', 'Deeper reporting on the big stories', 'Saved stories and reading lists'], key: 'patriot' },
-    { name: 'Founding', price: '$12.99', per: '/month', features: ['Everything in Patriot', 'Founding member recognition', 'Direct line to the editors'], key: 'founding' },
-  ];
+function subscribePage(opts) {
+  const o = opts || {};
+  let notice = '';
+  if (o.sent) {
+    notice =
+      '<div class="nl-notice"><strong>Thank you.</strong> We have sent a confirmation email to ' +
+      esc(o.email || 'your inbox') +
+      '. Click the link in that email to finish signing up. You can set topics and regions there too, or leave them for later.</div>';
+  } else if (o.error) {
+    notice =
+      '<div class="nl-notice"><strong>That email address does not look right.</strong> Check it and try again.</div>';
+  }
   const body =
-    '<div class="kicker">Membership</div><h1 class="headline" style="font-size:2.4rem">Subscribe to The Centennial Ledger</h1>' +
-    '<p class="dek">Support independent Colorado reporting. Paid checkout opens shortly; pick a tier and we will email you the moment billing goes live.</p>' +
-    '<div class="tiers">' +
-    tiers
+    '<div class="kicker">Newsletter</div>' +
+    '<h1 class="headline" style="font-size:2.4rem">Stay Informed. Stay Colorado.</h1>' +
+    '<p class="dek">Get Colorado\'s top stories delivered to your inbox. Subscribe to the free morning briefing, follow your favorite topics, or receive news from the regions that matter to you.</p>' +
+    notice +
+    '<form class="nl-panel" method="post" action="/subscribe">' +
+    '<input type="hidden" name="source" value="subscribe-page">' +
+    '<div class="nl-field"><label for="nl-email">Email address</label>' +
+    '<input id="nl-email" type="email" name="email" required placeholder="Your email address" value="' +
+    esc(o.email || '') +
+    '"></div>' +
+    '<div class="nl-field"><label for="nl-name">First name (optional)</label>' +
+    '<input id="nl-name" type="text" name="first_name" placeholder="First name"></div>' +
+    '<h2>The Colorado Daily Brief</h2>' +
+    '<label class="nl-check"><input type="checkbox" name="daily_brief" checked> <span>Send me The Colorado Daily Brief, the free weekday morning newsletter.</span></label>' +
+    '<h2>Topics</h2>' +
+    '<p class="nl-note-small" style="margin:0 0 .4rem">Pick the sections you want in a personal digest email. Leave them all blank if you only want the Daily Brief.</p>' +
+    topicCheckboxes([]) +
+    '<h2>Regions</h2>' +
+    '<p class="nl-note-small" style="margin:0 0 .4rem">Pick the parts of Colorado you want local news from.</p>' +
+    regionCheckboxes([]) +
+    '<button class="nl-primary" type="submit">Subscribe for Free</button>' +
+    '<p class="nl-note-small">Free to subscribe. No spam. Unsubscribe or change your preferences anytime.</p>' +
+    '<p class="nl-note-small">If you pick topics or regions, we will also send a digest of matching stories, once a day on weekdays by default. You can change the frequency, pause, or stop it in your preferences at any time.</p>' +
+    '</form>';
+  return layout({
+    title: fitTitle('Subscribe free: Colorado news by email, The Centennial Ledger', 70),
+    description: fitDescription(
+      'Subscribe free to The Centennial Ledger by email. Get the weekday Colorado Daily Brief, follow topics like politics, taxes, energy and schools, or get news from your region.'
+    ),
+    path: '/subscribe',
+    body,
+  });
+}
+
+/** Landing page for /preferences: ask for the address, email a link. */
+function preferencesLandingPage(opts) {
+  const o = opts || {};
+  const body =
+    '<div class="static-page"><h1>Manage Your Email Preferences</h1>' +
+    (o.sent
+      ? '<p>We have sent a manage-preferences link to that address. The link works for 30 days. If no email arrives, check that the address matches the one you subscribed with.</p>'
+      : '<p>Enter the email address you subscribed with and we will send you a link to your preference center. There is no password. From the preference center you can change your topics, regions and digest frequency, pause your subscription, change your email address, or unsubscribe.</p>' +
+        '<form class="nl-panel" method="post" action="/preferences/request">' +
+        '<div class="nl-field"><label for="pref-email">Email address</label>' +
+        '<input id="pref-email" type="email" name="email" required placeholder="Your email address"></div>' +
+        '<button class="nl-primary" type="submit">Email Me the Link</button>' +
+        '</form>') +
+    '</div>';
+  return layout({
+    title: fitTitle('Manage your email preferences, The Centennial Ledger', 70),
+    description: fitDescription(
+      'Manage your Centennial Ledger email subscriptions: change topics, regions and digest frequency, pause, change your address, or unsubscribe. No password needed.'
+    ),
+    path: '/preferences',
+    body,
+  });
+}
+
+/** The preference center itself, reached from a signed email link. */
+function preferencesPage({ sub, token, saved, error }) {
+  const action = '/preferences/' + esc(token);
+  const freqRadio = (value, label, hint) =>
+    '<label class="nl-radio"><input type="radio" name="digest_frequency" value="' +
+    value +
+    '"' +
+    (sub.digestFrequency === value ? ' checked' : '') +
+    '> <span>' +
+    label +
+    (hint ? ' <span style="color:#555">(' + hint + ')</span>' : '') +
+    '</span></label>';
+  let body =
+    '<div class="static-page"><h1>Your Email Preferences</h1>' +
+    '<p>Signed in as <strong>' + esc(sub.email) + '</strong>. ' +
+    (sub.status === 'confirmed'
+      ? 'Your subscription is active.'
+      : sub.status === 'pending'
+        ? 'Your subscription is waiting for confirmation. Check your inbox for the confirmation email.'
+        : 'You are unsubscribed. To start again, use the <a href="/subscribe">subscribe page</a> and confirm from your inbox.') +
+    '</p>';
+  if (saved) body += '<div class="nl-notice"><strong>Saved.</strong> Your preferences are updated.</div>';
+  if (error === 'email-sent') {
+    body += '<div class="nl-notice"><strong>Confirmation sent.</strong> We emailed the new address. Click the link in that email to finish the change.</div>';
+  } else if (error === 'invalid-email') {
+    body += '<div class="nl-notice"><strong>That email address does not look right.</strong> The change was not made.</div>';
+  } else if (error === 'email-in-use') {
+    body += '<div class="nl-notice"><strong>That address already has a subscription.</strong> The change was not made.</div>';
+  }
+  body +=
+    '<form class="nl-panel" method="post" action="' + action + '">' +
+    '<div class="nl-field"><label for="pref-name">First name</label>' +
+    '<input id="pref-name" type="text" name="first_name" value="' + esc(sub.firstName || '') + '"></div>' +
+    '<h2>The Colorado Daily Brief</h2>' +
+    '<label class="nl-check"><input type="checkbox" name="daily_brief"' +
+    (sub.dailyBrief ? ' checked' : '') +
+    '> <span>Send me The Colorado Daily Brief, Monday to Friday.</span></label>' +
+    '<h2>Topics</h2>' +
+    topicCheckboxes(sub.topics) +
+    '<h2>Regions</h2>' +
+    regionCheckboxes(sub.regions) +
+    '<h2>Digest frequency</h2>' +
+    '<p class="nl-note-small" style="margin:0 0 .4rem">A digest collects stories matching your topics and regions. A story is never sent to you twice.</p>' +
+    freqRadio('daily', 'Daily', 'weekdays') +
+    freqRadio('weekly', 'Weekly', 'Monday, covering the past week') +
+    freqRadio('off', 'No digest') +
+    '<h2>Breaking news</h2>' +
+    '<label class="nl-check"><input type="checkbox" name="breaking"' +
+    (sub.breakingOptIn ? ' checked' : '') +
+    '> <span>Email me when major Colorado news breaks.</span></label>' +
+    '<h2>Pause</h2>' +
+    '<label class="nl-check"><input type="checkbox" name="paused"' +
+    (sub.paused ? ' checked' : '') +
+    '> <span>Pause all newsletter email for now. Your settings stay saved.</span></label>' +
+    '<button class="nl-primary" type="submit">Save Preferences</button>' +
+    '</form>' +
+    '<h2 style="font-family:var(--font-headline)">Change your email address</h2>' +
+    '<form class="nl-panel" method="post" action="' + action + '/change-email">' +
+    '<div class="nl-field"><label for="pref-new-email">New email address</label>' +
+    '<input id="pref-new-email" type="email" name="new_email" required placeholder="New email address"></div>' +
+    '<p class="nl-note-small">We will email the new address a confirmation link. The change applies when you click it.</p>' +
+    '<button class="nl-primary" type="submit">Send Confirmation to the New Address</button>' +
+    '</form>' +
+    '<h2 style="font-family:var(--font-headline)">Unsubscribe</h2>' +
+    '<form class="nl-panel" method="post" action="' + action + '/unsubscribe">' +
+    '<p>Stop all Ledger email: the Daily Brief, digests and breaking news.</p>' +
+    '<button class="nl-danger" type="submit">Unsubscribe From All Emails</button>' +
+    '</form></div>';
+  return layout({
+    title: fitTitle('Your email preferences, The Centennial Ledger', 70),
+    description: fitDescription(
+      'Your Centennial Ledger preference center: Daily Brief, topics, regions, digest frequency, breaking news, pause, email change and unsubscribe.'
+    ),
+    path: '/preferences',
+    body,
+  });
+}
+
+/** GET page behind an unsubscribe link: confirm before it happens. */
+function unsubscribeConfirmPage(token) {
+  const body =
+    '<div class="static-page"><h1>Unsubscribe</h1>' +
+    '<p>Stop all email from The Centennial Ledger: the Daily Brief, digests and breaking news alerts. You can subscribe again at any time.</p>' +
+    '<form method="post" action="/unsubscribe/' + esc(token) + '">' +
+    '<button class="nl-danger" type="submit">Unsubscribe Me</button></form>' +
+    '<p class="nl-note-small">Changed your mind about some of it? <a href="/preferences">Manage your preferences</a> instead.</p></div>';
+  return layout({
+    title: fitTitle('Unsubscribe from Ledger email, The Centennial Ledger', 70),
+    description: fitDescription(
+      'Unsubscribe from The Centennial Ledger email: the Daily Brief, digests and breaking news alerts stop, and the address is not emailed again.'
+    ),
+    path: '/unsubscribe',
+    body,
+  });
+}
+
+/**
+ * Internal newsletter dashboard (secret-gated in server.js). Plain
+ * tables and forms; the secret rides in the query string so links
+ * and form posts stay inside the tool.
+ */
+function adminNewsletterPage(d) {
+  const key = '?key=' + encodeURIComponent(d.key);
+  const card = (num, lbl) =>
+    '<div class="admin-card"><div class="num">' + esc(String(num)) + '</div><div class="lbl">' + esc(lbl) + '</div></div>';
+  const countRows = (rows) =>
+    rows
+      .map((r) => '<tr><td>' + esc(r.name) + '</td><td>' + esc(String(r.count)) + '</td></tr>')
+      .join('');
+  let body = '<div class="static-page" style="max-width:1000px"><h1>Newsletter Admin</h1>';
+  if (d.msg) body += '<div class="nl-notice">' + esc(d.msg) + '</div>';
+  body +=
+    '<p>Email provider: <strong>' +
+    (d.provider === 'ses' ? 'Amazon SES (live)' : 'Outbox only. Amazon SES is not configured, so sends are written to the outbox table below.') +
+    '</strong><br>Scheduled send time: ' + esc(d.sendTime) + ' Denver, Monday to Friday. Autosend: ' +
+    (d.autosend ? 'on' : 'off (drafts wait for approval here)') +
+    '.<br><a href="/admin/newsletter/export.csv' + key + '">Download subscriber CSV</a></p>';
+
+  body +=
+    '<div class="admin-cards">' +
+    card(d.stats.total, 'Total subscribers') +
+    card(d.stats.confirmed, 'Confirmed active') +
+    card(d.stats.newToday, 'New today') +
+    card(d.stats.new7d, 'New in 7 days') +
+    card(d.stats.new30d, 'New in 30 days') +
+    card(d.stats.unsubscribed, 'Unsubscribed (total)') +
+    '</div>';
+
+  body +=
+    '<div class="admin-section"><h2>Signups by day, last 30 days</h2>' +
+    '<table class="admin-table"><tr><th>Date</th><th>Signups</th></tr>' +
+    d.growth
+      .map((g) => '<tr><td>' + esc(g.date) + '</td><td>' + esc(String(g.count)) + '</td></tr>')
+      .join('') +
+    '</table></div>';
+
+  body +=
+    '<div class="admin-section"><h2>Preferences (confirmed subscribers)</h2>' +
+    '<p class="nl-note-small">Topic and region counts overlap: one subscriber can follow several topics and regions, so these numbers are not unique people.</p>' +
+    '<table class="admin-table"><tr><th>Topic</th><th>Subscribers</th></tr>' +
+    countRows(d.topicCounts) +
+    '</table>' +
+    '<table class="admin-table"><tr><th>Region</th><th>Subscribers</th></tr>' +
+    countRows(d.regionCounts) +
+    '</table>' +
+    '<table class="admin-table"><tr><th>Preference</th><th>Subscribers</th></tr>' +
+    '<tr><td>The Colorado Daily Brief</td><td>' + esc(String(d.dailyBriefCount)) + '</td></tr>' +
+    '<tr><td>Digest: daily</td><td>' + esc(String(d.freqCounts.daily || 0)) + '</td></tr>' +
+    '<tr><td>Digest: weekly</td><td>' + esc(String(d.freqCounts.weekly || 0)) + '</td></tr>' +
+    '<tr><td>Digest: off</td><td>' + esc(String(d.freqCounts.off || 0)) + '</td></tr>' +
+    '<tr><td>Breaking news opt-in</td><td>' + esc(String(d.breakingCount)) + '</td></tr>' +
+    '<tr><td>Paused</td><td>' + esc(String(d.pausedCount)) + '</td></tr>' +
+    '</table></div>';
+
+  body +=
+    '<div class="admin-section"><h2>Daily Brief</h2>' +
+    '<form method="post" action="/admin/newsletter/generate' + key + '">' +
+    '<button class="nl-danger" style="border-color:var(--color-gold);color:#333" type="submit">Build today\'s draft</button></form>' +
+    '<p class="nl-note-small">The scheduler builds the draft at the send time on weekdays. This button does the same thing now, for testing.</p></div>';
+
+  body +=
+    '<div class="admin-section"><h2>Campaigns</h2>' +
+    '<table class="admin-table"><tr><th>ID</th><th>Type</th><th>Date</th><th>Subject</th><th>Status</th><th>Recipients</th><th></th></tr>' +
+    d.campaigns
       .map(
-        (t) =>
-          '<div class="tier"><h2 style="font-family:\'Playfair Display\',Georgia,serif;margin:.2rem 0">' + t.name + '</h2>' +
-          '<div class="price">' + t.price + '<span style="font-size:1rem">' + t.per + '</span></div>' +
-          '<ul style="text-align:left">' + t.features.map((f) => '<li>' + f + '</li>').join('') + '</ul>' +
-          '<a class="btn" href="/subscribe/checkout?tier=' + t.key + '">Choose ' + t.name + '</a></div>'
+        (c) =>
+          '<tr><td>' + c.id + '</td><td>' + esc(c.type) + '</td><td>' + esc(c.sendDate) + '</td><td>' +
+          esc(c.subject) + '</td><td>' + esc(c.status) + '</td><td>' + esc(String(c.recipients || 0)) +
+          '</td><td><a href="/admin/newsletter' + key + '&preview=' + c.id + '">Preview</a></td></tr>'
       )
       .join('') +
-    '</div>' +
-    briefingBox(false);
+    '</table></div>';
+
+  if (d.preview) {
+    const c = d.preview.campaign;
+    body +=
+      '<div class="admin-section"><h2>Preview: ' + esc(c.type) + ' #' + c.id + ', ' + esc(c.subject) + '</h2>' +
+      '<div class="admin-preview"><iframe title="Email preview" style="width:100%;height:640px;border:0" srcdoc="' +
+      esc(d.preview.html) +
+      '"></iframe></div>';
+    if (c.status === 'draft') {
+      body +=
+        '<form method="post" action="/admin/newsletter/campaign/' + c.id + '/send' + key + '" style="display:inline-block;margin-right:.6rem">' +
+        '<button class="nl-primary" style="width:auto;padding:.55rem 1.2rem" type="submit">Approve &amp; Send</button></form>' +
+        '<form method="post" action="/admin/newsletter/campaign/' + c.id + '/test' + key + '" style="display:inline-block">' +
+        '<button type="submit">Send test to ' + esc(d.testEmail || 'NEWSLETTER_TEST_EMAIL (not set)') + '</button></form>' +
+        '<form method="post" action="/admin/newsletter/campaign/' + c.id + '/sponsor' + key + '" style="margin-top:1rem">' +
+        '<div class="nl-field"><label>Sponsor name (optional; block hidden when any field is empty)</label>' +
+        '<input type="text" name="sponsor_name" value="' + esc(c.sponsorName || '') + '"></div>' +
+        '<div class="nl-field"><label>Sponsor message</label>' +
+        '<input type="text" name="sponsor_message" value="' + esc(c.sponsorMessage || '') + '"></div>' +
+        '<div class="nl-field"><label>Sponsor link</label>' +
+        '<input type="text" name="sponsor_url" value="' + esc(c.sponsorUrl || '') + '"></div>' +
+        '<button type="submit">Save Sponsor Block</button></form>';
+    }
+    body += '</div>';
+  }
+
+  body +=
+    '<div class="admin-section"><h2>Breaking news (manual only)</h2>' +
+    '<form method="post" action="/admin/newsletter/breaking' + key + '">' +
+    '<div class="nl-field"><label>Subject line</label>' +
+    '<input type="text" name="subject" required placeholder="Breaking: ..."></div>' +
+    '<p class="nl-note-small">Pick the stories to include. The campaign is created as a draft; sending still takes the Approve &amp; Send button on its preview. Only subscribers who opted in to breaking news receive it.</p>' +
+    d.breakingCandidates
+      .map(
+        (a) =>
+          '<label class="nl-check"><input type="checkbox" name="articles" value="' +
+          esc(a.slug) +
+          '"> <span>' +
+          esc(a.headline) +
+          ' <span style="color:#555">(' +
+          esc(a.sectionName) +
+          ')</span></span></label>'
+      )
+      .join('') +
+    '<button class="nl-primary" style="width:auto;padding:.55rem 1.2rem;margin-top:.6rem" type="submit">Create Breaking Draft</button>' +
+    '</form></div>';
+
+  body +=
+    '<div class="admin-section"><h2>Outbox, latest 50</h2>' +
+    '<table class="admin-table"><tr><th>When</th><th>To</th><th>Subject</th><th>Kind</th><th>Status</th></tr>' +
+    d.outbox
+      .map(
+        (o) =>
+          '<tr><td>' + esc(o.createdAt) + '</td><td>' + esc(o.to) + '</td><td>' + esc(o.subject) +
+          '</td><td>' + esc(o.kind) + '</td><td>' + esc(o.status) + '</td></tr>'
+      )
+      .join('') +
+    '</table></div></div>';
+
   return layout({
-    title: fitTitle('Colorado news subscription plans: Free, Patriot, Founding', 70),
-    description: fitDescription(
-      'Subscribe for full access to Colorado political news: Free headlines and the daily briefing, Patriot at $6.99 a month, Founding at $12.99. Compare the plans.'
-    ),
+    title: 'Newsletter admin | ' + SITE_NAME,
+    description: 'Internal newsletter dashboard.',
+    path: '/admin/newsletter',
+    body,
+  });
+}
+
+/** Small notice page for confirm and unsubscribe outcomes. */
+function newsletterNoticePage({ heading, text, linkHref, linkText }) {
+  const body =
+    '<div class="static-page"><h1>' + esc(heading) + '</h1><p>' + esc(text) + '</p>' +
+    (linkHref
+      ? '<p><a href="' + esc(linkHref) + '">' + esc(linkText || 'Continue') + '</a></p>'
+      : '') +
+    '</div>';
+  return layout({
+    title: fitTitle(heading + ', The Centennial Ledger', 70),
+    description: fitDescription(text),
     path: '/subscribe',
     body,
   });
@@ -2508,6 +2963,10 @@ function staticPage(kind) {
       '<h2>What we collect</h2><p>Email addresses for the briefing and subscriptions, basic server logs (pages visited, browser type, approximate location from your IP address), and cookies used for site function and, where enabled, advertising through Google AdSense.</p>' +
       '<h2>Advertising</h2><p>We may run Google AdSense advertising. Google and its partners may use cookies to serve ads based on your visits to this and other sites. You can opt out of personalized advertising in your Google account settings.</p>' +
       '<h2>Your choices</h2><p>Every briefing email includes an unsubscribe link. To ask what we hold about you or to have it deleted, contact the publisher through the address on this page.</p>' +
+      '<h2>Newsletters and subscriptions</h2><p>When you subscribe to The Colorado Daily Brief, a topic or regional digest, or breaking news alerts, we store your email address, any first name you give us, the topics and regions you choose, and a record of when and where you signed up. We use that information only to send the emails you asked for and to manage your subscription.</p>' +
+      '<h2>Email delivery</h2><p>Our newsletters are delivered by Amazon Simple Email Service (Amazon SES), a third-party email provider. Your email address is shared with that provider only so your emails can be sent. Where the provider supports it, we may record whether an email was delivered, bounced, or reported as spam, and which links were clicked, so we can keep the newsletter useful and the subscriber list accurate.</p>' +
+      '<h2>Managing your subscription</h2><p>Every newsletter carries an unsubscribe link that works without a password or an account, and a link to a preference center where you can change topics, regions and frequency, pause your subscription, change your email address, or unsubscribe from everything. Unsubscribed addresses stay on a suppression list so they are not emailed again by mistake. To have your information removed entirely, contact the publisher through the address on this page.</p>' +
+      '<h2>Advertisers and sponsors</h2><p>We do not sell or share subscriber email addresses with advertisers or sponsors. When a newsletter carries a sponsored placement, it is delivered by The Centennial Ledger itself as part of the email; sponsors never receive the subscriber list.</p>' +
       '<h2>Changes</h2><p>We will post changes to this policy on this page with a new effective date. Effective November 1, 2026.</p>'
     : '<p>By using The Centennial Ledger you agree to these terms. The site provides news and analysis for general information. Stories are written from source material linked on each article page; we work to correct errors promptly when they are brought to our attention.</p>' +
       '<h2>Subscriptions</h2><p>Paid tiers (Patriot and Founding) are billed monthly once checkout is active and can be cancelled at any time, effective at the end of the billing period. Free content remains free.</p>' +
@@ -2619,6 +3078,12 @@ module.exports = {
   explainedPage,
   satirePage,
   subscribePage,
+  preferencesLandingPage,
+  preferencesPage,
+  unsubscribeConfirmPage,
+  newsletterNoticePage,
+  adminNewsletterPage,
+  signupModule,
   checkoutPage,
   searchPage,
   staticPage,

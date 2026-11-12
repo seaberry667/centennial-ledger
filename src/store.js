@@ -851,6 +851,161 @@ function normalizeArticle(raw) {
 /* File store backend                                                  */
 /* ------------------------------------------------------------------ */
 
+/* ------------------------------------------------------------------ */
+/* Newsletter records (2026-11-12)                                     */
+/* One subscriber database behind both backends: a single row per     */
+/* email address carries the Daily Brief flag, topic and region        */
+/* subscriptions, digest frequency, and the consent/suppression        */
+/* record. Campaigns, per-subscriber deliveries (so an article is      */
+/* never sent to the same subscriber twice), and the email outbox      */
+/* (send log, and the delivery mechanism until Amazon SES is            */
+/* configured) live alongside. All schema changes are additive and     */
+/* idempotent; see the boot migrations in each backend's init().       */
+/* ------------------------------------------------------------------ */
+
+function nextNumericId(rows) {
+  return (
+    rows.reduce((max, r) => Math.max(max, Number(r && r.id) || 0), 0) + 1
+  );
+}
+
+function normalizeSubscriberRecord(input, id) {
+  const src = input && typeof input === 'object' ? input : {};
+  const freq = ['off', 'daily', 'weekly'].includes(src.digestFrequency)
+    ? src.digestFrequency
+    : 'off';
+  const status = ['pending', 'confirmed', 'unsubscribed'].includes(src.status)
+    ? src.status
+    : 'pending';
+  return {
+    id: id != null ? id : src.id != null ? src.id : null,
+    email: String(src.email || '').toLowerCase().trim(),
+    firstName: String(src.firstName || ''),
+    status,
+    confirmedAt: src.confirmedAt || null,
+    signupDate: src.signupDate || new Date().toISOString(),
+    signupSource: String(src.signupSource || 'web'),
+    lastPrefUpdate: src.lastPrefUpdate || null,
+    dailyBrief: !!src.dailyBrief,
+    topics: Array.isArray(src.topics) ? src.topics.map(String) : [],
+    regions: Array.isArray(src.regions) ? src.regions.map(String) : [],
+    digestFrequency: freq,
+    breakingOptIn: !!src.breakingOptIn,
+    paused: !!src.paused,
+    unsubscribedAt: src.unsubscribedAt || null,
+    suppressed: !!src.suppressed,
+    consent:
+      src.consent && typeof src.consent === 'object'
+        ? src.consent
+        : { at: '', source: '', ip: '' },
+    lastDigestAt: src.lastDigestAt || null,
+  };
+}
+
+function normalizeCampaignRecord(input, id) {
+  const src = input && typeof input === 'object' ? input : {};
+  const type = ['brief', 'digest', 'breaking', 'test'].includes(src.type)
+    ? src.type
+    : 'brief';
+  const status = ['draft', 'approved', 'sending', 'sent', 'failed'].includes(
+    src.status
+  )
+    ? src.status
+    : 'draft';
+  return {
+    id: id != null ? id : src.id != null ? src.id : null,
+    type,
+    sendDate: String(src.sendDate || ''),
+    subject: String(src.subject || ''),
+    status,
+    stats: src.stats && typeof src.stats === 'object' ? src.stats : {},
+    articleIds: Array.isArray(src.articleIds)
+      ? src.articleIds.map(String)
+      : [],
+    aroundIds: Array.isArray(src.aroundIds)
+      ? src.aroundIds.map(String)
+      : [],
+    podcast:
+      src.podcast && typeof src.podcast === 'object' ? src.podcast : null,
+    sponsorName: String(src.sponsorName || ''),
+    sponsorMessage: String(src.sponsorMessage || ''),
+    sponsorUrl: String(src.sponsorUrl || ''),
+    createdAt: src.createdAt || new Date().toISOString(),
+    sentAt: src.sentAt || null,
+  };
+}
+
+function pgIso(value) {
+  return value ? new Date(value).toISOString() : null;
+}
+
+function pgSubscriberRowToRecord(row) {
+  if (!row) return null;
+  return normalizeSubscriberRecord(
+    {
+      email: row.email,
+      firstName: row.first_name,
+      status: row.status,
+      confirmedAt: pgIso(row.confirmed_at),
+      signupDate: pgIso(row.signup_date) || new Date().toISOString(),
+      signupSource: row.signup_source,
+      lastPrefUpdate: pgIso(row.last_pref_update),
+      dailyBrief: !!row.daily_brief,
+      topics: Array.isArray(row.topics) ? row.topics : [],
+      regions: Array.isArray(row.regions) ? row.regions : [],
+      digestFrequency: row.digest_frequency,
+      breakingOptIn: !!row.breaking_opt_in,
+      paused: !!row.paused,
+      unsubscribedAt: pgIso(row.unsubscribed_at),
+      suppressed: !!row.suppressed,
+      consent:
+        row.consent && typeof row.consent === 'object'
+          ? row.consent
+          : { at: '', source: '', ip: '' },
+      lastDigestAt: pgIso(row.last_digest_at),
+    },
+    row.id
+  );
+}
+
+function pgCampaignRowToRecord(row) {
+  if (!row) return null;
+  return normalizeCampaignRecord(
+    {
+      type: row.type,
+      sendDate: row.send_date,
+      subject: row.subject,
+      status: row.status,
+      stats: row.stats && typeof row.stats === 'object' ? row.stats : {},
+      articleIds: Array.isArray(row.article_ids) ? row.article_ids : [],
+      aroundIds: Array.isArray(row.around_ids) ? row.around_ids : [],
+      podcast:
+        row.podcast && typeof row.podcast === 'object' ? row.podcast : null,
+      sponsorName: row.sponsor_name,
+      sponsorMessage: row.sponsor_message,
+      sponsorUrl: row.sponsor_url,
+      createdAt: pgIso(row.created_at) || new Date().toISOString(),
+      sentAt: pgIso(row.sent_at),
+    },
+    row.id
+  );
+}
+
+function pgOutboxRowToRecord(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    to: row.to_email,
+    subject: row.subject,
+    html: row.html,
+    text: row.text_body,
+    kind: row.kind,
+    status: row.status,
+    providerId: row.provider_id,
+    createdAt: pgIso(row.created_at) || new Date().toISOString(),
+  };
+}
+
 class FileStore {
   constructor(file) {
     this.file = file;
@@ -1071,6 +1226,52 @@ class FileStore {
       if (applyInternalLinks(a)) linksChanged = true;
     }
     if (linksChanged) this._save();
+    // Newsletter tables (2026-11-12): ensure the arrays exist, then
+    // migrate legacy briefing subscribers once (idempotent: rows
+    // already present in nlSubscribers are skipped by email).
+    this._ensureNewsletterShape();
+    if (this._migrateLegacyBriefingSubscribers()) this._save();
+  }
+
+  _ensureNewsletterShape() {
+    if (!Array.isArray(this.data.nlSubscribers)) this.data.nlSubscribers = [];
+    if (!Array.isArray(this.data.nlCampaigns)) this.data.nlCampaigns = [];
+    if (!Array.isArray(this.data.nlDeliveries)) this.data.nlDeliveries = [];
+    if (!Array.isArray(this.data.nlOutbox)) this.data.nlOutbox = [];
+  }
+
+  // Legacy briefing_subscribers become confirmed Daily Brief
+  // subscribers with signup_source 'legacy-briefing'. Returns true
+  // when a row was added (caller saves).
+  _migrateLegacyBriefingSubscribers() {
+    const known = new Set(
+      this.data.nlSubscribers.map((s) => String(s.email || '').toLowerCase())
+    );
+    let added = false;
+    for (const legacy of this.data.subscribers || []) {
+      const email = String((legacy && legacy.email) || '')
+        .toLowerCase()
+        .trim();
+      if (!email || known.has(email)) continue;
+      const at = legacy.createdAt || new Date().toISOString();
+      this.data.nlSubscribers.push(
+        normalizeSubscriberRecord(
+          {
+            email,
+            status: 'confirmed',
+            confirmedAt: at,
+            signupDate: at,
+            signupSource: 'legacy-briefing',
+            dailyBrief: true,
+            consent: { at, source: 'legacy-briefing', ip: '' },
+          },
+          nextNumericId(this.data.nlSubscribers)
+        )
+      );
+      known.add(email);
+      added = true;
+    }
+    return added;
   }
 
   _save() {
@@ -1234,6 +1435,160 @@ class FileStore {
     this._save();
     return true;
   }
+
+  /* -------- Newsletter: subscribers -------- */
+
+  async nlFindSubscriberByEmail(email) {
+    const e = String(email || '').toLowerCase().trim();
+    return this.data.nlSubscribers.find((s) => s.email === e) || null;
+  }
+
+  async nlGetSubscriber(id) {
+    return this.data.nlSubscribers.find((s) => s.id === Number(id)) || null;
+  }
+
+  async nlInsertSubscriber(rec) {
+    const sub = normalizeSubscriberRecord(
+      rec,
+      nextNumericId(this.data.nlSubscribers)
+    );
+    this.data.nlSubscribers.push(sub);
+    this._save();
+    return sub;
+  }
+
+  async nlUpdateSubscriber(id, patch) {
+    const sub = this.data.nlSubscribers.find((s) => s.id === Number(id));
+    if (!sub) return null;
+    Object.assign(
+      sub,
+      normalizeSubscriberRecord(Object.assign({}, sub, patch), sub.id)
+    );
+    this._save();
+    return sub;
+  }
+
+  async nlListSubscribers() {
+    return this.data.nlSubscribers.slice();
+  }
+
+  /* -------- Newsletter: campaigns -------- */
+
+  async nlInsertCampaign(rec) {
+    const existing = this.data.nlCampaigns.find(
+      (c) => c.type === rec.type && c.sendDate === rec.sendDate
+    );
+    if (existing) return existing;
+    const campaign = normalizeCampaignRecord(
+      rec,
+      nextNumericId(this.data.nlCampaigns)
+    );
+    this.data.nlCampaigns.push(campaign);
+    this._save();
+    return campaign;
+  }
+
+  async nlGetCampaign(id) {
+    return this.data.nlCampaigns.find((c) => c.id === Number(id)) || null;
+  }
+
+  async nlFindCampaign(type, sendDate) {
+    return (
+      this.data.nlCampaigns.find(
+        (c) => c.type === type && c.sendDate === sendDate
+      ) || null
+    );
+  }
+
+  async nlUpdateCampaign(id, patch) {
+    const campaign = this.data.nlCampaigns.find((c) => c.id === Number(id));
+    if (!campaign) return null;
+    Object.assign(
+      campaign,
+      normalizeCampaignRecord(Object.assign({}, campaign, patch), campaign.id)
+    );
+    this._save();
+    return campaign;
+  }
+
+  async nlListCampaigns(limit = 50) {
+    return this.data.nlCampaigns
+      .slice()
+      .sort((a, b) => b.id - a.id)
+      .slice(0, limit);
+  }
+
+  /* -------- Newsletter: deliveries -------- */
+
+  async nlInsertDelivery(rec) {
+    const delivery = {
+      id: nextNumericId(this.data.nlDeliveries),
+      campaignId: Number(rec.campaignId),
+      subscriberId: Number(rec.subscriberId),
+      articleIds: Array.isArray(rec.articleIds)
+        ? rec.articleIds.map(String)
+        : [],
+      sentAt: new Date().toISOString(),
+    };
+    this.data.nlDeliveries.push(delivery);
+    this._save();
+    return delivery;
+  }
+
+  async nlDeliveriesForSubscriber(subscriberId) {
+    return this.data.nlDeliveries.filter(
+      (d) => d.subscriberId === Number(subscriberId)
+    );
+  }
+
+  async nlCountDeliveries(campaignId) {
+    return this.data.nlDeliveries.filter(
+      (d) => d.campaignId === Number(campaignId)
+    ).length;
+  }
+
+  /* -------- Newsletter: outbox -------- */
+
+  async nlAddOutbox(rec) {
+    const row = {
+      id: nextNumericId(this.data.nlOutbox),
+      to: String((rec && rec.to) || ''),
+      subject: String((rec && rec.subject) || ''),
+      html: String((rec && rec.html) || ''),
+      text: String((rec && rec.text) || ''),
+      kind: String((rec && rec.kind) || 'campaign'),
+      status: String((rec && rec.status) || 'queued'),
+      providerId: String((rec && rec.providerId) || ''),
+      createdAt: new Date().toISOString(),
+    };
+    this.data.nlOutbox.push(row);
+    this._save();
+    return row;
+  }
+
+  async nlListOutbox(limit = 50) {
+    return this.data.nlOutbox
+      .slice()
+      .sort((a, b) => b.id - a.id)
+      .slice(0, limit);
+  }
+
+  /**
+   * Every stored article, newest first, without the Opinion part
+   * of the hidden-article read filter (retracted stories stay
+   * excluded: they must never be emailed). Internal use only
+   * (digest matching, where Opinion is included for subscribers
+   * who opted into the Opinion topic); public pages keep using
+   * listArticles/getArticle.
+   */
+  async listArticlesAll({ limit = 500 } = {}) {
+    return this.data.articles
+      .filter((a) => a && !RETRACTED_SLUGS.has(a.slug))
+      .slice()
+      .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
+      .slice(0, limit)
+      .map((a) => Object.assign({}, a));
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -1285,6 +1640,94 @@ class PgStore {
         email TEXT UNIQUE NOT NULL,
         created_at TIMESTAMPTZ DEFAULT now()
       )`);
+    // Newsletter tables (2026-11-12, additive only). One row per
+    // email address carries every subscription preference; the
+    // unique index on lower(email) keeps the address unique
+    // case-insensitively. Campaigns are unique on (type, send_date)
+    // so a day's brief or digest can never be created twice.
+    // Deliveries record which articles went to which subscriber so
+    // no article is ever sent to the same person twice. The outbox
+    // is the send log, and the delivery mechanism itself until
+    // Amazon SES credentials are configured.
+    await this.pool.query(`
+      CREATE TABLE IF NOT EXISTS subscribers (
+        id SERIAL PRIMARY KEY,
+        email TEXT NOT NULL,
+        first_name TEXT NOT NULL DEFAULT '',
+        status TEXT NOT NULL DEFAULT 'pending',
+        confirmed_at TIMESTAMPTZ,
+        signup_date TIMESTAMPTZ NOT NULL DEFAULT now(),
+        signup_source TEXT NOT NULL DEFAULT 'web',
+        last_pref_update TIMESTAMPTZ,
+        daily_brief BOOLEAN NOT NULL DEFAULT false,
+        topics JSONB NOT NULL DEFAULT '[]'::jsonb,
+        regions JSONB NOT NULL DEFAULT '[]'::jsonb,
+        digest_frequency TEXT NOT NULL DEFAULT 'off',
+        breaking_opt_in BOOLEAN NOT NULL DEFAULT false,
+        paused BOOLEAN NOT NULL DEFAULT false,
+        unsubscribed_at TIMESTAMPTZ,
+        suppressed BOOLEAN NOT NULL DEFAULT false,
+        consent JSONB NOT NULL DEFAULT '{}'::jsonb,
+        last_digest_at TIMESTAMPTZ
+      )`);
+    await this.pool.query(
+      'CREATE UNIQUE INDEX IF NOT EXISTS subscribers_email_lower_key ON subscribers (lower(email))'
+    );
+    await this.pool.query(`
+      CREATE TABLE IF NOT EXISTS campaigns (
+        id SERIAL PRIMARY KEY,
+        type TEXT NOT NULL,
+        send_date TEXT NOT NULL,
+        subject TEXT NOT NULL DEFAULT '',
+        status TEXT NOT NULL DEFAULT 'draft',
+        stats JSONB NOT NULL DEFAULT '{}'::jsonb,
+        article_ids JSONB NOT NULL DEFAULT '[]'::jsonb,
+        around_ids JSONB NOT NULL DEFAULT '[]'::jsonb,
+        podcast JSONB,
+        sponsor_name TEXT NOT NULL DEFAULT '',
+        sponsor_message TEXT NOT NULL DEFAULT '',
+        sponsor_url TEXT NOT NULL DEFAULT '',
+        created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+        sent_at TIMESTAMPTZ,
+        UNIQUE (type, send_date)
+      )`);
+    await this.pool.query(`
+      CREATE TABLE IF NOT EXISTS deliveries (
+        id SERIAL PRIMARY KEY,
+        campaign_id INTEGER NOT NULL REFERENCES campaigns(id) ON DELETE CASCADE,
+        subscriber_id INTEGER NOT NULL REFERENCES subscribers(id) ON DELETE CASCADE,
+        article_ids JSONB NOT NULL DEFAULT '[]'::jsonb,
+        sent_at TIMESTAMPTZ NOT NULL DEFAULT now()
+      )`);
+    await this.pool.query(
+      'CREATE INDEX IF NOT EXISTS deliveries_subscriber_idx ON deliveries (subscriber_id)'
+    );
+    await this.pool.query(
+      'CREATE INDEX IF NOT EXISTS deliveries_campaign_idx ON deliveries (campaign_id)'
+    );
+    await this.pool.query(`
+      CREATE TABLE IF NOT EXISTS email_outbox (
+        id SERIAL PRIMARY KEY,
+        to_email TEXT NOT NULL,
+        subject TEXT NOT NULL DEFAULT '',
+        html TEXT NOT NULL DEFAULT '',
+        text_body TEXT NOT NULL DEFAULT '',
+        kind TEXT NOT NULL DEFAULT 'campaign',
+        status TEXT NOT NULL DEFAULT 'queued',
+        provider_id TEXT NOT NULL DEFAULT '',
+        created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+      )`);
+    // One-time, idempotent migration: legacy briefing_subscribers
+    // become confirmed Daily Brief subscribers. Rows already
+    // migrated are skipped by the unique index.
+    await this.pool.query(`
+      INSERT INTO subscribers
+        (email, status, confirmed_at, signup_date, signup_source, daily_brief, consent)
+      SELECT bs.email, 'confirmed', bs.created_at, bs.created_at,
+             'legacy-briefing', true,
+             jsonb_build_object('at', bs.created_at, 'source', 'legacy-briefing', 'ip', '')
+      FROM briefing_subscribers bs
+      ON CONFLICT (lower(email)) DO NOTHING`);
     // Migration for databases created before article images existed.
     await this.pool.query(
       'ALTER TABLE articles ADD COLUMN IF NOT EXISTS image JSONB'
@@ -1827,6 +2270,288 @@ class PgStore {
       [e]
     );
     return true;
+  }
+
+  /* -------- Newsletter: subscribers -------- */
+
+  async nlFindSubscriberByEmail(email) {
+    const e = String(email || '').toLowerCase().trim();
+    const q = await this.pool.query(
+      'SELECT * FROM subscribers WHERE lower(email) = $1 LIMIT 1',
+      [e]
+    );
+    return pgSubscriberRowToRecord(q.rows[0]);
+  }
+
+  async nlGetSubscriber(id) {
+    const q = await this.pool.query('SELECT * FROM subscribers WHERE id = $1', [
+      Number(id),
+    ]);
+    return pgSubscriberRowToRecord(q.rows[0]);
+  }
+
+  async nlInsertSubscriber(rec) {
+    const r = normalizeSubscriberRecord(rec);
+    const q = await this.pool.query(
+      `INSERT INTO subscribers
+         (email, first_name, status, confirmed_at, signup_date, signup_source,
+          last_pref_update, daily_brief, topics, regions, digest_frequency,
+          breaking_opt_in, paused, unsubscribed_at, suppressed, consent,
+          last_digest_at)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
+       RETURNING *`,
+      [
+        r.email,
+        r.firstName,
+        r.status,
+        r.confirmedAt,
+        r.signupDate,
+        r.signupSource,
+        r.lastPrefUpdate,
+        r.dailyBrief,
+        JSON.stringify(r.topics),
+        JSON.stringify(r.regions),
+        r.digestFrequency,
+        r.breakingOptIn,
+        r.paused,
+        r.unsubscribedAt,
+        r.suppressed,
+        JSON.stringify(r.consent),
+        r.lastDigestAt,
+      ]
+    );
+    return pgSubscriberRowToRecord(q.rows[0]);
+  }
+
+  async nlUpdateSubscriber(id, patch) {
+    const current = await this.nlGetSubscriber(id);
+    if (!current) return null;
+    const r = normalizeSubscriberRecord(
+      Object.assign({}, current, patch),
+      current.id
+    );
+    const q = await this.pool.query(
+      `UPDATE subscribers SET
+         email = $1, first_name = $2, status = $3, confirmed_at = $4,
+         signup_date = $5, signup_source = $6, last_pref_update = $7,
+         daily_brief = $8, topics = $9, regions = $10,
+         digest_frequency = $11, breaking_opt_in = $12, paused = $13,
+         unsubscribed_at = $14, suppressed = $15, consent = $16,
+         last_digest_at = $17
+       WHERE id = $18
+       RETURNING *`,
+      [
+        r.email,
+        r.firstName,
+        r.status,
+        r.confirmedAt,
+        r.signupDate,
+        r.signupSource,
+        r.lastPrefUpdate,
+        r.dailyBrief,
+        JSON.stringify(r.topics),
+        JSON.stringify(r.regions),
+        r.digestFrequency,
+        r.breakingOptIn,
+        r.paused,
+        r.unsubscribedAt,
+        r.suppressed,
+        JSON.stringify(r.consent),
+        r.lastDigestAt,
+        current.id,
+      ]
+    );
+    return pgSubscriberRowToRecord(q.rows[0]);
+  }
+
+  async nlListSubscribers() {
+    const q = await this.pool.query('SELECT * FROM subscribers ORDER BY id ASC');
+    return q.rows.map(pgSubscriberRowToRecord);
+  }
+
+  /* -------- Newsletter: campaigns -------- */
+
+  async nlInsertCampaign(rec) {
+    const r = normalizeCampaignRecord(rec);
+    const q = await this.pool.query(
+      `INSERT INTO campaigns
+         (type, send_date, subject, status, stats, article_ids, around_ids,
+          podcast, sponsor_name, sponsor_message, sponsor_url, created_at, sent_at)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+       ON CONFLICT (type, send_date) DO NOTHING
+       RETURNING *`,
+      [
+        r.type,
+        r.sendDate,
+        r.subject,
+        r.status,
+        JSON.stringify(r.stats),
+        JSON.stringify(r.articleIds),
+        JSON.stringify(r.aroundIds),
+        r.podcast ? JSON.stringify(r.podcast) : null,
+        r.sponsorName,
+        r.sponsorMessage,
+        r.sponsorUrl,
+        r.createdAt,
+        r.sentAt,
+      ]
+    );
+    if (q.rows[0]) return pgCampaignRowToRecord(q.rows[0]);
+    return this.nlFindCampaign(r.type, r.sendDate);
+  }
+
+  async nlGetCampaign(id) {
+    const q = await this.pool.query('SELECT * FROM campaigns WHERE id = $1', [
+      Number(id),
+    ]);
+    return pgCampaignRowToRecord(q.rows[0]);
+  }
+
+  async nlFindCampaign(type, sendDate) {
+    const q = await this.pool.query(
+      'SELECT * FROM campaigns WHERE type = $1 AND send_date = $2 LIMIT 1',
+      [type, sendDate]
+    );
+    return pgCampaignRowToRecord(q.rows[0]);
+  }
+
+  async nlUpdateCampaign(id, patch) {
+    const current = await this.nlGetCampaign(id);
+    if (!current) return null;
+    const r = normalizeCampaignRecord(
+      Object.assign({}, current, patch),
+      current.id
+    );
+    const q = await this.pool.query(
+      `UPDATE campaigns SET
+         type = $1, send_date = $2, subject = $3, status = $4, stats = $5,
+         article_ids = $6, around_ids = $7, podcast = $8, sponsor_name = $9,
+         sponsor_message = $10, sponsor_url = $11, created_at = $12, sent_at = $13
+       WHERE id = $14
+       RETURNING *`,
+      [
+        r.type,
+        r.sendDate,
+        r.subject,
+        r.status,
+        JSON.stringify(r.stats),
+        JSON.stringify(r.articleIds),
+        JSON.stringify(r.aroundIds),
+        r.podcast ? JSON.stringify(r.podcast) : null,
+        r.sponsorName,
+        r.sponsorMessage,
+        r.sponsorUrl,
+        r.createdAt,
+        r.sentAt,
+        current.id,
+      ]
+    );
+    return pgCampaignRowToRecord(q.rows[0]);
+  }
+
+  async nlListCampaigns(limit = 50) {
+    const q = await this.pool.query(
+      'SELECT * FROM campaigns ORDER BY id DESC LIMIT $1',
+      [limit]
+    );
+    return q.rows.map(pgCampaignRowToRecord);
+  }
+
+  /* -------- Newsletter: deliveries -------- */
+
+  async nlInsertDelivery(rec) {
+    const q = await this.pool.query(
+      `INSERT INTO deliveries (campaign_id, subscriber_id, article_ids)
+       VALUES ($1, $2, $3)
+       RETURNING *`,
+      [
+        Number(rec.campaignId),
+        Number(rec.subscriberId),
+        JSON.stringify(
+          Array.isArray(rec.articleIds) ? rec.articleIds.map(String) : []
+        ),
+      ]
+    );
+    const row = q.rows[0];
+    return {
+      id: row.id,
+      campaignId: row.campaign_id,
+      subscriberId: row.subscriber_id,
+      articleIds: Array.isArray(row.article_ids) ? row.article_ids : [],
+      sentAt: pgIso(row.sent_at) || new Date().toISOString(),
+    };
+  }
+
+  async nlDeliveriesForSubscriber(subscriberId) {
+    const q = await this.pool.query(
+      'SELECT * FROM deliveries WHERE subscriber_id = $1 ORDER BY id ASC',
+      [Number(subscriberId)]
+    );
+    return q.rows.map((row) => ({
+      id: row.id,
+      campaignId: row.campaign_id,
+      subscriberId: row.subscriber_id,
+      articleIds: Array.isArray(row.article_ids) ? row.article_ids : [],
+      sentAt: pgIso(row.sent_at) || '',
+    }));
+  }
+
+  async nlCountDeliveries(campaignId) {
+    const q = await this.pool.query(
+      'SELECT COUNT(*)::int AS n FROM deliveries WHERE campaign_id = $1',
+      [Number(campaignId)]
+    );
+    return q.rows[0].n;
+  }
+
+  /* -------- Newsletter: outbox -------- */
+
+  async nlAddOutbox(rec) {
+    const q = await this.pool.query(
+      `INSERT INTO email_outbox
+         (to_email, subject, html, text_body, kind, status, provider_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7)
+       RETURNING *`,
+      [
+        String((rec && rec.to) || ''),
+        String((rec && rec.subject) || ''),
+        String((rec && rec.html) || ''),
+        String((rec && rec.text) || ''),
+        String((rec && rec.kind) || 'campaign'),
+        String((rec && rec.status) || 'queued'),
+        String((rec && rec.providerId) || ''),
+      ]
+    );
+    return pgOutboxRowToRecord(q.rows[0]);
+  }
+
+  async nlListOutbox(limit = 50) {
+    const q = await this.pool.query(
+      'SELECT * FROM email_outbox ORDER BY id DESC LIMIT $1',
+      [limit]
+    );
+    return q.rows.map(pgOutboxRowToRecord);
+  }
+
+  /**
+   * Every stored article, newest first, without the Opinion part
+   * of the hidden-article read filter (retracted stories stay
+   * excluded: they must never be emailed). Internal use only
+   * (digest matching, where Opinion is included for subscribers
+   * who opted into the Opinion topic); public pages keep using
+   * listArticles/getArticle.
+   */
+  async listArticlesAll({ limit = 500 } = {}) {
+    const res = RETRACTED_SLUGS.size
+      ? await this.pool.query(
+          'SELECT * FROM articles WHERE slug <> ALL($1) ORDER BY published_at DESC LIMIT $2',
+          [[...RETRACTED_SLUGS], limit]
+        )
+      : await this.pool.query(
+          'SELECT * FROM articles ORDER BY published_at DESC LIMIT $1',
+          [limit]
+        );
+    return res.rows.map((r) => this._row(r)).filter(Boolean);
   }
 }
 

@@ -10,8 +10,10 @@
 const express = require('express');
 const path = require('path');
 const sharp = require('sharp');
-const { createStore, SECTIONS, REGIONS, normalizeArticle, isSatire } = require('./store');
+const { createStore, SECTIONS, REGIONS, normalizeArticle, isSatire, sectionName } = require('./store');
 const render = require('./render');
+const newsletter = require('./newsletter');
+const mailer = require('./mailer');
 const { startWeatherUpdates } = require('./weather');
 
 const app = express();
@@ -500,11 +502,19 @@ app.get('/explained', async (req, res) => {
 });
 
 app.get('/subscribe', (req, res) => {
-  res.type('html').send(render.subscribePage());
+  res.type('html').send(
+    render.subscribePage({
+      sent: req.query.sent === '1',
+      error: req.query.error || '',
+      email: String(req.query.email || ''),
+    })
+  );
 });
 
+// The paid tiers are retired; the free subscription lives at
+// /subscribe. The old checkout URL redirects there permanently.
 app.get('/subscribe/checkout', (req, res) => {
-  res.type('html').send(render.checkoutPage(String(req.query.tier || 'patriot')));
+  res.redirect(301, '/subscribe');
 });
 
 app.get('/about', (req, res) => {
@@ -537,9 +547,484 @@ app.get('/search', async (req, res) => {
   res.type('html').send(render.searchPage(q, results));
 });
 
+/* --------------------------- Newsletter --------------------------- */
+
+function asArray(v) {
+  if (v === undefined || v === null) return [];
+  return Array.isArray(v) ? v : [v];
+}
+
+function safeSource(raw, fallback) {
+  const s = String(raw || '').toLowerCase();
+  return /^[a-z0-9-]{1,40}$/.test(s) ? s : fallback;
+}
+
+function safeReturnPath(raw) {
+  const s = String(raw || '');
+  return s.startsWith('/') && !s.startsWith('//') ? s : '/';
+}
+
+/**
+ * The legacy briefing signup keeps its exact redirect contract
+ * (/?briefing=thanks / /?briefing=invalid) but now writes into the
+ * unified subscriber system: a pending Daily Brief subscriber plus
+ * a confirmation email (double opt-in).
+ */
 app.post('/briefing', async (req, res) => {
-  const ok = await store.addSubscriber(req.body && req.body.email);
-  res.redirect(ok ? '/?briefing=thanks' : '/?briefing=invalid');
+  const email = String((req.body && req.body.email) || '').trim();
+  if (!newsletter.isValidEmail(email)) {
+    return res.redirect('/?briefing=invalid');
+  }
+  await newsletter.subscribeSignup(store, mailer, {
+    email,
+    dailyBrief: true,
+    source: safeSource(req.body && req.body.source, 'briefing-box'),
+    ip: req.ip,
+  });
+  res.redirect('/?briefing=thanks');
+});
+
+/** The full subscription form on /subscribe. */
+app.post('/subscribe', async (req, res) => {
+  const b = req.body || {};
+  const email = String(b.email || '').trim();
+  if (!newsletter.isValidEmail(email)) {
+    return res.redirect('/subscribe?error=invalid');
+  }
+  await newsletter.subscribeSignup(store, mailer, {
+    email,
+    firstName: b.first_name,
+    dailyBrief: b.daily_brief === 'on' || b.daily_brief === 'true',
+    topics: asArray(b.topics),
+    regions: asArray(b.regions),
+    source: 'subscribe-page',
+    ip: req.ip,
+  });
+  res.redirect('/subscribe?sent=1&email=' + encodeURIComponent(email));
+});
+
+/**
+ * Compact contextual forms (article, section and region modules):
+ * email plus preselected topics/regions. The reader lands on a
+ * short notice page; customization happens later, from the
+ * confirmation email or the preference center, and skipping it
+ * never blocks the signup.
+ */
+app.post('/subscribe-quick', async (req, res) => {
+  const b = req.body || {};
+  const email = String(b.email || '').trim();
+  if (!newsletter.isValidEmail(email)) {
+    return res.redirect('/subscribe?error=invalid');
+  }
+  await newsletter.subscribeSignup(store, mailer, {
+    email,
+    dailyBrief: false,
+    topics: asArray(b.topics),
+    regions: asArray(b.regions),
+    digestFrequency: 'daily',
+    source: safeSource(b.source, 'module'),
+    ip: req.ip,
+  });
+  res.type('html').send(
+    render.newsletterNoticePage({
+      heading: 'Please check your inbox',
+      text:
+        'We sent a confirmation email to ' + email +
+        '. Click the link in that email to finish signing up. You can adjust your topics and regions there, or any time from the preference center.',
+      linkHref: safeReturnPath(b.return),
+      linkText: 'Back to reading',
+    })
+  );
+});
+
+/** Double opt-in confirmation link from the signup email. */
+app.get('/confirm/:token', async (req, res) => {
+  const sub = await newsletter.confirmSubscriber(store, req.params.token);
+  if (!sub) {
+    return res.status(400).type('html').send(
+      render.newsletterNoticePage({
+        heading: 'That link has expired',
+        text: 'Confirmation links work for 7 days. Subscribe again and we will send a fresh one.',
+        linkHref: '/subscribe',
+        linkText: 'Go to the subscribe page',
+      })
+    );
+  }
+  res.type('html').send(
+    render.newsletterNoticePage({
+      heading: 'Subscription confirmed',
+      text:
+        'Thank you. Your subscription is active. You can set your topics and regions now, or change them any time.',
+      linkHref: newsletter.preferencesUrlFor(sub),
+      linkText: 'Set your topics and regions',
+    })
+  );
+});
+
+/** Confirmation link for an email-address change. */
+app.get('/confirm-email/:token', async (req, res) => {
+  const sub = await newsletter.applyEmailChange(store, req.params.token);
+  if (!sub) {
+    return res.status(400).type('html').send(
+      render.newsletterNoticePage({
+        heading: 'That link did not work',
+        text: 'The change link may have expired, or the address may already be subscribed. Nothing was changed.',
+        linkHref: '/preferences',
+        linkText: 'Go to your preferences',
+      })
+    );
+  }
+  res.type('html').send(
+    render.newsletterNoticePage({
+      heading: 'Email address updated',
+      text: 'Your Ledger emails will now go to ' + sub.email + '.',
+      linkHref: newsletter.preferencesUrlFor(sub),
+      linkText: 'Review your preferences',
+    })
+  );
+});
+
+app.get('/preferences', (req, res) => {
+  res.type('html').send(
+    render.preferencesLandingPage({ sent: req.query.sent === '1' })
+  );
+});
+
+app.post('/preferences/request', async (req, res) => {
+  const email = String((req.body && req.body.email) || '').trim();
+  if (newsletter.isValidEmail(email)) {
+    // The response is the same whether or not the address is on
+    // file, so the form cannot be used to probe the subscriber list.
+    await newsletter.requestPreferencesLink(store, mailer, email);
+  }
+  res.redirect('/preferences?sent=1');
+});
+
+app.get('/preferences/:token', async (req, res) => {
+  const sub = await newsletter.subscriberForPrefsToken(store, req.params.token);
+  if (!sub) {
+    return res.status(400).type('html').send(
+      render.newsletterNoticePage({
+        heading: 'That link has expired',
+        text: 'Preference links work for 30 days. Enter your email address and we will send a fresh one.',
+        linkHref: '/preferences',
+        linkText: 'Get a new link',
+      })
+    );
+  }
+  res.type('html').send(
+    render.preferencesPage({
+      sub,
+      token: req.params.token,
+      saved: req.query.saved === '1',
+      error: req.query.error || '',
+    })
+  );
+});
+
+app.post('/preferences/:token', async (req, res) => {
+  const sub = await newsletter.subscriberForPrefsToken(store, req.params.token);
+  if (!sub) return res.redirect('/preferences');
+  const b = req.body || {};
+  await newsletter.savePreferences(store, sub, {
+    firstName: b.first_name,
+    dailyBrief: b.daily_brief === 'on',
+    topics: asArray(b.topics),
+    regions: asArray(b.regions),
+    digestFrequency: b.digest_frequency,
+    breakingOptIn: b.breaking === 'on',
+    paused: b.paused === 'on',
+  });
+  res.redirect('/preferences/' + encodeURIComponent(req.params.token) + '?saved=1');
+});
+
+app.post('/preferences/:token/change-email', async (req, res) => {
+  const sub = await newsletter.subscriberForPrefsToken(store, req.params.token);
+  if (!sub) return res.redirect('/preferences');
+  const result = await newsletter.startEmailChange(
+    store,
+    mailer,
+    sub,
+    req.body && req.body.new_email
+  );
+  const err = result.ok ? 'email-sent' : result.error;
+  res.redirect(
+    '/preferences/' + encodeURIComponent(req.params.token) + '?error=' + encodeURIComponent(err)
+  );
+});
+
+app.post('/preferences/:token/unsubscribe', async (req, res) => {
+  const sub = await newsletter.subscriberForPrefsToken(store, req.params.token);
+  if (!sub) return res.redirect('/preferences');
+  await newsletter.unsubscribeSubscriber(store, sub);
+  res.type('html').send(
+    render.newsletterNoticePage({
+      heading: 'You have been unsubscribed',
+      text: 'All Ledger email to ' + sub.email + ' has stopped. If this was a mistake, you can subscribe again on the subscribe page.',
+      linkHref: '/',
+      linkText: 'Back to the front page',
+    })
+  );
+});
+
+app.get('/unsubscribe/:token', async (req, res) => {
+  const sub = await newsletter.subscriberForUnsubToken(store, req.params.token);
+  if (!sub) {
+    return res.status(400).type('html').send(
+      render.newsletterNoticePage({
+        heading: 'That link did not work',
+        text: 'The unsubscribe link could not be verified. You can manage everything from the preference center instead.',
+        linkHref: '/preferences',
+        linkText: 'Go to your preferences',
+      })
+    );
+  }
+  res.type('html').send(render.unsubscribeConfirmPage(req.params.token));
+});
+
+/** One-click unsubscribe (also the List-Unsubscribe-Post target). */
+app.post('/unsubscribe/:token', async (req, res) => {
+  const sub = await newsletter.subscriberForUnsubToken(store, req.params.token);
+  if (!sub) {
+    return res.status(400).type('html').send(
+      render.newsletterNoticePage({
+        heading: 'That link did not work',
+        text: 'The unsubscribe link could not be verified. You can manage everything from the preference center instead.',
+        linkHref: '/preferences',
+        linkText: 'Go to your preferences',
+      })
+    );
+  }
+  await newsletter.unsubscribeSubscriber(store, sub);
+  res.type('html').send(
+    render.newsletterNoticePage({
+      heading: 'You have been unsubscribed',
+      text: 'All Ledger email to ' + sub.email + ' has stopped.',
+      linkHref: '/',
+      linkText: 'Back to the front page',
+    })
+  );
+});
+
+/* --------------------- Newsletter admin --------------------------- */
+
+function csvCell(v) {
+  const s = String(v == null ? '' : v);
+  return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+
+app.use('/admin/newsletter', (req, res, next) => {
+  const secret = process.env.NEWSLETTER_ADMIN_SECRET;
+  if (!secret) return res.status(404).send('Not found');
+  const given = (req.query && req.query.key) || (req.body && req.body.key) || '';
+  if (given !== secret) return res.status(403).send('Forbidden');
+  next();
+});
+
+app.get('/admin/newsletter/export.csv', async (req, res) => {
+  const subs = await store.nlListSubscribers();
+  const header =
+    'email,first_name,status,daily_brief,topics,regions,digest_frequency,breaking,paused,signup_date,source';
+  const lines = subs.map((s) =>
+    [
+      s.email,
+      s.firstName,
+      s.status,
+      s.dailyBrief ? 'yes' : 'no',
+      (s.topics || []).join(';'),
+      (s.regions || []).join(';'),
+      s.digestFrequency,
+      s.breakingOptIn ? 'yes' : 'no',
+      s.paused ? 'yes' : 'no',
+      s.signupDate,
+      s.signupSource,
+    ]
+      .map(csvCell)
+      .join(',')
+  );
+  res
+    .type('text/csv')
+    .set('Content-Disposition', 'attachment; filename="ledger-subscribers.csv"')
+    .send(header + '\n' + lines.join('\n') + '\n');
+});
+
+app.get('/admin/newsletter', async (req, res) => {
+  const subs = await store.nlListSubscribers();
+  const now = Date.now();
+  const todayStr = newsletter.denverDateString(new Date());
+  const confirmed = subs.filter((s) => s.status === 'confirmed');
+  const stats = {
+    total: subs.length,
+    confirmed: confirmed.length,
+    newToday: subs.filter(
+      (s) => newsletter.denverDateString(new Date(s.signupDate)) === todayStr
+    ).length,
+    new7d: subs.filter((s) => now - Date.parse(s.signupDate) < 7 * 24 * 3600 * 1000).length,
+    new30d: subs.filter((s) => now - Date.parse(s.signupDate) < 30 * 24 * 3600 * 1000).length,
+    unsubscribed: subs.filter((s) => s.status === 'unsubscribed').length,
+  };
+  const growthMap = new Map();
+  for (let i = 29; i >= 0; i--) {
+    growthMap.set(
+      newsletter.denverDateString(new Date(now - i * 24 * 3600 * 1000)),
+      0
+    );
+  }
+  for (const s of subs) {
+    const d = newsletter.denverDateString(new Date(s.signupDate));
+    if (growthMap.has(d)) growthMap.set(d, growthMap.get(d) + 1);
+  }
+  const topicCounts = SECTIONS.map((sec) => ({
+    slug: sec.slug,
+    name: sec.name,
+    count: confirmed.filter((s) => (s.topics || []).includes(sec.slug)).length,
+  }));
+  const regionCounts = REGIONS.map((r) => ({
+    slug: r.slug,
+    name: r.name,
+    count: confirmed.filter((s) => (s.regions || []).includes(r.slug)).length,
+  }));
+  const freqCounts = { off: 0, daily: 0, weekly: 0 };
+  confirmed.forEach((s) => {
+    freqCounts[s.digestFrequency] = (freqCounts[s.digestFrequency] || 0) + 1;
+  });
+  const campaigns = await store.nlListCampaigns(50);
+  for (const c of campaigns) {
+    c.recipients = await store.nlCountDeliveries(c.id);
+  }
+  let preview = null;
+  const previewId = Number(req.query.preview || 0);
+  const previewCampaign = previewId
+    ? await store.nlGetCampaign(previewId)
+    : campaigns.find((c) => c.type === 'brief' && c.status === 'draft') || null;
+  if (previewCampaign) {
+    const rendered = await newsletter.renderCampaignEmail(store, previewCampaign, null);
+    preview = { campaign: previewCampaign, html: rendered.html };
+  }
+  const recent = await store.listArticles({ limit: 30 });
+  res.type('html').send(
+    render.adminNewsletterPage({
+      key: process.env.NEWSLETTER_ADMIN_SECRET,
+      msg: String(req.query.msg || ''),
+      stats,
+      growth: [...growthMap.entries()].map(([date, count]) => ({ date, count })),
+      topicCounts,
+      regionCounts,
+      dailyBriefCount: confirmed.filter((s) => s.dailyBrief).length,
+      freqCounts,
+      breakingCount: confirmed.filter((s) => s.breakingOptIn).length,
+      pausedCount: confirmed.filter((s) => s.paused).length,
+      campaigns,
+      preview,
+      breakingCandidates: recent.map((a) => ({
+        slug: a.slug,
+        headline: a.headline,
+        sectionName: sectionName(a.section),
+      })),
+      outbox: await store.nlListOutbox(50),
+      provider: mailer.providerName(),
+      sendTime: process.env.NEWSLETTER_SEND_TIME || '06:00',
+      autosend: process.env.NEWSLETTER_AUTOSEND === '1',
+      testEmail: process.env.NEWSLETTER_TEST_EMAIL || '',
+    })
+  );
+});
+
+app.post('/admin/newsletter/generate', async (req, res) => {
+  const dateStr = newsletter.denverDateString(new Date());
+  await newsletter.buildBriefDraft(store, dateStr);
+  res.redirect(
+    '/admin/newsletter?key=' + encodeURIComponent(process.env.NEWSLETTER_ADMIN_SECRET) +
+      '&msg=' + encodeURIComponent('Daily Brief draft is ready for ' + dateStr + '.')
+  );
+});
+
+app.post('/admin/newsletter/campaign/:id/send', async (req, res) => {
+  const key = encodeURIComponent(process.env.NEWSLETTER_ADMIN_SECRET);
+  const campaign = await store.nlGetCampaign(Number(req.params.id));
+  if (!campaign) {
+    return res.redirect('/admin/newsletter?key=' + key + '&msg=Campaign+not+found.');
+  }
+  let msg;
+  if (campaign.type === 'brief') {
+    const result = await newsletter.sendBriefCampaign(store, mailer, campaign);
+    const after = await store.nlGetCampaign(campaign.id);
+    // Digests follow the brief so the combined-email rule can
+    // leave today's brief stories out of brief readers' digests.
+    await newsletter.buildAndSendDigests(store, mailer, campaign.sendDate, after);
+    msg = result.alreadySent
+      ? 'That brief was already sent.'
+      : 'Brief sent. Digests built and sent for ' + campaign.sendDate + '.';
+  } else if (campaign.type === 'breaking') {
+    const result = await newsletter.sendBreakingCampaign(store, mailer, campaign);
+    msg = result.alreadySent ? 'That campaign was already sent.' : 'Breaking campaign sent.';
+  } else {
+    msg = 'Digests send from the brief flow, not on their own.';
+  }
+  res.redirect('/admin/newsletter?key=' + key + '&msg=' + encodeURIComponent(msg));
+});
+
+app.post('/admin/newsletter/campaign/:id/test', async (req, res) => {
+  const key = encodeURIComponent(process.env.NEWSLETTER_ADMIN_SECRET);
+  const campaign = await store.nlGetCampaign(Number(req.params.id));
+  const testEmail = process.env.NEWSLETTER_TEST_EMAIL || '';
+  if (!campaign || !testEmail) {
+    return res.redirect(
+      '/admin/newsletter?key=' + key + '&msg=' +
+        encodeURIComponent(
+          !campaign ? 'Campaign not found.' : 'Set NEWSLETTER_TEST_EMAIL to send test emails.'
+        )
+    );
+  }
+  const rendered = await newsletter.renderCampaignEmail(store, campaign, null);
+  await mailer.send(store, {
+    to: testEmail,
+    subject: '[TEST] ' + campaign.subject,
+    html: rendered.html,
+    text: rendered.text,
+    kind: 'test',
+  });
+  res.redirect(
+    '/admin/newsletter?key=' + key + '&msg=' + encodeURIComponent('Test email sent to ' + testEmail + '.')
+  );
+});
+
+app.post('/admin/newsletter/campaign/:id/sponsor', async (req, res) => {
+  const key = encodeURIComponent(process.env.NEWSLETTER_ADMIN_SECRET);
+  const campaign = await store.nlGetCampaign(Number(req.params.id));
+  if (campaign && campaign.status === 'draft') {
+    const b = req.body || {};
+    await store.nlUpdateCampaign(campaign.id, {
+      sponsorName: String(b.sponsor_name || '').slice(0, 120),
+      sponsorMessage: String(b.sponsor_message || '').slice(0, 400),
+      sponsorUrl: String(b.sponsor_url || '').slice(0, 400),
+    });
+  }
+  res.redirect(
+    '/admin/newsletter?key=' + key + '&preview=' + req.params.id + '&msg=' +
+      encodeURIComponent('Sponsor block saved.')
+  );
+});
+
+app.post('/admin/newsletter/breaking', async (req, res) => {
+  const key = encodeURIComponent(process.env.NEWSLETTER_ADMIN_SECRET);
+  const b = req.body || {};
+  const articleIds = asArray(b.articles).map(String);
+  const subject = String(b.subject || '').trim();
+  if (!subject || !articleIds.length) {
+    return res.redirect(
+      '/admin/newsletter?key=' + key + '&msg=' +
+        encodeURIComponent('A breaking campaign needs a subject and at least one story.')
+    );
+  }
+  const campaign = await newsletter.createBreakingCampaign(store, {
+    subject,
+    articleIds,
+  });
+  res.redirect(
+    '/admin/newsletter?key=' + key + '&preview=' + campaign.id + '&msg=' +
+      encodeURIComponent('Breaking draft created. Preview it, then Approve & Send.')
+  );
 });
 
 /* ------------------------------ SEO ------------------------------- */
@@ -701,9 +1186,51 @@ app.use((err, req, res, next) => {
   );
 });
 
+/* --------------------- Newsletter scheduler ----------------------- */
+/**
+ * Once a minute, on weekdays at NEWSLETTER_SEND_TIME (America/Denver,
+ * default 06:00), build today's Daily Brief draft if none exists.
+ * With NEWSLETTER_AUTOSEND=1 and a live email provider the draft
+ * sends at once and the day's digests follow it; otherwise the
+ * draft waits for the admin Approve & Send button, which runs the
+ * same digest step. Breaking campaigns are never automatic. The
+ * tick is cheap: a date comparison, and buildBriefDraft is a no-op
+ * once today's campaign exists.
+ */
+let newsletterSchedulerStarted = false;
+function startNewsletterScheduler() {
+  if (newsletterSchedulerStarted) return;
+  newsletterSchedulerStarted = true;
+  setInterval(async () => {
+    try {
+      const now = new Date();
+      const parts = newsletter.denverParts(now);
+      if (!['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].includes(parts.weekday)) return;
+      const sendTime = process.env.NEWSLETTER_SEND_TIME || '06:00';
+      if (parts.hour + ':' + parts.minute < sendTime) return;
+      const dateStr = newsletter.denverDateString(now);
+      if (await store.nlFindCampaign('brief', dateStr)) return;
+      const { campaign } = await newsletter.buildBriefDraft(store, dateStr);
+      console.log(
+        '[newsletter] Daily Brief draft built for ' + dateStr +
+          ' (campaign ' + campaign.id + ')'
+      );
+      if (process.env.NEWSLETTER_AUTOSEND === '1' && mailer.isLive()) {
+        await newsletter.sendBriefCampaign(store, mailer, campaign);
+        const after = await store.nlGetCampaign(campaign.id);
+        await newsletter.buildAndSendDigests(store, mailer, dateStr, after);
+        console.log('[newsletter] Daily Brief sent for ' + dateStr + '; digests followed.');
+      }
+    } catch (err) {
+      console.error('[newsletter] scheduler error:', err && err.message);
+    }
+  }, 60 * 1000);
+}
+
 const PORT = process.env.PORT || 3000;
 if (require.main === module) {
   startWeatherUpdates();
+  startNewsletterScheduler();
   app.listen(PORT, () => {
     console.log('The Centennial Ledger listening on port ' + PORT);
   });
