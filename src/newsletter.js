@@ -585,8 +585,11 @@ async function getPodcastEpisode() {
  * Pick the brief's stories from the last ~36 hours: most recent
  * first, at most two per section (relaxed to three only when that
  * is the only way to reach five stories), five to eight stories,
- * never padded. "Around Colorado" takes up to three Local stories
- * not already used, most recent first.
+ * never padded. "Around Colorado" takes up to three stories not
+ * already used, most recent first: Local stories plus topic-section
+ * stories that carry a region (dual categorization — owner decision
+ * 2026-11-12: region-carrying topic stories belong in Around
+ * Colorado alongside pure-Local stories).
  */
 function selectBriefArticles(articles, nowMs) {
   const cutoff = nowMs - 36 * 60 * 60 * 1000;
@@ -609,12 +612,13 @@ function selectBriefArticles(articles, nowMs) {
   take(2);
   if (picks.length < 5) take(3);
   const used = new Set(picks.map((a) => a.slug));
+  const isLocalish = (a) => a.section === 'local' || !!a.region;
   let around = recent
-    .filter((a) => a.section === 'local' && !used.has(a.slug))
+    .filter((a) => isLocalish(a) && !used.has(a.slug))
     .slice(0, 3);
   if (!around.length) {
     around = articles
-      .filter((a) => a.section === 'local' && !used.has(a.slug))
+      .filter((a) => isLocalish(a) && !used.has(a.slug))
       .slice(0, 3);
   }
   return { picks, around };

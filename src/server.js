@@ -46,6 +46,32 @@ app.use(async (req, res, next) => {
   }
 });
 
+/**
+ * Stories for the "Local & Statewide" strip (homepage and article
+ * sidebar): the eight most recent stories that are Local OR carry a
+ * region. Dual categorization (owner decision, 2026-11-12): a story
+ * filed under a topic section that is specifically about one region
+ * (e.g. Education & Health from the Western Slope) belongs in the
+ * strip alongside pure-Local stories. Merged newest-first, deduped
+ * by slug, capped at eight — the strip's existing size.
+ */
+async function localStripStories() {
+  const [locals, ...byRegion] = await Promise.all([
+    store.listArticles({ section: 'local', limit: 8 }),
+    ...REGIONS.map((r) => store.listArticles({ region: r.slug, limit: 8 })),
+  ]);
+  const seen = new Set();
+  return locals
+    .concat(...byRegion)
+    .filter((a) => {
+      if (seen.has(a.slug)) return false;
+      seen.add(a.slug);
+      return true;
+    })
+    .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
+    .slice(0, 8);
+}
+
 /* ------------------------------ API ------------------------------ */
 
 app.get('/api/health', async (req, res) => {
@@ -255,8 +281,10 @@ app.get('/', async (req, res) => {
     .filter((a) => !usedSlugs.has(a.slug) && !isExplained(a))
     .slice(0, 3);
   // Local & Statewide (design addendum): the eight most recently
-  // published Local stories across all eight regions, newest first.
-  const localStories = await store.listArticles({ section: 'local', limit: 8 });
+  // published Local stories across all eight regions, newest first —
+  // plus region-carrying topic stories (dual categorization, owner
+  // decision 2026-11-12; see localStripStories).
+  const localStories = await localStripStories();
   // The newest Opinion EDITORIAL feeds the "From Our Editorial
   // Desk" strip — never a satire piece (owner instruction,
   // 2026-11-08: cartoons live under Opinion since the restructure
@@ -456,8 +484,9 @@ app.get('/article/:slug', async (req, res) => {
   );
   // Local & Statewide (design addendum): the eight most recently
   // published Local stories across all eight regions, newest first —
-  // the same sidebar component the homepage uses.
-  const localStories = await store.listArticles({ section: 'local', limit: 8 });
+  // the same sidebar component the homepage uses, including
+  // region-carrying topic stories (dual categorization, 2026-11-12).
+  const localStories = await localStripStories();
   // Colorado Explained pieces link to fellow explainers at the end
   // (owner directive, 2026-11-08), same-section explainers first.
   let explainedRelated = [];

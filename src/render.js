@@ -2398,7 +2398,9 @@ function articlePage(a, related, localStories, explainedRelated) {
     '<div class="breadcrumb"><a href="/">Home</a> &rsaquo; <a href="/section/' + a.section + '">' +
     esc(sectionName(a.section)) + '</a> &rsaquo; ' + esc(a.topicLabel || sectionName(a.section)) + '</div>' +
     '<div class="kicker-row"><span class="kicker">' + esc(a.topicLabel || sectionName(a.section)) +
-    (a.region ? ' &middot; ' + esc(a.region) : '') + '</span></div>' +
+    (a.region
+      ? ' &middot; <a href="/local/' + regionSlug(a.region) + '">' + esc(a.region) + '</a>'
+      : '') + '</span></div>' +
     '<h1>' + esc(a.headline) + '</h1>' +
     (a.dek ? '<p class="dek">' + inline(dekText(a)) + '</p>' : '') +
     '<div class="byline">' + bylineLine(a) + '</div>';
@@ -2537,19 +2539,25 @@ function articlePage(a, related, localStories, explainedRelated) {
     '</aside></div>';
 
   // Contextual newsletter module at the end of the article: the
-  // article's section is preselected as a topic, and a Local
-  // article's region too. The heading names the place or section
-  // so the offer matches the story the reader just finished.
+  // article's section is preselected as a topic, and the article's
+  // region too whenever it carries one — region is independent of
+  // section (dual categorization, owner directive 2026-11-12), so a
+  // topic story filed from a region preselects that region as well.
+  // The heading names the place or section so the offer matches
+  // the story the reader just finished.
   if (!isSatire(a)) {
     const regionOfArticle = a.region ? regionSlug(a.region) : '';
     const regionEntry = REGIONS.find((r) => r.slug === regionOfArticle);
     let moduleHeading;
     let moduleText;
-    if (a.section === 'local' && regionEntry) {
+    if (regionEntry) {
       moduleHeading = 'Get ' + regionEntry.name + ' News Delivered to Your Inbox';
       moduleText =
-        'Local stories from ' + regionEntry.name +
-        ', plus the day\'s top Colorado news, by email.';
+        a.section === 'local'
+          ? 'Local stories from ' + regionEntry.name +
+            ', plus the day\'s top Colorado news, by email.'
+          : sectionName(a.section) + ' stories from ' + regionEntry.name +
+            ', plus the day\'s top Colorado news, by email.';
     } else {
       moduleHeading =
         'Get ' + sectionName(a.section) + ' News Delivered to Your Inbox';
@@ -2562,7 +2570,7 @@ function articlePage(a, related, localStories, explainedRelated) {
       text: moduleText,
       source: 'article-' + a.section,
       topic: a.section,
-      region: a.section === 'local' && regionEntry ? regionEntry.slug : '',
+      region: regionEntry ? regionEntry.slug : '',
       returnTo: '/article/' + a.slug,
     });
   }

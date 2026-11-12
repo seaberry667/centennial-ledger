@@ -315,6 +315,26 @@ function regionName(slug) {
   return r ? r.name : '';
 }
 
+/**
+ * Canonical region name for an incoming free-text region value
+ * (dual categorization, owner directive 2026-11-12): accept an exact
+ * region name or a region slug (plus the newsroom's legacy
+ * "Mountains & Resorts" alias) and store the canonical name, so a
+ * story filed under a topic section still lands on its region page
+ * and in region digest matching. Anything else stores '' — region
+ * pages list only the eight real regions.
+ */
+function normalizeRegion(value) {
+  const v = String(value || '').trim();
+  if (!v) return '';
+  const byName = REGIONS.find((r) => r.name.toLowerCase() === v.toLowerCase());
+  if (byName) return byName.name;
+  const slug = slugify(v);
+  if (slug === 'mountains-resorts') return 'Mountains';
+  const bySlug = REGIONS.find((r) => r.slug === slug);
+  return bySlug ? bySlug.name : '';
+}
+
 const SPOTLIGHTS = ['gop_positive', 'dem_negative'];
 
 function normalizeSpotlight(input) {
@@ -826,7 +846,7 @@ function normalizeArticle(raw) {
     series,
     lastReviewed,
     topicLabel: String(raw.topicLabel || raw.topic_label || '').trim(),
-    region: String(raw.region || '').trim(),
+    region: normalizeRegion(raw.region),
     spotlight,
     sections,
     whyItMatters: String(raw.whyItMatters || raw.why_it_matters || '').trim(),
@@ -2247,7 +2267,7 @@ class PgStore {
     if (spotlight) { params.push(spotlight); where.push(`spotlight = $${params.length}`); }
     if (search) {
       params.push('%' + search + '%');
-      where.push(`(headline ILIKE $${params.length} OR dek ILIKE $${params.length} OR topic_label ILIKE $${params.length})`);
+      where.push(`(headline ILIKE $${params.length} OR dek ILIKE $${params.length} OR topic_label ILIKE $${params.length} OR region ILIKE $${params.length})`);
     }
     if (RETRACTED_SLUGS.size) {
       params.push([...RETRACTED_SLUGS]);
