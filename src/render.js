@@ -1367,8 +1367,17 @@ const PODCAST_FALLBACK_LINE =
  * same link — so the rail never waits on the podcast feed.
  */
 function podcastBox(episode) {
+  /* Kicker (owner rule, 2026-11-12): "TODAY'S PODCAST" only while
+   * the box's episode is today's (Denver date); "LATEST PODCAST"
+   * on Sundays, in the morning before the day's episode lands,
+   * and whenever the box is showing its fallback copy. */
+  const epDate = episode && episode.publishedAt ? fmtMetaDate(episode.publishedAt) : '';
+  const kicker =
+    epDate && epDate === fmtMetaDate(new Date().toISOString())
+      ? 'TODAY\'S PODCAST'
+      : 'LATEST PODCAST';
   let inner =
-    '<div class="briefing-kicker">TODAY\'S PODCAST</div>';
+    '<div class="briefing-kicker">' + kicker + '</div>';
   if (episode && episode.title) {
     if (episode.image) {
       inner +=
