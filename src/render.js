@@ -1254,7 +1254,7 @@ ${body}
           <li><a href="https://www.instagram.com/centennialledger" target="_blank" rel="noopener">Instagram</a></li>
         </ul>
         <img class="footer-ornament" src="/section-break.png" alt="" width="642" height="26">
-        <p class="footer-stay-text">The Colorado Daily Brief, free in your inbox Monday to Friday.</p>
+        <p class="footer-stay-text">The free weekday newsletter, in your inbox Monday to Friday.</p>
         <form class="footer-signup" method="post" action="/briefing">
           <input type="hidden" name="source" value="footer">
           <input type="email" name="email" required placeholder="Your email address" aria-label="Email address">
@@ -2761,10 +2761,10 @@ function subscribePage(opts) {
     '<div class="nl-field" style="flex:0 1 240px"><label for="nl-zip">ZIP code (optional)</label>' +
     '<input id="nl-zip" type="text" name="zip_code" inputmode="numeric" autocomplete="postal-code" placeholder="ZIP code"></div>' +
     '</div>' +
-    '<h2>The Colorado Daily Brief</h2>' +
-    '<label class="nl-check"><input type="checkbox" name="daily_brief" checked> <span>Send me The Colorado Daily Brief, the free weekday morning newsletter.</span></label>' +
+    '<h2>Free Weekday Newsletter</h2>' +
+    '<label class="nl-check"><input type="checkbox" name="daily_brief" checked> <span>Send me the free weekday morning newsletter.</span></label>' +
     '<h2>Topics</h2>' +
-    '<p class="nl-note-small" style="margin:0 0 .4rem">Pick the sections you want in a personal digest email. Leave them all blank if you only want the Daily Brief.</p>' +
+    '<p class="nl-note-small" style="margin:0 0 .4rem">Pick the sections you want in a personal digest email. Leave them all blank if you only want the weekday newsletter.</p>' +
     topicCheckboxes([]) +
     '<h2>Regions</h2>' +
     '<p class="nl-note-small" style="margin:0 0 .4rem">Pick the parts of Colorado you want local news from.</p>' +
@@ -2776,7 +2776,7 @@ function subscribePage(opts) {
   return layout({
     title: fitTitle('Subscribe free: Colorado news by email, The Centennial Ledger', 70),
     description: fitDescription(
-      'Subscribe free to The Centennial Ledger by email. Get the weekday Colorado Daily Brief, follow topics like politics, taxes, energy and schools, or get news from your region.'
+      'Subscribe free to The Centennial Ledger by email. Get the free weekday newsletter, follow topics like politics, taxes, energy and schools, or get news from your region.'
     ),
     path: '/subscribe',
     body,
@@ -2848,10 +2848,10 @@ function preferencesPage({ sub, token, saved, error }) {
     '<div class="nl-field" style="flex:0 1 240px"><label for="pref-zip">ZIP code</label>' +
     '<input id="pref-zip" type="text" name="zip_code" inputmode="numeric" autocomplete="postal-code" value="' + esc(sub.zipCode || '') + '"></div>' +
     '</div>' +
-    '<h2>The Colorado Daily Brief</h2>' +
+    '<h2>Free Weekday Newsletter</h2>' +
     '<label class="nl-check"><input type="checkbox" name="daily_brief"' +
     (sub.dailyBrief ? ' checked' : '') +
-    '> <span>Send me The Colorado Daily Brief, Monday to Friday.</span></label>' +
+    '> <span>Send me the free weekday newsletter, Monday to Friday.</span></label>' +
     '<h2>Topics</h2>' +
     topicCheckboxes(sub.topics) +
     '<h2>Regions</h2>' +
@@ -2880,13 +2880,13 @@ function preferencesPage({ sub, token, saved, error }) {
     '</form>' +
     '<h2 style="font-family:var(--font-headline)">Unsubscribe</h2>' +
     '<form class="nl-panel" method="post" action="' + action + '/unsubscribe">' +
-    '<p>Stop all Ledger email: the Daily Brief, digests and breaking news.</p>' +
+    '<p>Stop all Ledger email: the weekday newsletter, digests and breaking news.</p>' +
     '<button class="nl-danger" type="submit">Unsubscribe From All Emails</button>' +
     '</form></div>';
   return layout({
     title: fitTitle('Your email preferences, The Centennial Ledger', 70),
     description: fitDescription(
-      'Your Centennial Ledger preference center: Daily Brief, topics, regions, digest frequency, breaking news, pause, email change and unsubscribe.'
+      'Your Centennial Ledger preference center: weekday newsletter, topics, regions, digest frequency, breaking news, pause, email change and unsubscribe.'
     ),
     path: '/preferences',
     body,
@@ -2897,14 +2897,14 @@ function preferencesPage({ sub, token, saved, error }) {
 function unsubscribeConfirmPage(token) {
   const body =
     '<div class="static-page"><h1>Unsubscribe</h1>' +
-    '<p>Stop all email from The Centennial Ledger: the Daily Brief, digests and breaking news alerts. You can subscribe again at any time.</p>' +
+    '<p>Stop all email from The Centennial Ledger: the weekday newsletter, digests and breaking news alerts. You can subscribe again at any time.</p>' +
     '<form method="post" action="/unsubscribe/' + esc(token) + '">' +
     '<button class="nl-danger" type="submit">Unsubscribe Me</button></form>' +
     '<p class="nl-note-small">Changed your mind about some of it? <a href="/preferences">Manage your preferences</a> instead.</p></div>';
   return layout({
     title: fitTitle('Unsubscribe from Ledger email, The Centennial Ledger', 70),
     description: fitDescription(
-      'Unsubscribe from The Centennial Ledger email: the Daily Brief, digests and breaking news alerts stop, and the address is not emailed again.'
+      'Unsubscribe from The Centennial Ledger email: the weekday newsletter, digests and breaking news alerts stop, and the address is not emailed again.'
     ),
     path: '/unsubscribe',
     body,
@@ -2961,7 +2961,7 @@ function adminNewsletterPage(d) {
     countRows(d.regionCounts) +
     '</table>' +
     '<table class="admin-table"><tr><th>Preference</th><th>Subscribers</th></tr>' +
-    '<tr><td>The Colorado Daily Brief</td><td>' + esc(String(d.dailyBriefCount)) + '</td></tr>' +
+    '<tr><td>Weekday newsletter</td><td>' + esc(String(d.dailyBriefCount)) + '</td></tr>' +
     '<tr><td>Digest: daily</td><td>' + esc(String(d.freqCounts.daily || 0)) + '</td></tr>' +
     '<tr><td>Digest: weekly</td><td>' + esc(String(d.freqCounts.weekly || 0)) + '</td></tr>' +
     '<tr><td>Digest: off</td><td>' + esc(String(d.freqCounts.off || 0)) + '</td></tr>' +
@@ -2970,7 +2970,7 @@ function adminNewsletterPage(d) {
     '</table></div>';
 
   body +=
-    '<div class="admin-section"><h2>Daily Brief</h2>' +
+    '<div class="admin-section"><h2>Weekday Newsletter</h2>' +
     '<form method="post" action="/admin/newsletter/generate' + key + '">' +
     '<button class="nl-danger" style="border-color:var(--color-gold);color:#333" type="submit">Build today\'s draft</button></form>' +
     '<p class="nl-note-small">The scheduler builds the draft at the send time on weekdays. This button does the same thing now, for testing.</p></div>';
@@ -3081,7 +3081,7 @@ function checkoutPage(tier) {
   const body =
     '<div class="static-page"><h1>Checkout</h1>' +
     '<p>You selected the <strong>' + esc(name) + '</strong> tier.</p>' +
-    '<p>Online checkout is being connected now and will open shortly. Paid tiers launch as soon as secure billing is in place; the Free tier and The Colorado Briefing are available today.</p>' +
+    '<p>Online checkout is being connected now and will open shortly. Paid tiers launch as soon as secure billing is in place; the Free tier and the free weekday newsletter are available today.</p>' +
     '<p><a href="/subscribe">&larr; Back to subscription options</a></p></div>' +
     briefingBox(false);
   return layout({
@@ -3116,11 +3116,11 @@ function staticPage(kind) {
   const isPrivacy = kind === 'privacy';
   const title = isPrivacy ? 'Privacy Policy' : 'Terms of Use';
   const content = isPrivacy
-    ? '<p>The Centennial Ledger collects the least information needed to run this site. When you sign up for The Colorado Briefing, we store your email address so we can send it. When you subscribe, our payment processor handles your payment details; we never see or store full card numbers.</p>' +
+    ? '<p>The Centennial Ledger collects the least information needed to run this site. When you sign up for the weekday newsletter, we store your email address so we can send it. When you subscribe, our payment processor handles your payment details; we never see or store full card numbers.</p>' +
       '<h2>What we collect</h2><p>Email addresses for the briefing and subscriptions, basic server logs (pages visited, browser type, approximate location from your IP address), and cookies used for site function and, where enabled, advertising through Google AdSense.</p>' +
       '<h2>Advertising</h2><p>We may run Google AdSense advertising. Google and its partners may use cookies to serve ads based on your visits to this and other sites. You can opt out of personalized advertising in your Google account settings.</p>' +
       '<h2>Your choices</h2><p>Every briefing email includes an unsubscribe link. To ask what we hold about you or to have it deleted, contact the publisher through the address on this page.</p>' +
-      '<h2>Newsletters and subscriptions</h2><p>When you subscribe to The Colorado Daily Brief, a topic or regional digest, or breaking news alerts, we store your email address, any first name you give us, the topics and regions you choose, and a record of when and where you signed up. We use that information only to send the emails you asked for and to manage your subscription.</p>' +
+      '<h2>Newsletters and subscriptions</h2><p>When you subscribe to the free weekday newsletter, a topic or regional digest, or breaking news alerts, we store your email address, any first name you give us, the topics and regions you choose, and a record of when and where you signed up. We use that information only to send the emails you asked for and to manage your subscription.</p>' +
       '<h2>Email delivery</h2><p>Our newsletters are delivered by Amazon Simple Email Service (Amazon SES), a third-party email provider. Your email address is shared with that provider only so your emails can be sent. Where the provider supports it, we may record whether an email was delivered, bounced, or reported as spam, and which links were clicked, so we can keep the newsletter useful and the subscriber list accurate.</p>' +
       '<h2>Managing your subscription</h2><p>Every newsletter carries an unsubscribe link that works without a password or an account, and a link to a preference center where you can change topics, regions and frequency, pause your subscription, change your email address, or unsubscribe from everything. Unsubscribed addresses stay on a suppression list so they are not emailed again by mistake. To have your information removed entirely, contact the publisher through the address on this page.</p>' +
       '<h2>Advertisers and sponsors</h2><p>We do not sell or share subscriber email addresses with advertisers or sponsors. When a newsletter carries a sponsored placement, it is delivered by The Centennial Ledger itself as part of the email; sponsors never receive the subscriber list.</p>' +

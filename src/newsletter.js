@@ -646,7 +646,7 @@ async function buildBriefDraft(store, dateStr) {
   const campaign = await store.nlInsertCampaign({
     type: 'brief',
     sendDate: dateStr,
-    subject: 'The Colorado Daily Brief — ' + denverDateLabel(dateStr),
+    subject: 'Your daily newsletter — ' + denverDateLabel(dateStr),
     status: 'draft',
     articleIds: picks.map((a) => a.slug),
     aroundIds: around.map((a) => a.slug),
@@ -840,7 +840,7 @@ function renderBriefEmail(campaign, items, around, links) {
   bodyText += sponsorText(campaign);
 
   return campaignShell({
-    kicker: 'The Colorado Daily Brief',
+    kicker: 'Your Daily Newsletter',
     dateLabel: denverDateLabel(campaign.sendDate),
     heading: 'Good morning, Colorado.',
     intro: 'The leading Colorado stories, from the Capitol to communities across the state.',

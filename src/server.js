@@ -569,7 +569,7 @@ app.get('/signin', (req, res) => {
     render.simplePage(
       'Sign in: reader accounts for Colorado news subscribers',
       'Sign In',
-      'Reader accounts are coming soon. Subscribers will sign in here once checkout is live; in the meantime, The Colorado Briefing and the front page are open to everyone.',
+      'Reader accounts are coming soon. Subscribers will sign in here once checkout is live; in the meantime, the weekday newsletter and the front page are open to everyone.',
       '/signin',
       'Sign in to your reader account for Colorado political news: manage your subscription, saved stories and briefing preferences once checkout opens. Read the news.'
     )
@@ -976,7 +976,7 @@ app.post('/admin/newsletter/generate', async (req, res) => {
   await newsletter.buildBriefDraft(store, dateStr);
   res.redirect(
     '/admin/newsletter?key=' + encodeURIComponent(process.env.NEWSLETTER_ADMIN_SECRET) +
-      '&msg=' + encodeURIComponent('Daily Brief draft is ready for ' + dateStr + '.')
+      '&msg=' + encodeURIComponent('Weekday newsletter draft is ready for ' + dateStr + '.')
   );
 });
 

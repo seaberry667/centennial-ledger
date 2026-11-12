@@ -232,7 +232,7 @@ async function main() {
     check('/subscribe no longer shows paid tiers', !subscribeGet.text.includes('Patriot') && !subscribeGet.text.includes('Founding'));
     check('/subscribe form carries topics and regions', subscribeGet.text.includes('name="topics"') && subscribeGet.text.includes('name="regions"'));
     const home = await req('GET', '/');
-    check('homepage briefing box posts to the new system', home.status === 200 && home.text.includes('The Colorado Daily Brief') && home.text.includes('name="source" value="homepage"'));
+    check('homepage briefing box posts to the new system', home.status === 200 && home.text.includes('Free Weekday Newsletter') && home.text.includes('name="source" value="homepage"'));
     check('footer carries the compact form and preferences link', home.text.includes('Manage your email preferences') && home.text.includes('name="source" value="footer"'));
     const prefsLanding = await req('GET', '/preferences');
     check('/preferences landing loads', prefsLanding.status === 200 && prefsLanding.text.includes('Manage Your Email Preferences'));
