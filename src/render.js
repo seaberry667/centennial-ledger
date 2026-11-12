@@ -1342,7 +1342,6 @@ function briefingBox(thanks, source) {
   return (
     '<section class="briefing">' +
     '<div class="briefing-kicker">Free Weekday Newsletter</div>' +
-    '<h2 class="briefing-title">The Colorado Daily Brief</h2>' +
     '<p class="briefing-tag">The day\'s top Colorado stories, in your inbox before the workday starts.</p>' +
     (thanks
       ? '<p><strong>Thank you. Please check your inbox to confirm your subscription.</strong></p>'
