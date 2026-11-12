@@ -767,6 +767,8 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 .podcast-box .podcast-date{font-family:var(--font-ui);font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:#555;margin:0 0 .5rem}
 .podcast-box .podcast-titles{margin:0 0 .8rem;padding-left:1.15rem;text-align:left}
 .podcast-box .podcast-titles li{margin:.35rem 0;line-height:1.35}
+.podcast-box .podcast-titles a{color:inherit;text-decoration:none}
+.podcast-box .podcast-titles a:hover{text-decoration:underline}
 .podcast-box .podcast-listen{display:block;text-align:center;background:var(--color-red);color:#fff;padding:.55rem 1.1rem;font-family:var(--font-ui);font-size:1rem;text-decoration:none}
 /* ---------- Advertisements ---------- */
 .ad-slot{margin:1.2rem 0;text-align:center}
@@ -1381,8 +1383,9 @@ function podcastBox(episode) {
   if (episode && episode.title) {
     if (episode.image) {
       inner +=
+        '<a href="' + PODCAST_SPOTIFY_URL + '" target="_blank" rel="noopener">' +
         '<img class="podcast-art" src="' + esc(episode.image) +
-        '" alt="Colorado Daily News Brief podcast artwork" loading="lazy">';
+        '" alt="Colorado Daily News Brief podcast artwork" loading="lazy"></a>';
     }
     inner +=
       (episode.publishedAt
@@ -1390,7 +1393,13 @@ function podcastBox(episode) {
         : '') +
       (episode.titles && episode.titles.length
         ? '<ul class="podcast-titles">' +
-          episode.titles.map((t) => '<li>' + esc(t) + '</li>').join('') +
+          episode.titles
+            .map(
+              (t) =>
+                '<li><a href="' + PODCAST_SPOTIFY_URL +
+                '" target="_blank" rel="noopener">' + esc(t) + '</a></li>'
+            )
+            .join('') +
           '</ul>'
         : '');
   } else {
