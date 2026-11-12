@@ -15,6 +15,7 @@ const render = require('./render');
 const newsletter = require('./newsletter');
 const mailer = require('./mailer');
 const { startWeatherUpdates } = require('./weather');
+const podcastFeed = require('./podcast');
 
 const app = express();
 app.disable('x-powered-by');
@@ -328,6 +329,11 @@ app.get('/', async (req, res) => {
       opinion,
       explained,
       briefingThanks: req.query.briefing === 'thanks',
+      // Newest podcast episode for the rail's podcast box, from
+      // the in-memory feed cache: null until the first fetch
+      // lands, and the box renders its fallback copy meanwhile —
+      // the homepage never waits on the podcast feed.
+      podcast: podcastFeed.latestEpisode(),
     })
   );
 });
@@ -1265,6 +1271,7 @@ function startNewsletterScheduler() {
 const PORT = process.env.PORT || 3000;
 if (require.main === module) {
   startWeatherUpdates();
+  podcastFeed.startPodcastUpdates();
   startNewsletterScheduler();
   app.listen(PORT, () => {
     console.log('The Centennial Ledger listening on port ' + PORT);

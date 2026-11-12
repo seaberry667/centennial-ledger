@@ -565,6 +565,31 @@ function rectangleAdSlot() {
 }
 
 /**
+ * The homepage rail's bottom advertisement (owner request,
+ * 2026-11-12): the rail's rectangle unit, but in a fixed
+ * near-square shape. As the responsive rectangle it rendered as a
+ * long strip in the narrow rail and crowded the column; a fixed
+ * 300x250 unit keeps it a rectangle. Homepage rail only — the
+ * article sidebar keeps the responsive rectangleAdSlot(). Without
+ * an AdSense unit this is the same house placeholder
+ * rectangleAdSlot() returns, which is already near-square
+ * (min-height 250px).
+ */
+function homeRailAdSlot() {
+  if (ADSENSE_SLOTS.rectangle) {
+    return (
+      '<div class="ad-slot ad-rectangle rail-ad">' +
+      '<ins class="adsbygoogle" style="display:block;width:300px;height:250px" ' +
+      'data-ad-client="' + esc(ADSENSE_CLIENT) + '" ' +
+      'data-ad-slot="' + esc(ADSENSE_SLOTS.rectangle) + '"></ins>' +
+      '<script>(adsbygoogle = window.adsbygoogle || []).push({});</script>' +
+      '</div>'
+    );
+  }
+  return rectangleAdSlot();
+}
+
+/**
  * One homepage rail story row: a small plate thumbnail on the left
  * (no border; the engraving shows at its natural edges), then the
  * red uppercase category label and the headline as a link. No
@@ -735,6 +760,14 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 .briefing input[type=email]{width:100%;padding:.55rem;font-size:1rem;font-family:var(--font-body);border:1px solid #999;background:#fff}
 .briefing button{background:var(--color-red);color:#fff;border:0;padding:.55rem 1.1rem;font-size:1rem;font-family:var(--font-ui);cursor:pointer;width:100%}
 .briefing .briefing-note{font-style:italic;color:#555;font-size:.92rem;margin:.55rem 0 0}
+/* Podcast box: the briefing box's dress, with the show artwork, the
+   newest episode's title and date, an excerpt of its notes and a
+   button-styled listen link. */
+.podcast-box .podcast-art{display:block;width:96px;height:96px;object-fit:cover;border:1px solid var(--color-border);margin:.2rem 0 .6rem}
+.podcast-box .podcast-episode{font-family:var(--font-headline);font-weight:700;font-size:1.15rem;line-height:1.25;margin:.1rem 0 .15rem}
+.podcast-box .podcast-date{font-family:var(--font-ui);font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:#555;margin:0 0 .5rem}
+.podcast-box .podcast-excerpt{margin:0 0 .8rem}
+.podcast-box .podcast-listen{display:block;text-align:center;background:var(--color-red);color:#fff;padding:.55rem 1.1rem;font-family:var(--font-ui);font-size:1rem;text-decoration:none}
 /* ---------- Advertisements ---------- */
 .ad-slot{margin:1.2rem 0;text-align:center}
 .ad-placeholder{border:1px dashed #bbb;color:#999;font-family:var(--font-ui);font-size:.75rem;text-transform:uppercase;letter-spacing:.15em;padding:1.4rem 0}
@@ -756,6 +789,11 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 .home-rail .briefing{margin:0 0 1.2rem}
 .home-rail .ad-slot{margin:0 0 1.2rem}
 .home-rail .ad-rectangle{margin-top:1.2rem}
+/* The homepage rail's bottom ad is the fixed near-square rectangle
+   (see homeRailAdSlot): no slot padding, and the box holds the
+   rectangle's 250px height while the unit loads. */
+.home-rail .ad-slot.rail-ad{padding:0;min-height:250px}
+.home-rail .rail-ad .adsbygoogle{display:block;margin:0 auto}
 @media (max-width:900px){
   .home-layout{grid-template-columns:1fr}
   .home-features{grid-column:auto;grid-row:auto}
@@ -1314,6 +1352,47 @@ function briefingBox(thanks, source) {
     '<p class="briefing-note">Free to subscribe. No spam. Unsubscribe or change your preferences anytime. Monday to Friday.</p>' +
     '</section>'
   );
+}
+
+const PODCAST_SPOTIFY_URL = 'https://open.spotify.com/show/5r0ObdqenGKnYskuKRxWrX';
+const PODCAST_FALLBACK_LINE =
+  "Colorado's top stories, weather and sports — a new episode every weekday morning by 6 a.m.";
+
+/**
+ * Podcast box at the top of the homepage rail (owner request,
+ * 2026-11-12), in the newsletter box's dress: the show name,
+ * what's on the newest episode of the Colorado Daily News Brief
+ * (title, date and a plain-text excerpt of its notes, from the
+ * show's RSS feed via src/podcast.js), the show artwork, and a
+ * Listen on Spotify button. When the feed has not loaded yet (or
+ * is down) the box renders a standing line instead — same box,
+ * same link — so the rail never waits on the podcast feed.
+ */
+function podcastBox(episode) {
+  let inner =
+    '<div class="briefing-kicker">The Podcast</div>' +
+    '<h2 class="briefing-title">Colorado Daily News Brief</h2>';
+  if (episode && episode.title) {
+    if (episode.image) {
+      inner +=
+        '<img class="podcast-art" src="' + esc(episode.image) +
+        '" alt="Colorado Daily News Brief podcast artwork" loading="lazy">';
+    }
+    inner +=
+      '<p class="podcast-episode">' + esc(episode.title) + '</p>' +
+      (episode.publishedAt
+        ? '<p class="podcast-date">' + esc(fmtMetaDate(episode.publishedAt)) + '</p>'
+        : '') +
+      (episode.excerpt
+        ? '<p class="podcast-excerpt">' + esc(episode.excerpt) + '</p>'
+        : '');
+  } else {
+    inner += '<p class="briefing-tag">' + esc(PODCAST_FALLBACK_LINE) + '</p>';
+  }
+  inner +=
+    '<a class="podcast-listen" href="' + PODCAST_SPOTIFY_URL +
+    '" target="_blank" rel="noopener">Listen on Spotify</a>';
+  return '<section class="briefing podcast-box">' + inner + '</section>';
 }
 
 /**
@@ -1939,7 +2018,7 @@ function explainedPage({ articles, featured, category, cats }) {
   });
 }
 
-function homePage({ lead, second, third, latest, railGroups, latestRow, localStories, opinion, briefingThanks, explained }) {
+function homePage({ lead, second, third, latest, railGroups, latestRow, localStories, opinion, briefingThanks, explained, podcast }) {
   const jsonLd = [
     {
       '@context': 'https://schema.org',
@@ -1994,22 +2073,24 @@ function homePage({ lead, second, third, latest, railGroups, latestRow, localSto
       ? latestRow
       : latest.filter((a) => !railSlugs.has(a.slug)).slice(0, 3)
     ).filter(Boolean).slice(0, 3);
-    // Rail order: the per-section story groups, the briefing
-    // signup (title, one italic line and the form — no roundup
-    // paragraph), Local & Statewide, then a rectangle ad slot. In
-    // the markup the rail follows the features inside the
-    // two-column layout, so on narrow screens the page stacks in
-    // reading order: features, rail, strip, Latest grid, module.
+    // Rail order: the podcast box (owner request, 2026-11-12),
+    // the per-section story groups, the briefing signup (title,
+    // one italic line and the form — no roundup paragraph), Local
+    // & Statewide, then the near-square rectangle ad slot. In the
+    // markup the rail follows the features inside the two-column
+    // layout, so on narrow screens the page stacks in reading
+    // order: features, rail, strip, Latest grid, module.
     body +=
       '<div class="home-layout"><div class="home-features">' + features + '</div>' +
       '<aside class="home-rail" aria-label="Sidebar">' +
+      podcastBox(podcast) +
       (groups.length
         ? '<section class="rail-latest" aria-label="Latest stories by section">' +
           groups.map(railSectionGroup).join('') + '</section>'
         : '') +
       briefingBox(briefingThanks, 'homepage') +
       localStatewideBox(localStories) +
-      rectangleAdSlot() +
+      homeRailAdSlot() +
       '</aside></div>';
     // Below the columns, full width: the editorial strip when an
     // Opinion piece exists, then the three-card Latest grid, then
