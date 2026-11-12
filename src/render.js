@@ -1348,7 +1348,6 @@ function briefingBox(thanks, source) {
       : '<form method="post" action="/briefing"><input type="hidden" name="source" value="' +
         esc(source || 'briefing-box') +
         '"><input type="email" name="email" required placeholder="Your email address" aria-label="Email address"><button type="submit">Subscribe</button></form>') +
-    '<p class="briefing-note">Free to subscribe. No spam. Unsubscribe or change your preferences anytime. Monday to Friday.</p>' +
     '</section>'
   );
 }
