@@ -1007,12 +1007,8 @@ article.full figure.article-hero{margin:1.1rem 0}
    and a closing two-column band under its own double rule. No
    boxes or cards. Every rule is scoped to .about-page; the other
    static pages keep the narrow .static-page column above. */
-.about-page .about-kicker{color:var(--color-red);font-family:var(--font-ui);font-size:.82rem;font-weight:bold;letter-spacing:.14em;text-transform:uppercase}
-.about-nameplate{text-align:center;padding-top:.6rem;border-bottom:1px solid var(--color-text)}
-.about-nameplate::after{content:"";display:block;border-bottom:3px solid var(--color-text);margin:1.15rem 0 2px}
-.about-nameplate h1{font-size:3rem;line-height:1.05;margin:.45rem 0 .55rem}
-.about-nameplate .about-tagline{font-size:1.45rem;color:var(--color-navy);margin:0}
-.about-columns{margin-top:1.9rem}
+.about-head .about-tagline{margin:.3rem 0 0}
+.about-columns{margin-top:1.4rem}
 .about-columns p{margin:0 0 1em}
 .about-dropcap::first-letter{font-family:var(--font-headline);font-weight:700;font-size:3.3em;float:left;line-height:.82;padding:.05em .14em 0 0}
 .static-page.about-page .about-columns h2,.static-page.about-page .about-closing h2{font-family:var(--font-ui);color:var(--color-red);font-size:1rem;font-weight:bold;letter-spacing:.13em;text-transform:uppercase;line-height:1.4;border-bottom:1px solid var(--color-border);padding-bottom:.45rem;margin:1.8em 0 .85em;column-span:all;break-after:avoid}
@@ -1031,8 +1027,7 @@ article.full figure.article-hero{margin:1.1rem 0}
 .about-closing{grid-template-columns:1fr;gap:.4rem}
 }
 @media (max-width:767px){
-.about-nameplate h1{font-size:2.1rem}
-.about-nameplate .about-tagline{font-size:1.25rem}
+
 .about-pullquote{font-size:1.35rem;padding:1.1rem .4rem}
 }
 /* ---------- Footer ---------- */
@@ -3161,10 +3156,13 @@ function staticPage(kind) {
  * in the owner's draft.
  */
 function aboutPage() {
+  /* Header mirrors the section pages (owner instruction,
+   * 2026-11-12): leaderboard ad first, then the H1 with the same
+   * class and size the section pages use; the tagline follows as
+   * the standfirst. */
   const nameplate =
-    '<header class="about-nameplate">' +
-    '<div class="about-kicker">About Us</div>' +
-    '<h1>About The Centennial Ledger</h1>' +
+    '<header class="about-head">' +
+    '<h1 class="headline" style="font-size:2.4rem">About The Centennial Ledger</h1>' +
     "<p class=\"about-tagline\"><em>A Clear View of Colorado.</em></p>" +
     '</header>';
   const columns =
@@ -3226,7 +3224,9 @@ function aboutPage() {
       'The Centennial Ledger is an independent Colorado digital newspaper covering politics, rights, taxes, energy, schools and local news in all 64 counties.'
     ),
     path: '/about',
-    body: '<div class="static-page about-page">' + nameplate + columns + closing + '</div>',
+    body:
+      leaderboardAdSlot() +
+      '<div class="static-page about-page">' + nameplate + columns + closing + '</div>',
   });
 }
 
