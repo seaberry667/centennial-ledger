@@ -594,6 +594,8 @@ app.post('/subscribe', async (req, res) => {
   await newsletter.subscribeSignup(store, mailer, {
     email,
     firstName: b.first_name,
+    lastName: b.last_name,
+    zipCode: b.zip_code,
     dailyBrief: b.daily_brief === 'on' || b.daily_brief === 'true',
     topics: asArray(b.topics),
     regions: asArray(b.regions),
@@ -728,6 +730,8 @@ app.post('/preferences/:token', async (req, res) => {
   const b = req.body || {};
   await newsletter.savePreferences(store, sub, {
     firstName: b.first_name,
+    lastName: b.last_name,
+    zipCode: b.zip_code,
     dailyBrief: b.daily_brief === 'on',
     topics: asArray(b.topics),
     regions: asArray(b.regions),
@@ -824,11 +828,13 @@ app.use('/admin/newsletter', (req, res, next) => {
 app.get('/admin/newsletter/export.csv', async (req, res) => {
   const subs = await store.nlListSubscribers();
   const header =
-    'email,first_name,status,daily_brief,topics,regions,digest_frequency,breaking,paused,signup_date,source';
+    'email,first_name,last_name,zip_code,status,daily_brief,topics,regions,digest_frequency,breaking,paused,signup_date,source';
   const lines = subs.map((s) =>
     [
       s.email,
       s.firstName,
+      s.lastName || '',
+      s.zipCode || '',
       s.status,
       s.dailyBrief ? 'yes' : 'no',
       (s.topics || []).join(';'),

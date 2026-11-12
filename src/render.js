@@ -1008,6 +1008,11 @@ footer::before{content:"";position:absolute;top:-8px;left:0;right:0;height:1px;b
 .nl-primary:hover{background:#7d181e}
 .nl-note-small{font-size:.9rem;color:#555;margin:.6rem 0 0}
 .nl-notice{border:1px solid var(--color-gold);background:var(--color-ivory);padding:.8rem 1rem;margin:0 0 1rem;max-width:760px}
+.nl-row{display:flex;gap:1rem}
+.nl-row .nl-field{flex:1}
+.nl-panel.nl-wide-panel{max-width:none}
+.nl-notice.nl-wide-notice{max-width:none}
+@media (max-width:767px){.nl-row{flex-direction:column;gap:0}}
 .nl-danger{background:#fff;border:1.5px solid var(--color-red);color:var(--color-red);font-family:var(--font-ui);font-weight:600;padding:.5rem 1rem;cursor:pointer}
 .nl-danger:hover{background:var(--color-red);color:#fff}
 .footer-signup{display:flex;gap:.4rem;margin:.4rem 0 .2rem}
@@ -2592,26 +2597,34 @@ function subscribePage(opts) {
   let notice = '';
   if (o.sent) {
     notice =
-      '<div class="nl-notice"><strong>Thank you.</strong> We have sent a confirmation email to ' +
+      '<div class="nl-notice nl-wide-notice"><strong>Thank you.</strong> We have sent a confirmation email to ' +
       esc(o.email || 'your inbox') +
       '. Click the link in that email to finish signing up. You can set topics and regions there too, or leave them for later.</div>';
   } else if (o.error) {
     notice =
-      '<div class="nl-notice"><strong>That email address does not look right.</strong> Check it and try again.</div>';
+      '<div class="nl-notice nl-wide-notice"><strong>That email address does not look right.</strong> Check it and try again.</div>';
   }
   const body =
     '<div class="kicker">Newsletter</div>' +
     '<h1 class="headline" style="font-size:2.4rem">Stay Informed. Stay Colorado.</h1>' +
     '<p class="dek">Get Colorado\'s top stories delivered to your inbox. Subscribe to the free morning briefing, follow your favorite topics, or receive news from the regions that matter to you.</p>' +
     notice +
-    '<form class="nl-panel" method="post" action="/subscribe">' +
+    '<form class="nl-panel nl-wide-panel" method="post" action="/subscribe">' +
     '<input type="hidden" name="source" value="subscribe-page">' +
     '<div class="nl-field"><label for="nl-email">Email address</label>' +
     '<input id="nl-email" type="email" name="email" required placeholder="Your email address" value="' +
     esc(o.email || '') +
     '"></div>' +
+    '<div class="nl-row">' +
     '<div class="nl-field"><label for="nl-name">First name (optional)</label>' +
     '<input id="nl-name" type="text" name="first_name" placeholder="First name"></div>' +
+    '<div class="nl-field"><label for="nl-last">Last name (optional)</label>' +
+    '<input id="nl-last" type="text" name="last_name" placeholder="Last name"></div>' +
+    '</div>' +
+    '<div class="nl-row">' +
+    '<div class="nl-field" style="flex:0 1 240px"><label for="nl-zip">ZIP code (optional)</label>' +
+    '<input id="nl-zip" type="text" name="zip_code" inputmode="numeric" autocomplete="postal-code" placeholder="ZIP code"></div>' +
+    '</div>' +
     '<h2>The Colorado Daily Brief</h2>' +
     '<label class="nl-check"><input type="checkbox" name="daily_brief" checked> <span>Send me The Colorado Daily Brief, the free weekday morning newsletter.</span></label>' +
     '<h2>Topics</h2>' +
@@ -2689,8 +2702,16 @@ function preferencesPage({ sub, token, saved, error }) {
   }
   body +=
     '<form class="nl-panel" method="post" action="' + action + '">' +
+    '<div class="nl-row">' +
     '<div class="nl-field"><label for="pref-name">First name</label>' +
     '<input id="pref-name" type="text" name="first_name" value="' + esc(sub.firstName || '') + '"></div>' +
+    '<div class="nl-field"><label for="pref-last">Last name</label>' +
+    '<input id="pref-last" type="text" name="last_name" value="' + esc(sub.lastName || '') + '"></div>' +
+    '</div>' +
+    '<div class="nl-row">' +
+    '<div class="nl-field" style="flex:0 1 240px"><label for="pref-zip">ZIP code</label>' +
+    '<input id="pref-zip" type="text" name="zip_code" inputmode="numeric" autocomplete="postal-code" value="' + esc(sub.zipCode || '') + '"></div>' +
+    '</div>' +
     '<h2>The Colorado Daily Brief</h2>' +
     '<label class="nl-check"><input type="checkbox" name="daily_brief"' +
     (sub.dailyBrief ? ' checked' : '') +

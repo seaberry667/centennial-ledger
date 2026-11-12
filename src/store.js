@@ -881,6 +881,8 @@ function normalizeSubscriberRecord(input, id) {
     id: id != null ? id : src.id != null ? src.id : null,
     email: String(src.email || '').toLowerCase().trim(),
     firstName: String(src.firstName || ''),
+    lastName: String(src.lastName || ''),
+    zipCode: String(src.zipCode || ''),
     status,
     confirmedAt: src.confirmedAt || null,
     signupDate: src.signupDate || new Date().toISOString(),
@@ -945,6 +947,8 @@ function pgSubscriberRowToRecord(row) {
     {
       email: row.email,
       firstName: row.first_name,
+      lastName: row.last_name || '',
+      zipCode: row.zip_code || '',
       status: row.status,
       confirmedAt: pgIso(row.confirmed_at),
       signupDate: pgIso(row.signup_date) || new Date().toISOString(),
@@ -1654,6 +1658,8 @@ class PgStore {
         id SERIAL PRIMARY KEY,
         email TEXT NOT NULL,
         first_name TEXT NOT NULL DEFAULT '',
+        last_name TEXT NOT NULL DEFAULT '',
+        zip_code TEXT NOT NULL DEFAULT '',
         status TEXT NOT NULL DEFAULT 'pending',
         confirmed_at TIMESTAMPTZ,
         signup_date TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -1670,6 +1676,13 @@ class PgStore {
         consent JSONB NOT NULL DEFAULT '{}'::jsonb,
         last_digest_at TIMESTAMPTZ
       )`);
+    // Added 2026-11-12: optional last name + ZIP on the subscribe form.
+    await this.pool.query(
+      "ALTER TABLE subscribers ADD COLUMN IF NOT EXISTS last_name TEXT NOT NULL DEFAULT ''"
+    );
+    await this.pool.query(
+      "ALTER TABLE subscribers ADD COLUMN IF NOT EXISTS zip_code TEXT NOT NULL DEFAULT ''"
+    );
     await this.pool.query(
       'CREATE UNIQUE INDEX IF NOT EXISTS subscribers_email_lower_key ON subscribers (lower(email))'
     );
@@ -2294,15 +2307,17 @@ class PgStore {
     const r = normalizeSubscriberRecord(rec);
     const q = await this.pool.query(
       `INSERT INTO subscribers
-         (email, first_name, status, confirmed_at, signup_date, signup_source,
+         (email, first_name, last_name, zip_code, status, confirmed_at, signup_date, signup_source,
           last_pref_update, daily_brief, topics, regions, digest_frequency,
           breaking_opt_in, paused, unsubscribed_at, suppressed, consent,
           last_digest_at)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)
        RETURNING *`,
       [
         r.email,
         r.firstName,
+        r.lastName,
+        r.zipCode,
         r.status,
         r.confirmedAt,
         r.signupDate,
@@ -2332,17 +2347,20 @@ class PgStore {
     );
     const q = await this.pool.query(
       `UPDATE subscribers SET
-         email = $1, first_name = $2, status = $3, confirmed_at = $4,
-         signup_date = $5, signup_source = $6, last_pref_update = $7,
-         daily_brief = $8, topics = $9, regions = $10,
-         digest_frequency = $11, breaking_opt_in = $12, paused = $13,
-         unsubscribed_at = $14, suppressed = $15, consent = $16,
-         last_digest_at = $17
-       WHERE id = $18
+         email = $1, first_name = $2, last_name = $3, zip_code = $4,
+         status = $5, confirmed_at = $6,
+         signup_date = $7, signup_source = $8, last_pref_update = $9,
+         daily_brief = $10, topics = $11, regions = $12,
+         digest_frequency = $13, breaking_opt_in = $14, paused = $15,
+         unsubscribed_at = $16, suppressed = $17, consent = $18,
+         last_digest_at = $19
+       WHERE id = $20
        RETURNING *`,
       [
         r.email,
         r.firstName,
+        r.lastName,
+        r.zipCode,
         r.status,
         r.confirmedAt,
         r.signupDate,

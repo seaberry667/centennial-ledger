@@ -288,11 +288,25 @@ async function subscribeSignup(store, mailer, opts) {
       : existing
         ? existing.firstName
         : '';
+  const lastName =
+    opts.lastName != null && String(opts.lastName).trim() !== ''
+      ? String(opts.lastName).trim().slice(0, 80)
+      : existing
+        ? existing.lastName || ''
+        : '';
+  const zipCode =
+    opts.zipCode != null && String(opts.zipCode).trim() !== ''
+      ? String(opts.zipCode).trim().slice(0, 10)
+      : existing
+        ? existing.zipCode || ''
+        : '';
 
   let sub;
   if (existing) {
     sub = await store.nlUpdateSubscriber(existing.id, {
       firstName,
+      lastName,
+      zipCode,
       status: 'pending',
       dailyBrief,
       topics,
@@ -305,6 +319,8 @@ async function subscribeSignup(store, mailer, opts) {
     sub = await store.nlInsertSubscriber({
       email,
       firstName,
+      lastName,
+      zipCode,
       status: 'pending',
       signupDate: now,
       signupSource: opts.source || 'web',
@@ -375,6 +391,8 @@ async function subscriberForPrefsToken(store, tokenStr) {
 async function savePreferences(store, sub, fields) {
   return store.nlUpdateSubscriber(sub.id, {
     firstName: String(fields.firstName || '').slice(0, 80),
+    lastName: String(fields.lastName || '').slice(0, 80),
+    zipCode: String(fields.zipCode || '').trim().slice(0, 10),
     dailyBrief: !!fields.dailyBrief,
     topics: validTopics(fields.topics),
     regions: validRegions(fields.regions),

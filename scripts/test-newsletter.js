@@ -243,7 +243,7 @@ async function main() {
     const noKey = await req('GET', '/admin/newsletter');
     check('admin without the secret is forbidden', noKey.status === 403, 'status ' + noKey.status);
     const csv = await req('GET', '/admin/newsletter/export.csv?key=' + ADMIN);
-    check('CSV export lists subscribers', csv.status === 200 && csv.text.includes('email,first_name,status') && csv.text.includes('briefingfan@example.com'));
+    check('CSV export lists subscribers', csv.status === 200 && csv.text.includes('email,first_name,last_name,zip_code,status') && csv.text.includes('briefingfan@example.com'));
 
     /* ---- (g) draft generation ---- */
     const gen = await req('POST', '/admin/newsletter/generate?key=' + ADMIN, { form: {} });
