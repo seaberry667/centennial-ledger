@@ -19,10 +19,9 @@
 const FEED_URL = 'https://anchor.fm/s/11a0ed790/podcast/rss';
 const REFRESH_MS = 15 * 60 * 1000;
 const FETCH_TIMEOUT_MS = 3000;
-const EXCERPT_CHARS = 240;
 
 /* The newest episode parsed from the feed:
- * { title, publishedAt, excerpt, image } — null until the first
+ * { title, publishedAt, titles, image } — null until the first
  * successful fetch. */
 let latest = null;
 let lastFetchAt = 0;
@@ -65,17 +64,40 @@ function decodeEntities(text) {
 }
 
 /**
- * Plain text from a feed description: tags out first, entities
- * decoded, whitespace collapsed; then trimmed to about
- * EXCERPT_CHARS at a word boundary, with an ellipsis when cut.
+ * The episode's major story titles, from the description's
+ * rundown paragraph (owner request, 2026-11-12: list them all,
+ * in full, never truncated; weather and sports excluded). The
+ * rundown reads "Colorado news for <date>: <story>. <story>.
+ * Plus statewide weather and Colorado sports: ..." — so: take
+ * the first paragraph, drop the dateline lead-in, split it into
+ * sentences, and drop the closing weather-and-sports roundup
+ * (and any production-credit lines, if the paragraph split ever
+ * fails). Returns [] when nothing usable parses.
  */
-function excerptOf(html) {
-  const text = decodeEntities(String(html || '').replace(/<[^>]*>/g, ' '))
+function titlesOf(html) {
+  const raw = String(html || '');
+  const firstPara = /<p[^>]*>([\s\S]*?)<\/p>/i.exec(raw);
+  let text = decodeEntities((firstPara ? firstPara[1] : raw).replace(/<[^>]*>/g, ' '))
     .replace(/\s+/g, ' ')
     .trim();
-  if (text.length <= EXCERPT_CHARS) return text;
-  const cut = text.lastIndexOf(' ', EXCERPT_CHARS);
-  return text.slice(0, cut > 0 ? cut : EXCERPT_CHARS).trim() + '…';
+  text = text.replace(/^Colorado news for [^:]+:\s*/i, '');
+  /* Protect abbreviation periods so the sentence split survives
+   * "U.S. Senate" and the like. */
+  const DOT = '\u0001';
+  const protectedText = text.replace(/\b(?:U\.S\.|D\.C\.|U\.K\.|a\.m\.|p\.m\.)/g, (m) =>
+    m.replace(/\./g, DOT)
+  );
+  return protectedText
+    .split(/(?<=[.!?])\s+(?=[A-Z"“])/)
+    .map((s) => s.replaceAll(DOT, '.').trim().replace(/[.]$/, ''))
+    .filter(
+      (s) =>
+        s.length > 0 &&
+        !/^Plus\b/i.test(s) &&
+        !/^(Statewide weather|Colorado sports|In sports|In weather)\b/i.test(s) &&
+        !/produced by The Centennial Ledger/i.test(s) &&
+        !/^The voices you hear/i.test(s)
+    );
 }
 
 /**
@@ -94,10 +116,12 @@ function parseFeed(xml) {
   const pubDate = tagText(item, 'pubDate');
   const when = pubDate ? new Date(pubDate) : null;
   if (!title || !when || Number.isNaN(when.getTime())) return null;
+  const titles = titlesOf(tagText(item, 'description'));
+  if (!titles.length) return null;
   return {
     title,
     publishedAt: when.toISOString(),
-    excerpt: excerptOf(tagText(item, 'description')),
+    titles,
     image: imageHref(channel) || imageHref(item),
   };
 }

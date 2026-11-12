@@ -765,7 +765,8 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
    button-styled listen link. */
 .podcast-box .podcast-art{display:block;width:100%;height:auto;object-fit:cover;border:1px solid var(--color-border);margin:.2rem 0 .6rem}
 .podcast-box .podcast-date{font-family:var(--font-ui);font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:#555;margin:0 0 .5rem}
-.podcast-box .podcast-excerpt{margin:0 0 .8rem}
+.podcast-box .podcast-titles{margin:0 0 .8rem;padding-left:1.15rem;text-align:left}
+.podcast-box .podcast-titles li{margin:.35rem 0;line-height:1.35}
 .podcast-box .podcast-listen{display:block;text-align:center;background:var(--color-red);color:#fff;padding:.55rem 1.1rem;font-family:var(--font-ui);font-size:1rem;text-decoration:none}
 /* ---------- Advertisements ---------- */
 .ad-slot{margin:1.2rem 0;text-align:center}
@@ -1379,8 +1380,10 @@ function podcastBox(episode) {
       (episode.publishedAt
         ? '<p class="podcast-date">' + esc(fmtMetaDate(episode.publishedAt)) + '</p>'
         : '') +
-      (episode.excerpt
-        ? '<p class="podcast-excerpt">' + esc(episode.excerpt) + '</p>'
+      (episode.titles && episode.titles.length
+        ? '<ul class="podcast-titles">' +
+          episode.titles.map((t) => '<li>' + esc(t) + '</li>').join('') +
+          '</ul>'
         : '');
   } else {
     inner += '<p class="briefing-tag">' + esc(PODCAST_FALLBACK_LINE) + '</p>';
