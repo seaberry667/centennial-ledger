@@ -763,8 +763,7 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 /* Podcast box: the briefing box's dress, with the show artwork, the
    newest episode's title and date, an excerpt of its notes and a
    button-styled listen link. */
-.podcast-box .podcast-art{display:block;width:96px;height:96px;object-fit:cover;border:1px solid var(--color-border);margin:.2rem 0 .6rem}
-.podcast-box .podcast-episode{font-family:var(--font-headline);font-weight:700;font-size:1.15rem;line-height:1.25;margin:.1rem 0 .15rem}
+.podcast-box .podcast-art{display:block;width:100%;height:auto;object-fit:cover;border:1px solid var(--color-border);margin:.2rem 0 .6rem}
 .podcast-box .podcast-date{font-family:var(--font-ui);font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:#555;margin:0 0 .5rem}
 .podcast-box .podcast-excerpt{margin:0 0 .8rem}
 .podcast-box .podcast-listen{display:block;text-align:center;background:var(--color-red);color:#fff;padding:.55rem 1.1rem;font-family:var(--font-ui);font-size:1rem;text-decoration:none}
@@ -1369,8 +1368,7 @@ const PODCAST_FALLBACK_LINE =
  */
 function podcastBox(episode) {
   let inner =
-    '<div class="briefing-kicker">The Podcast</div>' +
-    '<h2 class="briefing-title">Colorado Daily News Brief</h2>';
+    '<div class="briefing-kicker">The Podcast</div>';
   if (episode && episode.title) {
     if (episode.image) {
       inner +=
@@ -1378,7 +1376,6 @@ function podcastBox(episode) {
         '" alt="Colorado Daily News Brief podcast artwork" loading="lazy">';
     }
     inner +=
-      '<p class="podcast-episode">' + esc(episode.title) + '</p>' +
       (episode.publishedAt
         ? '<p class="podcast-date">' + esc(fmtMetaDate(episode.publishedAt)) + '</p>'
         : '') +
