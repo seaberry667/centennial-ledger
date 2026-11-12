@@ -992,13 +992,46 @@ article.full figure.article-hero{margin:1.1rem 0}
 .searchbox input{flex:1;padding:.55rem;font-size:1rem;font-family:var(--font-body)}
 .searchbox button{background:var(--color-navy);color:#fff;border:0;padding:.55rem 1.1rem;cursor:pointer;font-family:var(--font-ui)}
 .static-page{max-width:760px}
-.static-page.about-page{max-width:920px;margin-left:auto;margin-right:auto}
+.static-page.about-page{max-width:none}
 .static-page h1{font-family:var(--font-headline)}
 .static-page h2{font-family:var(--font-headline);margin:1.6em 0 .5em}
 .static-page ul{margin:0 0 1em;padding-left:1.4em}
 .static-page li{margin-bottom:.45em;line-height:1.55}
 .about-tagline{font-size:1.3rem;color:var(--color-navy);margin-bottom:1.2rem}
 .static-page.about-page p,.static-page.about-page li{font-size:1.12rem;line-height:1.65}
+/* About page layout (owner request, 2026-11-12): the page runs the
+   full .wrap width — an ivory hero band, a wide lead with a fact
+   panel beside it, and a two-column grid of ivory section panels.
+   Every rule below is scoped to .about-page; the other static
+   pages keep the narrow .static-page column above. */
+.about-page .about-kicker{color:var(--color-red);font-family:var(--font-ui);font-size:.82rem;font-weight:bold;letter-spacing:.14em;text-transform:uppercase}
+.about-hero{background:var(--color-ivory);border:1px solid var(--color-gold);border-bottom:3px solid var(--color-gold);padding:1.9rem 2rem 1.6rem;margin-bottom:1.8rem}
+.about-hero h1{font-size:2.7rem;line-height:1.08;margin:.45rem 0 .55rem}
+.about-hero .about-tagline{font-size:1.5rem;margin:0}
+.about-lead{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:2.2rem;align-items:start}
+.about-lead-text p:first-child{margin-top:0}
+.about-facts{background:var(--color-ivory);border:1px solid var(--color-gold);padding:18px}
+.about-facts ul{list-style:none;margin:.4rem 0 0;padding:0}
+.static-page.about-page .about-facts li{border-top:1px solid var(--color-border);padding:.55rem 0;margin:0;font-family:var(--font-headline);font-size:1.05rem;line-height:1.35}
+.static-page.about-page .about-facts li:first-child{border-top:0;padding-top:.2rem}
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.4rem;margin-top:1.8rem}
+.about-panel{background:var(--color-ivory);border:1px solid var(--color-gold);padding:1.3rem 1.4rem 1.1rem}
+.about-page .about-panel h2{color:var(--color-red);font-family:var(--font-ui);font-size:.98rem;font-weight:bold;letter-spacing:.14em;text-transform:uppercase;line-height:1.4;margin:0 0 .7rem}
+.about-panel p{margin:.65em 0}
+.about-panel p:last-child{margin-bottom:0}
+.about-panel ul{margin:.65em 0}
+.about-panel-wide{grid-column:1/-1}
+.about-panel-links{font-family:var(--font-ui);font-size:1rem}
+@media (max-width:900px){
+.about-lead{grid-template-columns:1fr}
+.about-grid{grid-template-columns:1fr}
+.about-panel-wide{grid-column:auto}
+}
+@media (max-width:767px){
+.about-hero{padding:1.3rem 1.1rem 1.1rem}
+.about-hero h1{font-size:2rem}
+.about-hero .about-tagline{font-size:1.3rem}
+}
 /* ---------- Footer ---------- */
 footer{background:#fff;color:#3d3d3d;border-top:4px double var(--color-text);font-family:var(--font-body);font-size:.92rem;margin-top:2rem;position:relative}
 footer::before{content:"";position:absolute;top:-8px;left:0;right:0;height:1px;background:var(--color-gold)}
@@ -3125,17 +3158,39 @@ function staticPage(kind) {
  * in the owner's draft.
  */
 function aboutPage() {
-  const content =
+  const hero =
+    '<header class="about-hero">' +
+    '<div class="about-kicker">About Us</div>' +
+    '<h1>About The Centennial Ledger</h1>' +
     "<p class=\"about-tagline\"><em>A Clear View of Colorado.</em></p>" +
+    '</header>';
+  const lead =
+    '<div class="about-lead"><div class="about-lead-text">' +
     "<p>Colorado deserves a closer look.</p>" +
     "<p>From the State Capitol in Denver to county courthouses, school board meetings, and city halls across all 64 counties, the decisions shaping our state deserve attention, scrutiny, and a little healthy skepticism.</p>" +
     "<p><strong>The Centennial Ledger</strong> is an independent digital newspaper dedicated to Colorado politics, government, public policy, and local affairs. We cover the stories that affect how Coloradans live, work, raise families, spend their money, and exercise their freedoms.</p>" +
     "<p>Our mission is straightforward: make Colorado news accessible, informative, and worth reading.</p>" +
     "<p>We believe good journalism should ask difficult questions, follow the public's money, challenge official narratives, and explain why events matter. We also believe a newspaper should have some personality. Serious reporting and a sharp editorial wit have shared newspaper pages for centuries. We see no reason to abandon that tradition.</p>" +
+    '</div>' +
+    '<aside class="about-facts">' +
+    '<div class="about-kicker">At a Glance</div>' +
+    '<ul>' +
+    '<li>Statewide — all 64 counties</li>' +
+    '<li>Six news sections</li>' +
+    '<li>Eight local regions</li>' +
+    '<li>A free weekday newsletter</li>' +
+    '<li>A daily podcast</li>' +
+    '</ul>' +
+    '</aside></div>';
+  const panels =
+    '<div class="about-grid">' +
+    '<section class="about-panel">' +
     "<h2>Statewide Coverage, Local Perspective</h2>" +
     "<p>Colorado is more than Denver, and the stories that matter don't always make the evening news.</p>" +
     "<p>Our coverage spans state politics, constitutional rights, taxation, energy, education, elections, and local government. We pay particular attention to public decisions that may receive little attention outside the communities they affect.</p>" +
     "<p>Whether it's a Supreme Court case, a contentious school board vote, a county budget, or a new regulation from the Capitol, our goal is to explain what happened, who's responsible, and what it means for Coloradans.</p>" +
+    '</section>' +
+    '<section class="about-panel">' +
     "<h2>How Our Stories Are Produced</h2>" +
     "<p>We believe readers deserve to know how their news is made.</p>" +
     "<p>The Centennial Ledger uses artificial intelligence to research, organize, and write much of its news coverage from publicly available sources, including government documents, court records, legislative materials, official announcements, and reporting by established news organizations.</p>" +
@@ -3149,32 +3204,45 @@ function aboutPage() {
     "<li><strong>Accountability:</strong> Errors should be acknowledged and corrected, not quietly ignored.</li>" +
     "</ul>" +
     "<p>We do not present AI-generated material as firsthand eyewitness reporting or fabricate interviews, quotations, or sources.</p>" +
+    '</section>' +
+    '<section class="about-panel">' +
     "<h2>News, Opinion &amp; Satire</h2>" +
     "<p>Our news coverage is intended to inform. Our opinion pages are intended to provoke thought, encourage debate, and occasionally raise an eyebrow.</p>" +
     "<p>Editorials and commentary may take strong positions on the issues and personalities shaping Colorado. Those views belong in clearly identified opinion content, not disguised as impartial reporting.</p>" +
     "<p>Our satire and political cartoons draw on the long tradition of American newspaper commentary, where humor, caricature, and pointed criticism have always had a place.</p>" +
     "<p>Illustrations, including AI-generated imagery, are used to complement our coverage. Such images are illustrative representations, not documentary photographs of actual events, unless explicitly identified otherwise.</p>" +
+    '</section>' +
+    '<section class="about-panel">' +
     "<h2>Editorial Mission</h2>" +
     "<p>The Centennial Ledger is an independent Colorado news publication covering the people, policies, institutions, and decisions shaping our state. We believe in fiscal accountability, individual liberty, limited government, public transparency, and responsible stewardship of taxpayer resources. Through original reporting, thoughtful analysis, and commentary, we aim to help Coloradans better understand the issues affecting their communities.</p>" +
+    '</section>' +
+    '<section class="about-panel">' +
     "<h2>Independence &amp; Ownership</h2>" +
     "<p>The Centennial Ledger is an independently operated publication. We are not affiliated with any political party, candidate, political campaign, or government agency.</p>" +
     "<p>Editorial independence does not require the absence of opinions. It requires the freedom to question powerful institutions, scrutinize public officials, and follow the facts regardless of whom they favor.</p>" +
     "<p>Our allegiance is to our readers and to Colorado.</p>" +
+    '</section>' +
+    '<section class="about-panel">' +
     "<h2>Corrections &amp; Accountability</h2>" +
     "<p>Accuracy matters. When we get something wrong, we want to make it right.</p>" +
     "<p>Readers are encouraged to report factual errors, misleading context, broken source links, or questionable attributions. Substantive corrections should be made promptly and identified within the affected article. Significant developments may also warrant an updated story.</p>" +
     "<p>To request a correction or submit feedback, contact us at <a href=\"mailto:news@centennialledger.com\">news@centennialledger.com</a>. Please include the article URL and a brief explanation of the issue, along with supporting documentation when available.</p>" +
+    '</section>' +
+    '<section class="about-panel about-panel-wide">' +
     "<h2>Stay Informed</h2>" +
     "<p>Colorado never runs out of stories worth telling.</p>" +
     "<p>Subscribe to <strong>The Colorado Daily Briefing</strong> for a concise roundup of the day's important developments, from the Capitol to communities across the state.</p>" +
-    "<p><strong>The Centennial Ledger. A Clear View of Colorado.</strong></p>";
+    "<p class=\"about-panel-links\"><a href=\"/subscribe\">Subscribe to the newsletter</a> &middot; <a href=\"https://open.spotify.com/show/5r0ObdqenGKnYskuKRxWrX\" target=\"_blank\" rel=\"noopener\">The daily podcast on Spotify</a></p>" +
+    "<p><strong>The Centennial Ledger. A Clear View of Colorado.</strong></p>" +
+    '</section>' +
+    '</div>';
   return layout({
     title: fitTitle('About The Centennial Ledger: Colorado news, statewide coverage', 70),
     description: fitDescription(
       'The Centennial Ledger is an independent Colorado digital newspaper covering politics, rights, taxes, energy, schools and local news in all 64 counties.'
     ),
     path: '/about',
-    body: '<div class="static-page about-page"><h1>About The Centennial Ledger</h1>' + content + '</div>',
+    body: '<div class="static-page about-page">' + hero + lead + panels + '</div>',
   });
 }
 
