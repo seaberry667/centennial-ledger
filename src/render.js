@@ -1368,7 +1368,7 @@ const PODCAST_FALLBACK_LINE =
  */
 function podcastBox(episode) {
   let inner =
-    '<div class="briefing-kicker">The Podcast</div>';
+    '<div class="briefing-kicker">TODAY\'S PODCAST</div>';
   if (episode && episode.title) {
     if (episode.image) {
       inner +=
