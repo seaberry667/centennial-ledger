@@ -1258,7 +1258,6 @@ ${body}
         <h3>About</h3>
         <ul>
           <li><a href="/about">About Us</a></li>
-          <li><a href="/subscribe">Subscribe</a></li>
           <li><a href="https://www.facebook.com/profile.php?id=61595978079628" target="_blank" rel="noopener">Facebook</a></li>
           <li><a href="https://www.instagram.com/centennialledger" target="_blank" rel="noopener">Instagram</a></li>
           <li><a href="https://open.spotify.com/show/5r0ObdqenGKnYskuKRxWrX" target="_blank" rel="noopener">Spotify</a></li>
