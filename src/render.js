@@ -1261,15 +1261,16 @@ ${body}
           <li><a href="/subscribe">Subscribe</a></li>
           <li><a href="https://www.facebook.com/profile.php?id=61595978079628" target="_blank" rel="noopener">Facebook</a></li>
           <li><a href="https://www.instagram.com/centennialledger" target="_blank" rel="noopener">Instagram</a></li>
+          <li><a href="https://open.spotify.com/show/5r0ObdqenGKnYskuKRxWrX" target="_blank" rel="noopener">Spotify</a></li>
+          <li><a href="https://www.pandora.com/podcast/colorado-daily-news-brief/PC:1001124564" target="_blank" rel="noopener">Pandora</a></li>
+          <li><a href="https://www.stitcher.com/show/1124564" target="_blank" rel="noopener">Stitcher</a></li>
         </ul>
-        <img class="footer-ornament" src="/section-break.png" alt="" width="642" height="26">
-        <p class="footer-stay-text">The free weekday newsletter, in your inbox Monday to Friday.</p>
+        <p class="footer-stay-text">Sign up for daily newsletter.</p>
         <form class="footer-signup" method="post" action="/briefing">
           <input type="hidden" name="source" value="footer">
           <input type="email" name="email" required placeholder="Your email address" aria-label="Email address">
           <button type="submit">Subscribe</button>
         </form>
-        <p class="footer-pref-link"><a href="/preferences">Manage your email preferences</a></p>
       </div>
     </div>
   </div>
