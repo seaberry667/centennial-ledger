@@ -1982,17 +1982,17 @@ function explainedFeature(a) {
 }
 
 /**
- * Homepage Colorado Explained module (owner directive, 2026-11-08):
- * replaces the "Latest from Colorado" grid. Curated by the home
- * route (flagship feature plus a subject-diverse supporting set),
- * never a plain newest-first feed.
+ * Homepage How Colorado Works module (owner directive,
+ * 2026-11-13): the latest explainer big, then one row of three
+ * (the next three latest, supplied by the home route). Nothing
+ * older appears on the homepage.
  */
 function explainedModule(ex) {
   let s =
     '<section class="explained-home" aria-label="How Colorado Works">' +
     '<h2 class="explained-heading">How Colorado Works</h2>';
   s += explainedFeature(ex.featured);
-  const items = (ex.items || []).filter(Boolean).slice(0, 4);
+  const items = (ex.items || []).filter(Boolean).slice(0, 3);
   if (items.length) {
     s += '<div class="explained-grid">' + items.map(articleCard).join('') + '</div>';
   }

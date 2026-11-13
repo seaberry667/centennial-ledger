@@ -295,27 +295,16 @@ app.get('/', async (req, res) => {
     (await store.listArticles({ section: 'opinion', limit: 10 })).find(
       (a) => !isSatire(a)
     ) || null;
-  // Colorado Explained homepage module (owner directive,
-  // 2026-11-08): curated, not a newest-first feed — the TABOR
-  // flagship features, and the supporting set is picked so no two
-  // adjacent cards share a section while alternatives remain.
+  // How Colorado Works homepage module (owner directive,
+  // 2026-11-13, superseding the 2026-11-08 TABOR-pinned curated
+  // set): the latest explainer features big, followed by exactly
+  // one row of the next three latest. Older explainers appear
+  // only on the /explained archive, never on the homepage.
+  // listArticles returns newest first.
   const explainedAll = (await store.listArticles({ limit: 100 })).filter(isExplained);
   let explained = null;
   if (explainedAll.length) {
-    const featured =
-      explainedAll.find((a) => a.slug === 'how-colorados-tabor-law-actually-works') ||
-      explainedAll[0];
-    const pool = explainedAll.filter((a) => a.slug !== featured.slug);
-    const items = [];
-    while (items.length < 4 && pool.length) {
-      const lastSection = items.length
-        ? items[items.length - 1].section
-        : featured.section;
-      let idx = pool.findIndex((a) => a.section !== lastSection);
-      if (idx < 0) idx = 0;
-      items.push(pool.splice(idx, 1)[0]);
-    }
-    explained = { featured, items };
+    explained = { featured: explainedAll[0], items: explainedAll.slice(1, 4) };
   }
   res.type('html').send(
     render.homePage({
