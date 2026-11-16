@@ -209,6 +209,24 @@ app.post('/api/ingest-brief', async (req, res) => {
   res.json({ received: items.length, inserted, updated, skipped });
 });
 
+/**
+ * DELETE /api/ingest-brief/:date — same secret. Removes one brief
+ * page (corrections, test rows). Brief pages are a single document
+ * per date, so a delete is exact and reversible by re-ingesting.
+ */
+app.delete('/api/ingest-brief/:date', async (req, res) => {
+  const secret = process.env.INGEST_SECRET;
+  if (!secret) return res.status(500).json({ error: 'INGEST_SECRET is not configured' });
+  if (req.get('x-ingest-secret') !== secret) {
+    return res.status(401).json({ error: 'invalid or missing x-ingest-secret' });
+  }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(req.params.date)) {
+    return res.status(400).json({ error: 'date must be YYYY-MM-DD' });
+  }
+  const deleted = await store.deleteBriefPage(req.params.date);
+  res.json({ date: req.params.date, deleted });
+});
+
 /* --------------------------- Public pages ------------------------- */
 
 // Colorado Explained series membership (owner directive,

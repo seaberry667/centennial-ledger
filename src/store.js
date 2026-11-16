@@ -1629,6 +1629,14 @@ class FileStore {
     return 'inserted';
   }
 
+  async deleteBriefPage(date) {
+    const before = this.data.briefPages.length;
+    this.data.briefPages = this.data.briefPages.filter((p) => p.date !== date);
+    if (this.data.briefPages.length === before) return false;
+    this._save();
+    return true;
+  }
+
   async getBriefPage(date) {
     return this.data.briefPages.find((p) => p.date === date) || null;
   }
@@ -2635,6 +2643,14 @@ class PgStore {
       [page.date, JSON.stringify(page)]
     );
     return res.rows[0] && res.rows[0].inserted ? 'inserted' : 'updated';
+  }
+
+  async deleteBriefPage(date) {
+    const res = await this.pool.query(
+      'DELETE FROM brief_pages WHERE date = $1',
+      [date]
+    );
+    return res.rowCount > 0;
   }
 
   async getBriefPage(date) {
