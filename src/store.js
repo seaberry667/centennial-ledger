@@ -1262,6 +1262,7 @@ class FileStore {
     if (!Array.isArray(this.data.nlCampaigns)) this.data.nlCampaigns = [];
     if (!Array.isArray(this.data.nlDeliveries)) this.data.nlDeliveries = [];
     if (!Array.isArray(this.data.nlOutbox)) this.data.nlOutbox = [];
+    if (!Array.isArray(this.data.briefPages)) this.data.briefPages = [];
   }
 
   // Legacy briefing_subscribers become confirmed Daily Brief
@@ -1613,6 +1614,30 @@ class FileStore {
       .slice(0, limit)
       .map((a) => Object.assign({}, a));
   }
+
+  /* -------- Podcast brief pages -------- */
+
+  async upsertBriefPage(page) {
+    const i = this.data.briefPages.findIndex((p) => p.date === page.date);
+    if (i >= 0) {
+      this.data.briefPages[i] = page;
+      this._save();
+      return 'updated';
+    }
+    this.data.briefPages.push(page);
+    this._save();
+    return 'inserted';
+  }
+
+  async getBriefPage(date) {
+    return this.data.briefPages.find((p) => p.date === date) || null;
+  }
+
+  async listBriefPages() {
+    return this.data.briefPages
+      .slice()
+      .sort((a, b) => (a.date < b.date ? 1 : -1));
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -1749,6 +1774,14 @@ class PgStore {
         status TEXT NOT NULL DEFAULT 'queued',
         provider_id TEXT NOT NULL DEFAULT '',
         created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+      )`);
+    // Podcast brief pages (2026-11-16, additive only): one row per
+    // episode date, the whole page stored as JSONB.
+    await this.pool.query(`
+      CREATE TABLE IF NOT EXISTS brief_pages (
+        date TEXT PRIMARY KEY,
+        payload JSONB NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT now()
       )`);
     // One-time, idempotent migration: legacy briefing_subscribers
     // become confirmed Daily Brief subscribers. Rows already
@@ -2591,9 +2624,116 @@ class PgStore {
         );
     return res.rows.map((r) => this._row(r)).filter(Boolean);
   }
+
+  /* -------- Podcast brief pages -------- */
+
+  async upsertBriefPage(page) {
+    const res = await this.pool.query(
+      `INSERT INTO brief_pages (date, payload) VALUES ($1, $2)
+       ON CONFLICT (date) DO UPDATE SET payload = EXCLUDED.payload
+       RETURNING (xmax = 0) AS inserted`,
+      [page.date, JSON.stringify(page)]
+    );
+    return res.rows[0] && res.rows[0].inserted ? 'inserted' : 'updated';
+  }
+
+  async getBriefPage(date) {
+    const res = await this.pool.query(
+      'SELECT payload FROM brief_pages WHERE date = $1',
+      [date]
+    );
+    return res.rows.length ? res.rows[0].payload : null;
+  }
+
+  async listBriefPages() {
+    const res = await this.pool.query(
+      'SELECT payload FROM brief_pages ORDER BY date DESC'
+    );
+    return res.rows.map((r) => r.payload);
+  }
 }
 
 /* ------------------------------------------------------------------ */
+
+/* ------------------------------------------------------------------ */
+/* Podcast brief pages (2026-11-16)                                    */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Validate and normalize one story entry of a podcast brief page:
+ * a headline, a few paragraphs of body text, and its own sources.
+ * Returns null when the entry cannot be rendered.
+ */
+function normalizeBriefStory(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  const headline = String(raw.headline || '').trim();
+  if (!headline) return null;
+  let body = raw.body;
+  if (typeof body === 'string') body = [body];
+  if (!Array.isArray(body)) return null;
+  const paragraphs = body
+    .map((p) => String(p || '').trim())
+    .filter(Boolean)
+    .slice(0, 12);
+  if (!paragraphs.length) return null;
+  const sources = (Array.isArray(raw.sources) ? raw.sources : [])
+    .filter(
+      (s) =>
+        s &&
+        (String(s.name || s.label || '').trim() ||
+          /^https?:\/\//i.test(String(s.url || '')))
+    )
+    .slice(0, 8)
+    .map((s) => ({
+      name: String(s.name || s.label || s.url).trim(),
+      url: /^https?:\/\//i.test(String(s.url || ''))
+        ? String(s.url).trim()
+        : '',
+    }));
+  return { headline, body: paragraphs, sources };
+}
+
+/**
+ * Validate and normalize one podcast brief page from the ingest API.
+ * A brief page is the web companion to one Colorado Daily News Brief
+ * episode: short article versions of the episode's stories, each with
+ * its sources listed under it. Keyed by the episode's date
+ * (YYYY-MM-DD). Returns null when the payload is not a valid page.
+ */
+function normalizeBriefPage(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  const date = String(raw.date || '').trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return null;
+  const d = new Date(date + 'T12:00:00Z');
+  if (Number.isNaN(d.getTime()) || d.toISOString().slice(0, 10) !== date) {
+    return null;
+  }
+  const episodeTitle = String(raw.episodeTitle || '').trim();
+  if (!episodeTitle) return null;
+  const stories = (Array.isArray(raw.stories) ? raw.stories : [])
+    .map(normalizeBriefStory)
+    .filter(Boolean)
+    .slice(0, 12);
+  if (!stories.length) return null;
+  const aroundColorado = (Array.isArray(raw.aroundColorado)
+    ? raw.aroundColorado
+    : [])
+    .map(normalizeBriefStory)
+    .filter(Boolean)
+    .slice(0, 8);
+  const spotifyUrl = /^https?:\/\//i.test(String(raw.spotifyUrl || ''))
+    ? String(raw.spotifyUrl).trim()
+    : '';
+  return {
+    date,
+    episodeTitle,
+    episodeNumber: Number(raw.episodeNumber) || null,
+    spotifyUrl,
+    intro: String(raw.intro || '').trim(),
+    stories,
+    aroundColorado,
+  };
+}
 
 async function createStore() {
   const store = process.env.DATABASE_URL
@@ -2614,6 +2754,7 @@ module.exports = {
   regionSlug,
   regionName,
   normalizeArticle,
+  normalizeBriefPage,
   normalizeImage,
   slugify,
 };

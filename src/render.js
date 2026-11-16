@@ -983,6 +983,21 @@ article.full figure.article-hero{margin:1.1rem 0}
 .breadcrumb a{color:#666}
 .sources-block{border-top:1px solid var(--color-border);margin-top:1.8rem;padding-top:.8rem}
 .sources-block h2{font-family:var(--font-headline);font-size:1.15rem;margin:.1rem 0 .4rem}
+/* Podcast brief pages (2026-11-16): one page per episode, short
+   story versions with a source list under each story. */
+.brief-kicker{font-family:var(--font-ui);color:var(--color-red);font-size:.82rem;font-weight:bold;letter-spacing:.14em;text-transform:uppercase;margin:0 0 .4rem}
+.brief-story{border-top:1px solid var(--color-border);margin-top:1.6rem;padding-top:1.1rem;max-width:760px}
+.brief-story h2{font-family:var(--font-headline);font-size:1.55rem;line-height:1.2;margin:.1rem 0 .6rem}
+.brief-story h3{font-family:var(--font-headline);font-size:1.25rem;line-height:1.25;margin:.1rem 0 .5rem}
+.brief-story p{font-family:var(--font-body);font-size:1.06rem;line-height:1.55;margin:0 0 .8em}
+.brief-sources{margin-top:.2rem}
+.brief-sources h3,.brief-sources h4{font-family:var(--font-ui);font-size:.78rem;font-weight:bold;letter-spacing:.12em;text-transform:uppercase;color:#666;margin:0 0 .3rem}
+.brief-listen{display:inline-block;background:var(--color-navy);color:#fff;text-decoration:none;padding:.55rem 1.1rem;font-family:var(--font-ui);margin:.2rem 0 .6rem}
+.brief-around{font-family:var(--font-headline);font-size:1.7rem;margin:2.2rem 0 .2rem}
+.brief-nav{display:flex;justify-content:space-between;gap:1rem;margin-top:2.2rem;font-family:var(--font-ui);font-size:.95rem;max-width:760px}
+.brief-index-list{list-style:none;margin:1rem 0;padding:0;max-width:760px}
+.brief-index-list li{border-top:1px solid var(--color-border);padding:.7rem 0}
+.brief-index-list a{font-family:var(--font-headline);font-size:1.2rem;color:var(--color-navy);text-decoration:none}
 /* ---------- Subscribe / static pages ---------- */
 .tiers{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.2rem;margin-top:1rem}
 .tier{border:1px solid var(--color-border);background:#fff;padding:1.2rem;text-align:center}
@@ -2069,6 +2084,135 @@ function explainedPage({ articles, featured, category, cats }) {
     ),
     path: '/explained',
     activeNav: 'explained',
+    jsonLd,
+    body,
+  });
+}
+
+/* Podcast brief pages (owner order, 2026-11-16): the web companion
+   to one Colorado Daily News Brief episode — short article versions
+   of the episode's stories, each with its sources listed under it. */
+
+function briefStoryHtml(s, headingTag) {
+  const tag = headingTag || 'h2';
+  let h =
+    '<article class="brief-story"><' + tag + '>' + esc(s.headline) + '</' + tag + '>';
+  h += (Array.isArray(s.body) ? s.body : [])
+    .map((p) => '<p>' + inline(p) + '</p>')
+    .join('');
+  const sources = (Array.isArray(s.sources) ? s.sources : []).filter(
+    (x) => x && (x.url || x.name)
+  );
+  if (sources.length) {
+    h +=
+      '<div class="brief-sources"><h4>Sources</h4>' +
+      sources
+        .map((x) =>
+          x.url
+            ? '<p class="source"><a href="' + esc(x.url) +
+              '" rel="noopener" target="_blank">' + esc(x.name || x.url) + '</a></p>'
+            : '<p class="source">' + esc(x.name) + '</p>'
+        )
+        .join('') +
+      '</div>';
+  }
+  return h + '</article>';
+}
+
+function briefPage(page, newer, older) {
+  const jsonLd = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      name: 'Colorado Daily News Brief: ' + page.episodeTitle,
+      url: absUrl('/podcast/' + page.date),
+      isPartOf: { '@type': 'WebSite', name: SITE_NAME, url: siteUrl() + '/' },
+    },
+  ];
+  let body = leaderboardAdSlot();
+  body +=
+    '<p class="brief-kicker">Colorado Daily News Brief</p>' +
+    '<h1 class="headline" style="font-size:2.4rem">' + esc(page.episodeTitle) + '</h1>' +
+    '<p class="dek">' +
+    inline(
+      page.intro ||
+        "The stories from this episode of the Colorado Daily News Brief, in short form, with their sources."
+    ) +
+    '</p>';
+  if (page.spotifyUrl) {
+    body +=
+      '<a class="brief-listen" href="' + esc(page.spotifyUrl) +
+      '" rel="noopener" target="_blank">Listen on Spotify</a>';
+  }
+  body += page.stories.map((s) => briefStoryHtml(s, 'h2')).join('');
+  const around = Array.isArray(page.aroundColorado) ? page.aroundColorado : [];
+  if (around.length) {
+    body += '<h2 class="brief-around">Around Colorado</h2>';
+    body += around.map((s) => briefStoryHtml(s, 'h3')).join('');
+  }
+  body +=
+    '<p class="last-reviewed">Colorado Daily News Brief is produced by The Centennial Ledger. The voices you hear in the podcast are AI-generated; the reporting is gathered and verified by people.</p>';
+  if (newer || older) {
+    body += '<nav class="brief-nav" aria-label="More episode pages">';
+    body += older
+      ? '<a href="/podcast/' + esc(older.date) + '">&larr; ' + esc(older.episodeTitle) + '</a>'
+      : '<span></span>';
+    body += newer
+      ? '<a href="/podcast/' + esc(newer.date) + '">' + esc(newer.episodeTitle) + ' &rarr;</a>'
+      : '<span></span>';
+    body += '</nav>';
+  }
+  return layout({
+    title: fitTitle('Colorado Daily News Brief: ' + page.episodeTitle, 70),
+    description: fitDescription(
+      page.intro ||
+        'Short versions of the stories from the ' +
+          page.episodeTitle +
+          ' episode of the Colorado Daily News Brief, each with its sources.'
+    ),
+    path: '/podcast/' + page.date,
+    jsonLd,
+    body,
+  });
+}
+
+function briefIndexPage(pages) {
+  const list = Array.isArray(pages) ? pages : [];
+  const jsonLd = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      name: 'Colorado Daily News Brief | ' + SITE_NAME,
+      url: absUrl('/podcast'),
+      isPartOf: { '@type': 'WebSite', name: SITE_NAME, url: siteUrl() + '/' },
+    },
+  ];
+  let body = leaderboardAdSlot();
+  body +=
+    '<p class="brief-kicker">Podcast</p>' +
+    '<h1 class="headline" style="font-size:2.4rem">Colorado Daily News Brief</h1>' +
+    '<p class="dek">Every weekday episode&rsquo;s stories in short form, each with its sources &mdash; the full reporting behind the podcast, in print.</p>';
+  if (list.length) {
+    body +=
+      '<ul class="brief-index-list">' +
+      list
+        .map(
+          (p) =>
+            '<li><a href="/podcast/' + esc(p.date) + '">' +
+            esc(p.episodeTitle) +
+            '</a></li>'
+        )
+        .join('') +
+      '</ul>';
+  } else {
+    body += '<p>The first episode pages are on the way.</p>';
+  }
+  return layout({
+    title: fitTitle('Colorado Daily News Brief: episode stories and sources', 70),
+    description: fitDescription(
+      'Short article versions of every Colorado Daily News Brief episode story, each with its sources, from The Centennial Ledger.'
+    ),
+    path: '/podcast',
     jsonLd,
     body,
   });
@@ -3282,6 +3426,8 @@ module.exports = {
   localRegionPage,
   articlePage,
   explainedPage,
+  briefPage,
+  briefIndexPage,
   satirePage,
   subscribePage,
   preferencesLandingPage,

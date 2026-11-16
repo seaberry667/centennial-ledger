@@ -10,7 +10,7 @@
 const express = require('express');
 const path = require('path');
 const sharp = require('sharp');
-const { createStore, SECTIONS, REGIONS, normalizeArticle, isSatire, sectionName } = require('./store');
+const { createStore, SECTIONS, REGIONS, normalizeArticle, normalizeBriefPage, isSatire, sectionName } = require('./store');
 const render = require('./render');
 const newsletter = require('./newsletter');
 const mailer = require('./mailer');
@@ -174,6 +174,39 @@ app.post('/api/ingest', async (req, res) => {
     if (!filled) skipped += 1;
   }
   res.json({ received: items.length, inserted, skipped, imaged, sourced, reimaged });
+});
+
+/**
+ * POST /api/ingest-brief
+ * Header: x-ingest-secret must match INGEST_SECRET (the same secret
+ * as /api/ingest). Body: one podcast brief page object, or
+ * { pages: [...] }. Brief pages are keyed by episode date and are
+ * REPLACED on re-ingest: unlike articles, a day's companion page is a
+ * single document, and a corrected page must supersede the first
+ * posting of that date.
+ */
+app.post('/api/ingest-brief', async (req, res) => {
+  const secret = process.env.INGEST_SECRET;
+  if (!secret) return res.status(500).json({ error: 'INGEST_SECRET is not configured' });
+  if (req.get('x-ingest-secret') !== secret) {
+    return res.status(401).json({ error: 'invalid or missing x-ingest-secret' });
+  }
+  const body = req.body || {};
+  const items = Array.isArray(body) ? body : Array.isArray(body.pages) ? body.pages : [body];
+  let inserted = 0;
+  let updated = 0;
+  let skipped = 0;
+  for (const raw of items) {
+    const page = normalizeBriefPage(raw);
+    if (!page) {
+      skipped += 1;
+      continue;
+    }
+    const result = await store.upsertBriefPage(page);
+    if (result === 'inserted') inserted += 1;
+    else updated += 1;
+  }
+  res.json({ received: items.length, inserted, updated, skipped });
 });
 
 /* --------------------------- Public pages ------------------------- */
@@ -523,6 +556,29 @@ app.get('/explained', async (req, res) => {
   res.type('html').send(
     render.explainedPage({ articles, featured, category: valid ? cat : '', cats })
   );
+});
+
+// Podcast brief pages (owner order, 2026-11-16): every weekday
+// episode of Colorado Daily News Brief gets one page carrying short
+// article versions of its stories, each with its sources listed
+// under it — the "full stories with sources" the episode
+// descriptions promise at centennialledger.com.
+app.get('/podcast', async (req, res) => {
+  const pages = await store.listBriefPages();
+  res.type('html').send(render.briefIndexPage(pages));
+});
+
+app.get('/podcast/:date', async (req, res) => {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(req.params.date)) {
+    return res.status(404).type('html').send(notFound());
+  }
+  const page = await store.getBriefPage(req.params.date);
+  if (!page) return res.status(404).type('html').send(notFound());
+  const pages = await store.listBriefPages();
+  const idx = pages.findIndex((p) => p.date === page.date);
+  const newer = idx > 0 ? pages[idx - 1] : null;
+  const older = idx >= 0 && idx < pages.length - 1 ? pages[idx + 1] : null;
+  res.type('html').send(render.briefPage(page, newer, older));
 });
 
 app.get('/subscribe', (req, res) => {
@@ -1061,6 +1117,7 @@ app.post('/admin/newsletter/breaking', async (req, res) => {
 
 app.get('/sitemap.xml', async (req, res) => {
   const articles = await store.listArticles({ limit: 5000 });
+  const briefPages = await store.listBriefPages();
   const base = render.siteUrl();
   const urls = [
     { loc: base + '/', changefreq: 'hourly', priority: '1.0' },
@@ -1075,6 +1132,13 @@ app.get('/sitemap.xml', async (req, res) => {
       priority: '0.7',
     })),
     { loc: base + '/explained', changefreq: 'weekly', priority: '0.8' },
+    { loc: base + '/podcast', changefreq: 'daily', priority: '0.6' },
+    ...briefPages.map((p) => ({
+      loc: base + '/podcast/' + p.date,
+      lastmod: p.date,
+      changefreq: 'monthly',
+      priority: '0.6',
+    })),
     { loc: base + '/subscribe', changefreq: 'monthly', priority: '0.5' },
     { loc: base + '/about', changefreq: 'monthly', priority: '0.5' },
     { loc: base + '/privacy', changefreq: 'yearly', priority: '0.2' },
