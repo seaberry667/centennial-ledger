@@ -923,7 +923,8 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 .explained-heading::after{content:"";flex:1;height:2px;background:var(--color-gold)}
 .explained-tagline{font-style:italic;font-size:1.05rem;color:#444;margin:0 0 1.1rem}
 .explained-feature{display:flex;gap:1.4rem;flex-wrap:wrap;margin-bottom:1.3rem}
-.explained-feature figure.art-figure{flex:0 0 340px;margin:0}
+.explained-feature>.art-link{flex:0 0 340px;max-width:100%}
+.explained-feature figure.art-figure{margin:0}
 .explained-feature-text{flex:1;min-width:240px}
 .explained-feature-headline{font-family:var(--font-headline);font-size:1.9rem;line-height:1.15;margin:.2rem 0 .5rem}
 .explained-feature-headline a{color:inherit;text-decoration:none}
