@@ -563,11 +563,11 @@ app.get('/explained', async (req, res) => {
     all.some((a) => a.section === s.slug)
   ).map((s) => ({ slug: s.slug, name: s.name }));
   const filtered = valid ? all.filter((a) => a.section === cat) : all;
-  const featured =
-    !valid && filtered.length
-      ? filtered.find((a) => a.slug === 'how-colorados-tabor-law-actually-works') ||
-        filtered[0]
-      : null;
+  // Owner directive, 2026-11-19: the MOST RECENT explainer features
+  // at the very top of /explained, and the rest follow underneath in
+  // most-recent-first order (listArticles returns newest first). This
+  // supersedes the earlier TABOR-pinned featured pick.
+  const featured = !valid && filtered.length ? filtered[0] : null;
   const articles = featured
     ? filtered.filter((a) => a.slug !== featured.slug)
     : filtered;
