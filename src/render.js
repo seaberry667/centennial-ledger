@@ -774,7 +774,8 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 .briefing .briefing-tag{margin:0 0 .8rem;font-style:italic}
 .briefing form{display:flex;flex-direction:column;gap:.5rem;margin-top:.6rem}
 .briefing input[type=email]{width:100%;padding:.55rem;font-size:1rem;font-family:var(--font-body);border:1px solid #999;background:#fff}
-.briefing button{background:var(--color-red);color:#fff;border:0;padding:.55rem 1.1rem;font-size:1rem;font-family:var(--font-ui);cursor:pointer;width:100%}
+.briefing button{align-self:center;background:var(--color-red);color:#fff;border:0;text-decoration:none;font-family:var(--font-body);font-weight:600;font-size:1rem;letter-spacing:.02em;padding:.28rem .65rem;border-radius:3px;cursor:pointer}
+.briefing button:hover{background:#7d181e}
 .briefing .briefing-note{font-style:italic;color:#555;font-size:.92rem;margin:.55rem 0 0}
 /* Podcast box: the briefing box's dress, with the show artwork, the
    newest episode's title and date, an excerpt of its notes and a
