@@ -374,6 +374,12 @@ app.get('/', async (req, res) => {
       // lands, and the box renders its fallback copy meanwhile —
       // the homepage never waits on the podcast feed.
       podcast: podcastFeed.latestEpisode(),
+      // Dates that have a podcast companion page: the box links
+      // its headlines to the episode's own page only when that
+      // page exists, and to the /podcast archive otherwise.
+      briefDates: new Set(
+        (await store.listBriefPages()).map((p) => p.date)
+      ),
     })
   );
 });

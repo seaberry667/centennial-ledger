@@ -1008,7 +1008,7 @@ article.full figure.article-hero{margin:1.1rem 0}
 /* Podcast brief pages (2026-11-16): one page per episode, short
    story versions with a source list under each story. */
 .brief-kicker{font-family:var(--font-ui);color:var(--color-red);font-size:.82rem;font-weight:bold;letter-spacing:.14em;text-transform:uppercase;margin:0 0 .4rem}
-.brief-story{border-top:1px solid var(--color-border);margin-top:1.6rem;padding-top:1.1rem;max-width:760px}
+.brief-story{border-top:1px solid var(--color-border);margin-top:1.6rem;padding-top:1.1rem;max-width:760px;scroll-margin-top:1.2rem}
 .brief-story h2{font-family:var(--font-headline);font-size:1.55rem;line-height:1.2;margin:.1rem 0 .6rem}
 .brief-story h3{font-family:var(--font-headline);font-size:1.25rem;line-height:1.25;margin:.1rem 0 .5rem}
 .brief-story p{font-family:var(--font-body);font-size:1.06rem;line-height:1.55;margin:0 0 .8em}
@@ -1445,7 +1445,7 @@ const PODCAST_FALLBACK_LINE =
  * is down) the box renders a standing line instead — same box,
  * same link — so the rail never waits on the podcast feed.
  */
-function podcastBox(episode) {
+function podcastBox(episode, briefDates) {
   /* Kicker (owner rule, 2026-11-12): "TODAY'S PODCAST" only while
    * the box's episode is today's (Denver date); "LATEST PODCAST"
    * on Sundays, in the morning before the day's episode lands,
@@ -1455,6 +1455,18 @@ function podcastBox(episode) {
     epDate && epDate === fmtMetaDate(new Date().toISOString())
       ? 'TODAY\'S PODCAST'
       : 'LATEST PODCAST';
+  /* Link targets (owner order, 2026-11-20): the ONLY things in
+   * the box that link to Spotify are the artwork at the top and
+   * the Listen on Spotify button. Each headline links to that
+   * story's anchor on the episode's own podcast page
+   * (/podcast/YYYY-MM-DD#story-N, stories in the same order on
+   * both). briefDates carries the dates that have a companion
+   * page; an episode without one (the Saturday history edition
+   * has none) links its headlines and its read line to the
+   * /podcast archive instead of a page that does not exist. */
+  const epYmd = episode && episode.publishedAt ? fmtDenverYmd(episode.publishedAt) : '';
+  const hasPage = !!(epYmd && briefDates && briefDates.has(epYmd));
+  const pageUrl = hasPage ? '/podcast/' + epYmd : '/podcast';
   let inner =
     '<div class="briefing-kicker">' + kicker + '</div>';
   if (episode && episode.title) {
@@ -1472,9 +1484,10 @@ function podcastBox(episode) {
         ? '<ul class="podcast-titles">' +
           episode.titles
             .map(
-              (t) =>
-                '<li><a href="' + PODCAST_SPOTIFY_URL +
-                '" target="_blank" rel="noopener">' + esc(t) + '</a></li>'
+              (t, i) =>
+                '<li><a href="' + pageUrl +
+                (hasPage ? '#story-' + (i + 1) : '') +
+                '">' + esc(t) + '</a></li>'
             )
             .join('') +
           '</ul>'
@@ -1487,12 +1500,17 @@ function podcastBox(episode) {
     '" target="_blank" rel="noopener">Listen on Spotify</a>';
   /* Companion story page link (owner order, 2026-11-20): the box
    * is how site readers reach the episode's page of stories with
-   * sources at /podcast/YYYY-MM-DD. In the fallback state (no
-   * episode loaded) it points at the /podcast index instead. */
-  if (episode && episode.publishedAt) {
+   * sources at /podcast/YYYY-MM-DD; under it, a link to the
+   * podcast archive at /podcast, which lists every past
+   * episode's page. When the episode has no page of its own, the
+   * read line itself points at the archive (same wording as the
+   * fallback state) and no separate archive link is stacked
+   * under it. */
+  if (hasPage) {
     inner +=
-      '<a class="podcast-read" href="/podcast/' + fmtDenverYmd(episode.publishedAt) +
-      '">Read this episode&rsquo;s stories, with sources</a>';
+      '<a class="podcast-read" href="' + pageUrl +
+      '">Read this episode&rsquo;s stories, with sources</a>' +
+      '<a class="podcast-read" href="/podcast">Podcast archive &mdash; all past episodes</a>';
   } else {
     inner +=
       '<a class="podcast-read" href="/podcast">Read the episodes&rsquo; stories, with sources</a>';
@@ -2152,10 +2170,12 @@ function explainedPage({ articles, featured, category, cats }) {
    to one Colorado Daily News Brief episode — short article versions
    of the episode's stories, each with its sources listed under it. */
 
-function briefStoryHtml(s, headingTag) {
+function briefStoryHtml(s, headingTag, anchorId) {
   const tag = headingTag || 'h2';
   let h =
-    '<article class="brief-story"><' + tag + '>' + esc(s.headline) + '</' + tag + '>';
+    '<article class="brief-story"' +
+    (anchorId ? ' id="' + anchorId + '"' : '') +
+    '><' + tag + '>' + esc(s.headline) + '</' + tag + '>';
   h += (Array.isArray(s.body) ? s.body : [])
     .map((p) => '<p>' + inline(p) + '</p>')
     .join('');
@@ -2203,7 +2223,12 @@ function briefPage(page, newer, older) {
       '<a class="brief-listen" href="' + esc(page.spotifyUrl) +
       '" rel="noopener" target="_blank">Listen on Spotify</a>';
   }
-  body += page.stories.map((s) => briefStoryHtml(s, 'h2')).join('');
+  /* Each top story carries a story-N anchor (owner order,
+   * 2026-11-20): the homepage podcast box links each of its
+   * headlines to the matching story on this page, in order. */
+  body += page.stories
+    .map((s, i) => briefStoryHtml(s, 'h2', 'story-' + (i + 1)))
+    .join('');
   const around = Array.isArray(page.aroundColorado) ? page.aroundColorado : [];
   if (around.length) {
     body += '<h2 class="brief-around">Around Colorado</h2>';
@@ -2277,7 +2302,7 @@ function briefIndexPage(pages) {
   });
 }
 
-function homePage({ lead, second, third, latest, railGroups, latestRow, localStories, opinion, briefingThanks, explained, podcast }) {
+function homePage({ lead, second, third, latest, railGroups, latestRow, localStories, opinion, briefingThanks, explained, podcast, briefDates }) {
   const jsonLd = [
     {
       '@context': 'https://schema.org',
@@ -2342,7 +2367,7 @@ function homePage({ lead, second, third, latest, railGroups, latestRow, localSto
     body +=
       '<div class="home-layout"><div class="home-features">' + features + '</div>' +
       '<aside class="home-rail" aria-label="Sidebar">' +
-      podcastBox(podcast) +
+      podcastBox(podcast, briefDates) +
       (groups.length
         ? '<section class="rail-latest" aria-label="Latest stories by section">' +
           groups.map(railSectionGroup).join('') + '</section>'
