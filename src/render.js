@@ -941,6 +941,9 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 .explained-tagline{font-style:italic;font-size:1.05rem;color:#444;margin:0 0 1.1rem}
 .explained-feature{display:flex;gap:1.4rem;flex-wrap:wrap;margin-bottom:1.3rem}
 .explained-feature--wrap{display:block}
+.explained-feature--wrap::after{content:"";display:block;clear:both}
+.explained-feature--wrap>.art-link{float:left;width:340px;max-width:100%;margin:.15rem 1.4rem .8rem 0}
+@media (max-width:767px){.explained-feature--wrap>.art-link{float:none;width:100%;margin:0 0 1rem}}
 .explained-feature>.art-link{flex:0 0 340px;max-width:100%}
 .explained-feature figure.art-figure{margin:0}
 .explained-feature-text{flex:1;min-width:240px}
@@ -2007,12 +2010,15 @@ function editorialStrip(opinion) {
  * and the /explained archive: plate at the left, category kicker,
  * headline, dek and an opening excerpt at the right.
  *
- * Homepage variant (owner order, 2026-11-20): with { wrap: true }
- * the block mirrors the main homepage feature stories instead —
- * kicker, headline and dek run full width on top, then the plate
- * with its caption floats right inside a .feature-intro and the
- * excerpt text wraps around it and below it. The /explained
- * archive keeps the side-by-side treatment above.
+ * Homepage variant (owner order, 2026-11-20, as corrected by the
+ * owner the same morning): with { wrap: true } the block keeps the
+ * treatment above — plate at the left at its usual 340px size,
+ * kicker, headline, dek and excerpt beside it — except the plate
+ * (with its caption) FLOATS left, so text that runs past the
+ * bottom of the plate and caption wraps underneath them at full
+ * width instead of staying in a narrow column. NOT the main
+ * feature stories' float-right layout. The /explained archive
+ * keeps the plain side-by-side treatment above.
  */
 function explainedFeature(a, opts) {
   if (!a) return '';
@@ -2020,18 +2026,12 @@ function explainedFeature(a, opts) {
   if (opts && opts.wrap) {
     let s =
       '<article class="explained-feature explained-feature--wrap">' +
+      articleFigure(a, 'explained-figure', { link: true, width: 700 }) +
       '<div class="kicker">' + esc(sectionName(a.section)) + '</div>' +
       '<h3 class="explained-feature-headline"><a href="/article/' +
       esc(a.slug) + '">' + esc(a.headline) + '</a></h3>' +
       (a.dek ? '<p class="dek">' + inline(dekText(a)) + '</p>' : '');
-    const fig = articleFigure(a, 'feature-figure', { link: true, width: 900 });
-    if (excerpt) {
-      s += fig
-        ? '<div class="feature-intro">' + fig + '<div class="feature-excerpt">' + excerpt + '</div></div>'
-        : '<div class="feature-excerpt">' + excerpt + '</div>';
-    } else if (fig) {
-      s += fig;
-    }
+    if (excerpt) s += '<div class="feature-excerpt">' + excerpt + '</div>';
     s +=
       '<div class="feature-actions"><a class="btn-read" href="/article/' +
       esc(a.slug) + '">Read More &rarr;</a></div>';
