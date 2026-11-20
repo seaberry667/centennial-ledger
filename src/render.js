@@ -940,6 +940,7 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 .explained-heading::after{content:"";flex:1;height:2px;background:var(--color-gold)}
 .explained-tagline{font-style:italic;font-size:1.05rem;color:#444;margin:0 0 1.1rem}
 .explained-feature{display:flex;gap:1.4rem;flex-wrap:wrap;margin-bottom:1.3rem}
+.explained-feature--wrap{display:block}
 .explained-feature>.art-link{flex:0 0 340px;max-width:100%}
 .explained-feature figure.art-figure{margin:0}
 .explained-feature-text{flex:1;min-width:240px}
@@ -2005,10 +2006,38 @@ function editorialStrip(opinion) {
  * The featured explainer treatment, shared by the homepage module
  * and the /explained archive: plate at the left, category kicker,
  * headline, dek and an opening excerpt at the right.
+ *
+ * Homepage variant (owner order, 2026-11-20): with { wrap: true }
+ * the block mirrors the main homepage feature stories instead —
+ * kicker, headline and dek run full width on top, then the plate
+ * with its caption floats right inside a .feature-intro and the
+ * excerpt text wraps around it and below it. The /explained
+ * archive keeps the side-by-side treatment above.
  */
-function explainedFeature(a) {
+function explainedFeature(a, opts) {
   if (!a) return '';
   const excerpt = leadExcerpt(a, 90);
+  if (opts && opts.wrap) {
+    let s =
+      '<article class="explained-feature explained-feature--wrap">' +
+      '<div class="kicker">' + esc(sectionName(a.section)) + '</div>' +
+      '<h3 class="explained-feature-headline"><a href="/article/' +
+      esc(a.slug) + '">' + esc(a.headline) + '</a></h3>' +
+      (a.dek ? '<p class="dek">' + inline(dekText(a)) + '</p>' : '');
+    const fig = articleFigure(a, 'feature-figure', { link: true, width: 900 });
+    if (excerpt) {
+      s += fig
+        ? '<div class="feature-intro">' + fig + '<div class="feature-excerpt">' + excerpt + '</div></div>'
+        : '<div class="feature-excerpt">' + excerpt + '</div>';
+    } else if (fig) {
+      s += fig;
+    }
+    s +=
+      '<div class="feature-actions"><a class="btn-read" href="/article/' +
+      esc(a.slug) + '">Read More &rarr;</a></div>';
+    s += '</article>';
+    return s;
+  }
   let s =
     '<article class="explained-feature">' +
     articleFigure(a, 'explained-figure', { link: true, width: 700 }) +
@@ -2036,7 +2065,7 @@ function explainedModule(ex) {
   let s =
     '<section class="explained-home" aria-label="How Colorado Works">' +
     '<h2 class="explained-heading">How Colorado Works</h2>';
-  s += explainedFeature(ex.featured);
+  s += explainedFeature(ex.featured, { wrap: true });
   const items = (ex.items || []).filter(Boolean).slice(0, 3);
   if (items.length) {
     s += '<div class="explained-grid">' + items.map(articleCard).join('') + '</div>';
