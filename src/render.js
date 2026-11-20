@@ -785,8 +785,8 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 .podcast-box .podcast-titles li{margin:.35rem 0;line-height:1.35}
 .podcast-box .podcast-titles a{color:inherit;text-decoration:none}
 .podcast-box .podcast-titles a:hover{text-decoration:underline}
-.podcast-box .podcast-listen{display:block;text-align:center;background:var(--color-red);color:#fff;padding:.55rem 1.1rem;font-family:var(--font-ui);font-size:1rem;text-decoration:none}
-.podcast-box .podcast-read{display:block;text-align:center;margin-top:.55rem;font-family:var(--font-ui);font-size:.85rem;color:var(--color-red);text-decoration:underline}
+.podcast-box .podcast-listen-wrap{text-align:center}
+.podcast-box .podcast-read{display:block;text-align:center;margin-top:.55rem;font-family:var(--font-body);font-size:.85rem;color:var(--color-red);text-decoration:underline}
 /* ---------- Advertisements ---------- */
 .ad-slot{margin:1.2rem 0;text-align:center}
 .ad-placeholder{border:1px dashed #bbb;color:#999;font-family:var(--font-ui);font-size:.75rem;text-transform:uppercase;letter-spacing:.15em;padding:1.4rem 0}
@@ -1496,9 +1496,12 @@ function podcastBox(episode, briefDates) {
   } else {
     inner += '<p class="briefing-tag">' + esc(PODCAST_FALLBACK_LINE) + '</p>';
   }
+  /* Listen button in the Read More buttons' dress (owner order,
+   * 2026-11-20): the same .btn-read formatting as the homepage
+   * features' read buttons, centered in the box. */
   inner +=
-    '<a class="podcast-listen" href="' + PODCAST_SPOTIFY_URL +
-    '" target="_blank" rel="noopener">Listen on Spotify</a>';
+    '<div class="podcast-listen-wrap"><a class="btn-read" href="' + PODCAST_SPOTIFY_URL +
+    '" target="_blank" rel="noopener">Listen on Spotify</a></div>';
   /* Companion story page link (owner order, 2026-11-20): the box
    * is how site readers reach the episode's page of stories with
    * sources at /podcast/YYYY-MM-DD; under it, a link to the
