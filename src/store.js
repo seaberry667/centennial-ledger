@@ -2779,6 +2779,23 @@ function normalizeBriefPage(raw) {
   const spotifyUrl = /^https?:\/\//i.test(String(raw.spotifyUrl || ''))
     ? String(raw.spotifyUrl).trim()
     : '';
+  /* Page format (owner order, 2026-11-20): 'brief' is the weekday
+   * companion (story list, sources under each story); 'article' is
+   * the Saturday history edition's page — one flowing article with
+   * subheads, an illustration, and a single Sources list at the
+   * end. The article's sections ride in `stories` either way. */
+  const format = raw.format === 'article' ? 'article' : 'brief';
+  let illustration = null;
+  if (raw.illustration && typeof raw.illustration === 'object') {
+    const src = String(raw.illustration.src || '').trim();
+    if (src.startsWith('/') || /^https?:\/\//i.test(src)) {
+      illustration = {
+        src,
+        alt: String(raw.illustration.alt || '').trim(),
+        caption: String(raw.illustration.caption || '').trim(),
+      };
+    }
+  }
   return {
     date,
     episodeTitle,
@@ -2787,6 +2804,8 @@ function normalizeBriefPage(raw) {
     intro: String(raw.intro || '').trim(),
     stories,
     aroundColorado,
+    format,
+    illustration,
   };
 }
 

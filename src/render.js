@@ -1009,6 +1009,7 @@ article.full figure.article-hero{margin:1.1rem 0}
    story versions with a source list under each story. */
 .brief-kicker{font-family:var(--font-ui);color:var(--color-red);font-size:.82rem;font-weight:bold;letter-spacing:.14em;text-transform:uppercase;margin:0 0 .4rem}
 .brief-story{border-top:1px solid var(--color-border);margin-top:1.6rem;padding-top:1.1rem;max-width:760px;scroll-margin-top:1.2rem}
+.brief-dateline{font-family:var(--font-ui);font-size:.85rem;letter-spacing:.06em;text-transform:uppercase;color:#555;margin:.3rem 0 .8rem}
 .brief-story h2{font-family:var(--font-headline);font-size:1.55rem;line-height:1.2;margin:.1rem 0 .6rem}
 .brief-story h3{font-family:var(--font-headline);font-size:1.25rem;line-height:1.25;margin:.1rem 0 .5rem}
 .brief-story p{font-family:var(--font-body);font-size:1.06rem;line-height:1.55;margin:0 0 .8em}
@@ -2210,8 +2211,25 @@ function briefPage(page, newer, older) {
   ];
   let body = leaderboardAdSlot();
   body +=
-    '<p class="brief-kicker">Colorado Daily News Brief</p>' +
+    '<p class="brief-kicker">' +
+    (page.format === 'article'
+      ? 'Colorado Daily News Brief &mdash; Saturday History Edition'
+      : 'Colorado Daily News Brief') +
+    '</p>' +
     '<h1 class="headline" style="font-size:2.4rem">' + esc(page.episodeTitle) + '</h1>' +
+    (page.format === 'article'
+      ? '<p class="brief-dateline">' +
+        esc(
+          new Date(page.date + 'T12:00:00-07:00').toLocaleDateString('en-US', {
+            weekday: 'long',
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric',
+            timeZone: 'America/Denver',
+          })
+        ) +
+        ' &middot; The Centennial Ledger</p>'
+      : '') +
     '<p class="dek">' +
     inline(
       page.intro ||
@@ -2226,13 +2244,65 @@ function briefPage(page, newer, older) {
   /* Each top story carries a story-N anchor (owner order,
    * 2026-11-20): the homepage podcast box links each of its
    * headlines to the matching story on this page, in order. */
-  body += page.stories
-    .map((s, i) => briefStoryHtml(s, 'h2', 'story-' + (i + 1)))
-    .join('');
-  const around = Array.isArray(page.aroundColorado) ? page.aroundColorado : [];
-  if (around.length) {
-    body += '<h2 class="brief-around">Around Colorado</h2>';
-    body += around.map((s) => briefStoryHtml(s, 'h3')).join('');
+  if (page.format === 'article') {
+    /* Article format (owner order, 2026-11-20): the illustration
+     * under the dek, then the sections as one flowing article —
+     * subheads, no per-section source blocks — and one combined
+     * Sources list at the end. Sections keep their story-N
+     * anchors so the homepage podcast box can link to them. */
+    if (page.illustration && page.illustration.src) {
+      body +=
+        '<figure class="art-figure"><img src="' + esc(page.illustration.src) +
+        '" alt="' + esc(page.illustration.alt || '') + '" loading="lazy">' +
+        (page.illustration.caption
+          ? '<figcaption>' + esc(page.illustration.caption) + '</figcaption>'
+          : '') +
+        '</figure>';
+    }
+    body += page.stories
+      .map(
+        (s, i) =>
+          '<article class="brief-story" id="story-' + (i + 1) + '"><h2>' +
+          esc(s.headline) + '</h2>' +
+          (Array.isArray(s.body) ? s.body : [])
+            .map((p) => '<p>' + inline(p) + '</p>')
+            .join('') +
+          '</article>'
+      )
+      .join('');
+    const seen = new Set();
+    const allSources = [];
+    for (const s of page.stories) {
+      for (const x of Array.isArray(s.sources) ? s.sources : []) {
+        if (!x || (!x.url && !x.name)) continue;
+        const key = x.url || x.name;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        allSources.push(x);
+      }
+    }
+    if (allSources.length) {
+      body +=
+        '<div class="brief-sources"><h4>Sources</h4>' +
+        allSources
+          .map((x) =>
+            x.url
+              ? '<p class="source"><a href="' + esc(x.url) +
+                '" rel="noopener" target="_blank">' + esc(x.name || x.url) + '</a></p>'
+              : '<p class="source">' + esc(x.name) + '</p>'
+          )
+          .join('') +
+        '</div>';
+    }
+  } else {
+    body += page.stories
+      .map((s, i) => briefStoryHtml(s, 'h2', 'story-' + (i + 1)))
+      .join('');
+    const around = Array.isArray(page.aroundColorado) ? page.aroundColorado : [];
+    if (around.length) {
+      body += '<h2 class="brief-around">Around Colorado</h2>';
+      body += around.map((s) => briefStoryHtml(s, 'h3')).join('');
+    }
   }
   body +=
     '<p class="last-reviewed">Colorado Daily News Brief is produced by The Centennial Ledger. The voices you hear in the podcast are AI-generated; the reporting is gathered and verified by people.</p>';
