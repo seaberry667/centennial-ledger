@@ -149,6 +149,22 @@ function fmtMetaDate(iso) {
   }
 }
 
+/** Denver calendar date as YYYY-MM-DD (companion-page URL shape). */
+function fmtDenverYmd(iso) {
+  try {
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/Denver',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).formatToParts(new Date(iso));
+    const get = (t) => (parts.find((p) => p.type === t) || {}).value || '';
+    return get('year') + '-' + get('month') + '-' + get('day');
+  } catch {
+    return '';
+  }
+}
+
 /**
  * Byline stamp for features and article pages: the story's date AND
  * time in Mountain Time, uppercase, e.g. "NOV 1, 11:32 AM MT".
@@ -770,6 +786,7 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 .podcast-box .podcast-titles a{color:inherit;text-decoration:none}
 .podcast-box .podcast-titles a:hover{text-decoration:underline}
 .podcast-box .podcast-listen{display:block;text-align:center;background:var(--color-red);color:#fff;padding:.55rem 1.1rem;font-family:var(--font-ui);font-size:1rem;text-decoration:none}
+.podcast-box .podcast-read{display:block;text-align:center;margin-top:.55rem;font-family:var(--font-ui);font-size:.85rem;color:var(--color-red);text-decoration:underline}
 /* ---------- Advertisements ---------- */
 .ad-slot{margin:1.2rem 0;text-align:center}
 .ad-placeholder{border:1px dashed #bbb;color:#999;font-family:var(--font-ui);font-size:.75rem;text-transform:uppercase;letter-spacing:.15em;padding:1.4rem 0}
@@ -1464,6 +1481,18 @@ function podcastBox(episode) {
   inner +=
     '<a class="podcast-listen" href="' + PODCAST_SPOTIFY_URL +
     '" target="_blank" rel="noopener">Listen on Spotify</a>';
+  /* Companion story page link (owner order, 2026-11-20): the box
+   * is how site readers reach the episode's page of stories with
+   * sources at /podcast/YYYY-MM-DD. In the fallback state (no
+   * episode loaded) it points at the /podcast index instead. */
+  if (episode && episode.publishedAt) {
+    inner +=
+      '<a class="podcast-read" href="/podcast/' + fmtDenverYmd(episode.publishedAt) +
+      '">Read this episode&rsquo;s stories, with sources</a>';
+  } else {
+    inner +=
+      '<a class="podcast-read" href="/podcast">Read the episodes&rsquo; stories, with sources</a>';
+  }
   return '<section class="briefing podcast-box">' + inner + '</section>';
 }
 

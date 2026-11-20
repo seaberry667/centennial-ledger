@@ -392,9 +392,11 @@ const SECTION_REDIRECTS = {
 };
 
 app.get('/section/:slug', async (req, res) => {
-  // Opinion and Satire are not public (owner order, 2026-11-08):
-  // their section URLs go home, and their articles 404 at the
-  // store's read layer.
+  // Opinion and Satire have no public section pages (owner orders,
+  // 2026-11-08 and 2026-11-20): their section URLs go home and
+  // nothing on the site links to them. Satire pieces themselves
+  // resolve at their own article URLs (direct access only, at the
+  // store's read layer); Opinion editorials still 404.
   if (req.params.slug === 'opinion' || req.params.slug === 'satire') {
     return res.redirect(301, '/');
   }
@@ -519,7 +521,7 @@ app.get('/article/:slug', async (req, res) => {
   // from the Satire list, newest first: "previous" is the older
   // comic, "next" is the newer one.
   if (isSatire(article)) {
-    const comics = (await store.listArticles({ section: 'opinion', limit: 60 })).filter(isSatire);
+    const comics = await store.listSatire();
     const idx = comics.findIndex((c) => c.slug === article.slug);
     const newer = idx > 0 ? comics[idx - 1] : null;
     const older = idx >= 0 && idx < comics.length - 1 ? comics[idx + 1] : null;

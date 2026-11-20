@@ -399,6 +399,17 @@ function isHiddenArticle(a) {
   return RETRACTED_SLUGS.has(a.slug) || a.section === 'opinion';
 }
 
+// Owner order (2026-11-20): Satire pages are public again at their
+// own URLs, but nothing on the site links to them. Listing paths
+// keep using isHiddenArticle above, so satire stays out of the
+// homepage, sections, search, sitemaps and every other list; only
+// DIRECT access — the article page itself and its plate image —
+// resolves a satire piece, via this narrower check. Opinion
+// editorials remain fully hidden everywhere.
+function isDirectAccessHidden(a) {
+  return RETRACTED_SLUGS.has(a.slug) || (a.section === 'opinion' && !isSatire(a));
+}
+
 /**
  * Owner-ordered Satire display swap (2026-11-05): on the Satire page
  * the gasoline-spill comic sits in the middle and the bicycle comic
@@ -1426,7 +1437,17 @@ class FileStore {
 
   async getArticle(slug) {
     const a = this.data.articles.find((x) => x.slug === slug);
-    return a && !isHiddenArticle(a) ? a : null;
+    return a && !isDirectAccessHidden(a) ? a : null;
+  }
+
+  /* Satire pieces for the satire pages' Previous/Next navigation
+   * (owner order, 2026-11-20): the only listing of satire anywhere,
+   * used solely inside a satire page itself — never linked from
+   * the rest of the site. Newest first, retracted slugs excluded. */
+  async listSatire() {
+    return this.data.articles
+      .filter((a) => isSatire(a) && !RETRACTED_SLUGS.has(a.slug))
+      .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
   }
 
   async listArticles({ section = null, region = null, spotlight = null, search = null, limit = 50 } = {}) {
@@ -2293,7 +2314,25 @@ class PgStore {
     if (RETRACTED_SLUGS.has(slug)) return null;
     const res = await this.pool.query('SELECT * FROM articles WHERE slug = $1', [slug]);
     const row = this._row(res.rows[0]);
-    return row && row.section !== 'opinion' ? row : null;
+    // Direct access only (owner order, 2026-11-20): a satire piece
+    // resolves at its own URL; Opinion editorials stay hidden.
+    return row && (row.section !== 'opinion' || isSatire(row)) ? row : null;
+  }
+
+  /* Satire pieces for the satire pages' Previous/Next navigation
+   * (owner order, 2026-11-20) — see the FileStore version. */
+  async listSatire() {
+    const params = [];
+    let where = "(format = 'satire' OR section = 'satire')";
+    if (RETRACTED_SLUGS.size) {
+      params.push([...RETRACTED_SLUGS]);
+      where += ` AND slug <> ALL($${params.length})`;
+    }
+    const res = await this.pool.query(
+      'SELECT * FROM articles WHERE ' + where + ' ORDER BY published_at DESC',
+      params
+    );
+    return res.rows.map((r) => this._row(r));
   }
 
   async listArticles({ section = null, region = null, spotlight = null, search = null, limit = 50 } = {}) {
