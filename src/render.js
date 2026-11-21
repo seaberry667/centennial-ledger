@@ -772,10 +772,7 @@ h2.headline,h1.headline{font-family:var(--font-headline);font-weight:800;line-he
 /* Same breathing room above the bottom leaderboard on section
    pages (owner directive, 2026-11-21). */
 .ad-breather{margin-top:1.4rem}
-/* Homepage bottom leaderboard: farther from the module above,
-   tighter against the footer (owner directive, 2026-11-21). */
-.home-bottom-ad{margin-top:2.4rem}
-.home-bottom-ad .ad-slot.ad-leaderboard{margin-bottom:.35rem}
+
 /* Section intro text at the top of section pages (owner
    directive, 2026-11-21): plain content paragraphs, no box. */
 .section-intro{margin:.2rem 0 1.2rem}
@@ -2594,15 +2591,16 @@ function homePage({ lead, second, third, gridFeatures, latest, railGroups, lates
         '<div class="latest-grid">' + latestCards.map(latestCard).join('') + '</div></section>';
     }
     // Thin leaderboard at the very bottom of the homepage, just
-    // above the footer (owner directive, 2026-11-21) — set a
-    // little farther from the How Colorado Works module above it
-    // and tighter against the footer (owner follow-up, same day).
-    body += '<div class="home-bottom-ad">' + leaderboardAdSlot() + '</div>';
+    // above the footer (owner directive, 2026-11-21), with the
+    // same spacing as the top ad — the plain slot, no extra
+    // wrapper (owner directive, same day, superseding an interim
+    // tighter-to-the-footer spacing).
+    body += leaderboardAdSlot();
     body += SAVE_SCRIPT + SHARE_SCRIPT;
   } else {
     body += '<section class="lead-story"><h1 class="headline">Colorado news, reported plainly.</h1><p class="dek">New stories are on the way.</p></section>';
     body += briefingBox(briefingThanks, 'homepage');
-    body += '<div class="home-bottom-ad">' + leaderboardAdSlot() + '</div>';
+    body += leaderboardAdSlot();
   }
 
   return layout({
