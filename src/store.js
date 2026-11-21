@@ -755,6 +755,13 @@ function normalizeSources(raw) {
   return out;
 }
 
+function cleanPunctuationSpacing(s) {
+  if (typeof s !== 'string') return s;
+  return s
+    .replace(/\s+([,.;:!?%])/g, '$1')
+    .replace(/([,.;:!?])\s{2,}/g, '$1 ');
+}
+
 /**
  * Opinion pieces carry their sources in the stored sources list,
  * rendered as the regular Sources section — never as bracketed
@@ -1984,6 +1991,71 @@ class PgStore {
         await this.pool.query(
           'UPDATE articles SET dek = $2, sections = $3 WHERE slug = $1',
           [r.slug, probe.dek, JSON.stringify(probe.sections)]
+        );
+      }
+    }
+    // One-time, idempotent punctuation-spacing repair (owner report,
+    // 2026-11-21): the newsroom's text cleaner manufactured a space
+    // before commas whenever it converted a spaced em dash ("word —
+    // word" became "word ,  word"), and some writer drafts carried
+    // the same typo. The newsroom now strips it at write, display,
+    // and upload; this pass repairs the copies already stored here:
+    // no space before , . ; : ! ? % and a single space after. It
+    // touches only spacing, never words. Idempotent: once a row is
+    // clean it no longer changes, so later boots change nothing.
+    const punctRows = await this.pool.query(
+      'SELECT slug, headline, dek, topic_label, sections, why_it_matters, image, sources, seo_title, meta_description FROM articles'
+    );
+    for (const r of punctRows.rows) {
+      let changed = false;
+      const F = (v) => {
+        const n = cleanPunctuationSpacing(v || '');
+        if (n !== (v || '')) changed = true;
+        return n;
+      };
+      const sectionsIn =
+        typeof r.sections === 'string' ? JSON.parse(r.sections) : r.sections || [];
+      const sections = sectionsIn.map((sec) => ({
+        ...sec,
+        heading: F(sec.heading),
+        lead: F(sec.lead),
+        paragraphs: (sec.paragraphs || []).map(F),
+      }));
+      const imageIn =
+        typeof r.image === 'string' ? JSON.parse(r.image) : r.image;
+      const image =
+        imageIn && typeof imageIn === 'object'
+          ? { ...imageIn, alt: F(imageIn.alt), caption: F(imageIn.caption) }
+          : imageIn;
+      const sourcesIn =
+        typeof r.sources === 'string' ? JSON.parse(r.sources) : r.sources || [];
+      const sources = sourcesIn.map((s) =>
+        s && typeof s === 'object' ? { ...s, name: F(s.name) } : s
+      );
+      const headline = F(r.headline);
+      const dek = F(r.dek);
+      const topicLabel = F(r.topic_label);
+      const why = F(r.why_it_matters);
+      const seoTitle = F(r.seo_title);
+      const metaDescription = F(r.meta_description);
+      if (changed) {
+        await this.pool.query(
+          `UPDATE articles SET headline = $2, dek = $3, topic_label = $4,
+             sections = $5, why_it_matters = $6, image = $7, sources = $8,
+             seo_title = $9, meta_description = $10
+           WHERE slug = $1`,
+          [
+            r.slug,
+            headline,
+            dek,
+            topicLabel,
+            JSON.stringify(sections),
+            why,
+            image ? JSON.stringify(image) : null,
+            JSON.stringify(sources),
+            seoTitle,
+            metaDescription,
+          ]
         );
       }
     }
