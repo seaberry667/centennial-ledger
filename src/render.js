@@ -2621,8 +2621,12 @@ function sectionPage({ section, articles }) {
       : '');
   // No small red section-name label above the title (owner
   // instruction, 2026-11-03): the H1 alone heads the page.
+  // Section H1s carry the full masthead form (owner directive,
+  // 2026-11-21): "Colorado <Section> News" — a name already ending
+  // in "News" does not gain a second one.
+  const h1 = 'Colorado ' + name + (/news$/i.test(name) ? '' : ' News');
   const body =
-    '<h1 class="headline" style="font-size:2.4rem">' + esc(name) + '</h1>' +
+    '<h1 class="headline" style="font-size:2.4rem">' + esc(h1) + '</h1>' +
     sectionIntro(section) +
     (articles.length
       ? listing
@@ -2680,7 +2684,7 @@ function collectionJsonLd(name, path, articles) {
 function localHubPage({ articles }) {
   // Same no-kicker rule as the section pages (owner, 2026-11-03).
   const body =
-    '<h1 class="headline" style="font-size:2.4rem">Local News</h1>' +
+    '<h1 class="headline" style="font-size:2.4rem">Colorado Local News</h1>' +
     sectionIntro('local') +
     regionNavList('') +
     (articles.length
