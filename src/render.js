@@ -2781,6 +2781,52 @@ function localHubPage({ articles }) {
 }
 
 /** A Local region page: Local-section stories carrying one region tag. */
+/* Region page meta titles and descriptions, owner-supplied
+   (2026-11-21). Separate from REGION_META, which is the visible
+   hub-box copy at the foot of region pages. */
+const REGION_SEO = {
+  'denver-metro': {
+    title: 'Denver Metro Local News: Denver, Aurora, Lakewood & School Boards',
+    description:
+      'Read Denver Metro news covering Denver, Aurora, Lakewood, Thornton and Douglas County, from school boards and housing to taxes, safety and growth. Read today.',
+  },
+  'northern-colorado': {
+    title: 'Northern Colorado Local News: Fort Collins, Boulder, Loveland & More',
+    description:
+      'Follow Northern Colorado news from Fort Collins, Boulder, Loveland, Longmont and Larimer County, covering councils, budgets, schools and safety. Read today.',
+  },
+  'southern-colorado': {
+    title: 'Southern Colorado Local News: Pueblo, Canon City, Taxes & Schools',
+    description:
+      'Read Southern Colorado news from Pueblo and Canon City, covering sales taxes, rail plans, school boards, electric bills, elections and city budgets. Read today.',
+  },
+  'western-slope': {
+    title: 'Western Slope Local News: Grand Junction, Montrose, Paonia & Budgets',
+    description:
+      'Follow Western Slope news from Grand Junction, Montrose and Paonia, covering budgets, schools, public safety, wildlife, water and local services. Read today.',
+  },
+  southwest: {
+    title: 'Southwest Colorado Local News: Durango, Cortez, Pagosa & Floods',
+    description:
+      'Read Southwest Colorado news from Durango, Cortez, Pagosa Springs and Montezuma County, covering floods, budgets, water rates, growth and elections. Read today.',
+  },
+  mountains: {
+    title: 'Colorado Mountains Local News: Summit, Eagle, Vail, Breckenridge',
+    description:
+      'Follow Colorado mountain news from Summit, Eagle, Pitkin and Chaffee counties, covering taxes, housing, ski season, budgets and public land use. Read today.',
+  },
+  'eastern-plains': {
+    title: 'Eastern Plains Local News: Sterling, Fort Morgan, Lamar & Farming',
+    description:
+      'Read Eastern Plains news from Sterling, Fort Morgan, Lamar, Burlington and Logan County, covering farm country, data centers, councils and schools. Read today.',
+  },
+  'san-luis-valley': {
+    title: 'San Luis Valley Local News: Alamosa, Wolf Creek Pass, Schools & Water',
+    description:
+      'Follow San Luis Valley news from Alamosa, Wolf Creek Pass and school districts, covering county budgets, Highway 160, water, pay plans and recalls. Read today.',
+  },
+};
+
 /* Region page H1s, owner-set wording (2026-11-21). */
 const REGION_H1 = {
   'denver-metro': 'Denver Metro News',
@@ -2807,10 +2853,15 @@ function localRegionPage({ region, articles }) {
     '<div class="ad-breather">' + leaderboardAdSlot() + '</div>' +
     regionHubBox(region);
 
+  const seo = REGION_SEO[region.slug] || {};
   return layout({
-    title: fitTitle(region.name + ' local news: counties, cities and school boards', 70),
+    title: fitTitle(
+      seo.title || region.name + ' local news: counties, cities and school boards',
+      70
+    ),
     description: fitDescription(
-      REGION_META[region.slug] ||
+      seo.description ||
+        REGION_META[region.slug] ||
         'Local news from ' + region.name + ', Colorado: county commissions, city councils, sheriffs and school boards, with the original sources linked. Read the latest.'
     ),
     path,
