@@ -2624,7 +2624,6 @@ function sectionPage({ section, articles }) {
   const body =
     '<h1 class="headline" style="font-size:2.4rem">' + esc(name) + '</h1>' +
     sectionIntro(section) +
-    leaderboardAdSlot() +
     (articles.length
       ? listing
       : '<p>No stories in this section yet. Check back after the next edition.</p>') +
@@ -2683,7 +2682,6 @@ function localHubPage({ articles }) {
   const body =
     '<h1 class="headline" style="font-size:2.4rem">Local News</h1>' +
     sectionIntro('local') +
-    leaderboardAdSlot() +
     regionNavList('') +
     (articles.length
       ? cardGridWithAd(articles, { kicker: false })
@@ -2708,7 +2706,6 @@ function localRegionPage({ region, articles }) {
     esc(region.name) + '</div>' +
     '<h1 class="headline" style="font-size:2.4rem">' + esc(region.name) + '</h1>' +
     regionNavList(region.slug) +
-    leaderboardAdSlot() +
     (articles.length
       ? cardGridWithAd(articles, { kicker: false })
       : '<p>No local stories from ' + esc(region.name) + ' yet. Check back after the next edition.</p>') +
