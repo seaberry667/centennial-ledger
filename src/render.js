@@ -471,7 +471,10 @@ function cardGridWithAd(articles, opts = {}) {
   return chunks
     .map(
       (chunk, idx) =>
-        (idx ? adSlot() : '') +
+        // Between grids, a thin leaderboard like the one at the
+        // top of the page (owner directive, 2026-11-21) — not the
+        // tall in-content unit.
+        (idx ? leaderboardAdSlot() : '') +
         '<div class="grid grid-4col">' +
         chunk.map((a) => articleCard(a, opts)).join('') +
         '</div>'
