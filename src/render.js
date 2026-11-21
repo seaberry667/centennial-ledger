@@ -769,6 +769,9 @@ h2.headline,h1.headline{font-family:var(--font-headline);font-weight:800;line-he
 /* Breathing room above the between-grids leaderboard on listing
    pages (owner directive, 2026-11-21). */
 .grid-ad{margin-top:1.4rem}
+/* Same breathing room above the bottom leaderboard on section
+   pages (owner directive, 2026-11-21). */
+.ad-breather{margin-top:1.4rem}
 /* Section intro text at the top of section pages (owner
    directive, 2026-11-21): plain content paragraphs, no box. */
 .section-intro{margin:.2rem 0 1.2rem}
@@ -2211,7 +2214,9 @@ function explainedPage({ articles, featured, category, cats }) {
       })),
     },
   ];
-  let body = leaderboardAdSlot();
+  // No top leaderboard on this page (owner directive, 2026-11-21,
+  // matching the section pages).
+  let body = '';
   body +=
     '<h1 class="headline" style="font-size:2.4rem">How Colorado Works</h1>' +
     '<p class="dek">The laws, institutions, history, and peculiarities that make Colorado tick.</p>' +
@@ -2647,8 +2652,9 @@ function sectionPage({ section, articles }) {
     // Ad where the newsletter signup module used to sit (owner
     // directive, 2026-11-21: ad space instead of the signup box in
     // page content) — the narrow leaderboard form, like the
-    // between-grids ads (owner follow-up, same day).
-    leaderboardAdSlot();
+    // between-grids ads (owner follow-up, same day), with the same
+    // breathing room above it.
+    '<div class="ad-breather">' + leaderboardAdSlot() + '</div>';
   return layout({
     title: fitTitle(meta.title, 70),
     description: fitDescription(meta.description),
@@ -2704,7 +2710,7 @@ function localHubPage({ articles }) {
     (articles.length
       ? cardGridWithAd(articles, { kicker: false })
       : '<p>No local stories yet. Check back after the next edition.</p>') +
-    leaderboardAdSlot();
+    '<div class="ad-breather">' + leaderboardAdSlot() + '</div>';
 
   return layout({
     title: fitTitle(SECTION_META.local.title, 70),
@@ -2727,7 +2733,7 @@ function localRegionPage({ region, articles }) {
     (articles.length
       ? cardGridWithAd(articles, { kicker: false })
       : '<p>No local stories from ' + esc(region.name) + ' yet. Check back after the next edition.</p>') +
-    leaderboardAdSlot() +
+    '<div class="ad-breather">' + leaderboardAdSlot() + '</div>' +
     regionHubBox(region);
 
   return layout({
