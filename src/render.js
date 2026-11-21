@@ -1836,24 +1836,24 @@ function featureStory(a) {
  */
 const SECTION_META = {
   politics: {
-    title: 'Colorado politics news: legislature, governor and elections',
+    title: 'Colorado Politics News: Legislature, Governor, Elections & Courts',
     description:
-      'Colorado politics news from the Capitol: the legislature, the governor, elections, courts and the state budget, reported with the original sources linked. Read the latest.',
+      'Follow Colorado politics from the Capitol to the courts, including the legislature, governor, elections, ballot measures, rights cases and spending. Read today.',
   },
   business: {
-    title: 'Colorado business and taxes news: economy, jobs and real estate',
+    title: 'Colorado Business & Tax News: Economy, Jobs, Housing & TABOR',
     description:
-      'Colorado business and taxes news: companies, jobs, housing, TABOR refunds and state spending across the state, with the original sources linked. Read the latest.',
+      'Follow Colorado business, jobs, housing, real estate, taxes, TABOR refunds, budgets and spending that shape wages, prices and growth statewide. Read today.',
   },
   'energy-environment': {
-    title: 'Colorado energy and environment news: oil, gas, water, climate',
+    title: 'Colorado Energy & Environment News: Oil, Gas, Water & Utilities',
     description:
-      'Colorado energy and environment news: oil and gas, electricity rates, water rights, wildfire and public lands, with the original records linked. Read more.',
+      'Track Colorado oil and gas, utilities, electric bills, water rights, drought, wildfires, public lands and climate policy across the state. Read more today.',
   },
   'education-health': {
-    title: 'Colorado education and health news: schools, hospitals, policy',
+    title: 'Colorado Education & Health News: Schools, Hospitals & Policy',
     description:
-      'Colorado education and healthcare news: school boards, closures, funding, hospitals, insurance costs and public health, with sources linked. Read the latest.',
+      'Follow Colorado schools, school boards, colleges, hospitals, insurance, Medicaid and public health decisions affecting families in every region. Read today.',
   },
   'colorado-life': {
     title: 'Colorado life: sports, outdoors, history, travel and culture',
@@ -1861,9 +1861,9 @@ const SECTION_META = {
       'Colorado life: Broncos, Avalanche and college sports, skiing, hiking, history, travel and the people of the Centennial State. Read the latest stories here.',
   },
   local: {
-    title: 'Colorado local news: counties, cities and school boards',
+    title: 'Colorado Local News: Counties, Cities, Councils & School Boards',
     description:
-      'Colorado local news from all eight regions: county commissions, city councils, sheriffs and school boards, with the original sources linked. Read the latest.',
+      'Read Colorado news from all 64 counties, covering city councils, commissioners, school boards, public safety, zoning, budgets and development. Explore today.',
   },
   opinion: {
     title: 'Colorado opinion and commentary: politics, taxes, schools',
@@ -2293,9 +2293,9 @@ function explainedPage({ articles, featured, category, cats }) {
   // wrapper so its spacing matches the top ad.
   body += '<div class="final-ad">' + leaderboardAdSlot() + '</div>';
   return layout({
-    title: fitTitle('How Colorado Works: how Colorado laws, water and taxes work', 70),
+    title: fitTitle('Colorado Explainers: How TABOR, Water, Taxes & Laws Really Work', 70),
     description: fitDescription(
-      'How Colorado Works answers how Colorado works: TABOR, property taxes, water rights, school funding, local government and more, in plain language.'
+      'Understand how Colorado works with explainers on TABOR, property taxes, water rights, school funding, energy rules and state government. Start learning today.'
     ),
     path: '/explained',
     activeNav: 'explained',
@@ -2626,9 +2626,9 @@ function homePage({ lead, second, third, gridFeatures, latest, railGroups, lates
   }
 
   return layout({
-    title: fitTitle('Colorado politics, taxes, energy, schools and local news', 70),
+    title: fitTitle('Colorado News: Politics, Taxes, Energy, Schools & Local Updates', 70),
     description: fitDescription(
-      'Colorado political news on taxes and the Taxpayer\'s Bill of Rights, gun rights, energy, schools and local government statewide. Read today\'s top stories.'
+      'Track Colorado politics, taxes, energy, schools, business and local decisions with reporting on what changed, who decided it and why it matters. Read today.'
     ),
     path: '/',
     jsonLd,
@@ -3235,9 +3235,9 @@ function subscribePage(opts) {
     '<p class="nl-note-small">If you pick topics or regions, we will also send a digest of matching stories, once a day on weekdays by default. You can change the frequency, pause, or stop it in your preferences at any time.</p>' +
     '</form>';
   return layout({
-    title: fitTitle('Subscribe free: Colorado news by email, The Centennial Ledger', 70),
+    title: fitTitle('Colorado News by Email: Free Weekday Newsletter & Local Digests', 70),
     description: fitDescription(
-      'Subscribe free to The Centennial Ledger by email. Get the free weekday newsletter, follow topics like politics, taxes, energy and schools, or get news from your region.'
+      'Get Colorado\'s top stories by email with a free weekday newsletter, topic digests and regional updates for the places and issues you follow most. Sign up today.'
     ),
     path: '/subscribe',
     body,
@@ -3592,14 +3592,14 @@ function staticPage(kind) {
       '<h2>Liability</h2><p>Content is provided as is, without warranties of any kind. To the extent allowed by law, The Centennial Ledger is not liable for indirect damages arising from use of the site. Effective November 1, 2026.</p>';
   const meta = isPrivacy
     ? {
-        title: 'Privacy policy: reader data, cookies and advertising',
+        title: 'Colorado News Privacy Policy: Reader Data, Cookies & Ad Choices',
         description:
-          'Privacy policy for this Colorado news site: what reader data is collected, how briefing emails and subscriptions use it, and how AdSense cookies work. Read it.',
+          'See how data is handled for newsletters and subscriptions, including email storage, cookies, Amazon SES delivery, AdSense and your choices. Review it today.',
       }
     : {
-        title: 'Terms of use: subscriptions, content and reader rules',
+        title: 'Colorado News Terms of Use: Subscriptions, Content & Reader Rules',
         description:
-          'Terms of use for this Colorado news site: subscription billing and cancellation, reader conduct, content corrections and liability. Read the full terms here.',
+          'Review the terms for using a Colorado news site, including subscription billing, cancellations, acceptable use, content sharing and liability. Read them today.',
       };
   return layout({
     title: fitTitle(meta.title, 70),
@@ -3699,9 +3699,9 @@ function aboutPage() {
     '</section>' +
     '</div>';
   return layout({
-    title: fitTitle('About The Centennial Ledger: Colorado news, statewide coverage', 70),
+    title: fitTitle('Colorado Independent News: About Our Statewide Reporting Mission', 70),
     description: fitDescription(
-      'The Centennial Ledger is an independent Colorado digital newspaper covering politics, rights, taxes, energy, schools and local news in all 64 counties.'
+      'Learn how this independent Colorado newspaper covers politics, taxes, energy, schools and local government across 64 counties, with sources shown. Read today.'
     ),
     path: '/about',
     body:
