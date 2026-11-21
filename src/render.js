@@ -454,20 +454,29 @@ function adSlot(label) {
 }
 
 /**
- * Card grid with an in-content ad slot between the first six cards
- * and the rest, on pages long enough to carry one. Shorter lists
- * render as a single plain grid.
+ * Card grids with in-content ad slots between them, on section,
+ * Local hub and region listing pages (owner directive, 2026-11-21):
+ * the first grid holds EIGHT cards — four wide, two deep — then an
+ * ad; every following grid holds SIXTEEN cards — four wide, four
+ * deep — with an ad between grids, for as many articles as the
+ * page carries. Lists of eight or fewer render as a single grid
+ * with no ad. Grids use the fixed four-column .grid-4col layout.
  */
 function cardGridWithAd(articles, opts = {}) {
   if (!articles.length) return '';
-  if (articles.length <= 6) {
-    return '<div class="grid">' + articles.map((a) => articleCard(a, opts)).join('') + '</div>';
+  const chunks = [articles.slice(0, 8)];
+  for (let i = 8; i < articles.length; i += 16) {
+    chunks.push(articles.slice(i, i + 16));
   }
-  return (
-    '<div class="grid">' + articles.slice(0, 6).map((a) => articleCard(a, opts)).join('') + '</div>' +
-    adSlot() +
-    '<div class="grid">' + articles.slice(6).map((a) => articleCard(a, opts)).join('') + '</div>'
-  );
+  return chunks
+    .map(
+      (chunk, idx) =>
+        (idx ? adSlot() : '') +
+        '<div class="grid grid-4col">' +
+        chunk.map((a) => articleCard(a, opts)).join('') +
+        '</div>'
+    )
+    .join('');
 }
 
 /**
@@ -752,6 +761,15 @@ h2.headline,h1.headline{font-family:var(--font-headline);font-weight:800;line-he
 .byline{font-family:var(--font-ui);color:var(--color-muted);font-size:11px;text-transform:uppercase;letter-spacing:.14em}
 .meta{font-family:var(--font-ui);font-size:11px;color:var(--color-muted);text-transform:uppercase;letter-spacing:.14em}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.2rem}
+/* Listing-page grids (owner directive, 2026-11-21): exactly four
+   cards wide on desktop, collapsing on narrower screens. */
+.grid-4col{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:1000px){
+  .grid-4col{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:600px){
+  .grid-4col{grid-template-columns:1fr}
+}
 .card{border-top:3px solid var(--color-text);padding-top:.6rem}
 .card h3{font-family:var(--font-headline);font-size:1.125rem;margin:.25rem 0;line-height:1.25}
 .card h3 a{text-decoration:none}

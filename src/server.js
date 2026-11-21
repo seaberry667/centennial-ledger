@@ -422,7 +422,7 @@ app.get('/section/:slug', async (req, res) => {
   if (redirect) return res.redirect(301, '/section/' + redirect);
   const section = SECTIONS.find((s) => s.slug === req.params.slug);
   if (!section) return res.status(404).type('html').send(notFound());
-  const articles = await store.listArticles({ section: section.slug, limit: 60 });
+  const articles = await store.listArticles({ section: section.slug, limit: 120 });
   if (section.slug === 'local') {
     return res.type('html').send(render.localHubPage({ articles }));
   }
@@ -436,7 +436,7 @@ app.get('/local/:region', async (req, res) => {
   // primary category (owner restructure, 2026-11-08): a statewide
   // subject story keeps its regional association, and the region
   // page is where that association shows.
-  const articles = await store.listArticles({ region: region.slug, limit: 60 });
+  const articles = await store.listArticles({ region: region.slug, limit: 120 });
   res.type('html').send(render.localRegionPage({ region, articles }));
 });
 
