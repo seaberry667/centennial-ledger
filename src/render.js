@@ -2589,13 +2589,10 @@ function sectionPage({ section, articles }) {
     (articles.length
       ? listing
       : '<p>No stories in this section yet. Check back after the next edition.</p>') +
-    signupModule({
-      heading: 'Follow ' + name + ' News by Email',
-      text: 'New ' + name + ' stories from The Centennial Ledger, delivered when they publish.',
-      source: 'section-' + section,
-      topic: section,
-      returnTo: '/section/' + section,
-    }) +
+    // In-content ad where the newsletter signup module used to sit
+    // (owner directive, 2026-11-21: ad space instead of the signup
+    // box in page content, on section pages and articles alike).
+    adSlot() +
     hubBox(section);
   return layout({
     title: fitTitle(meta.title, 70),
@@ -2652,13 +2649,7 @@ function localHubPage({ articles }) {
     (articles.length
       ? cardGridWithAd(articles, { kicker: false })
       : '<p>No local stories yet. Check back after the next edition.</p>') +
-    signupModule({
-      heading: 'Follow Local News by Email',
-      text: 'Local stories from across Colorado, delivered when they publish.',
-      source: 'section-local',
-      topic: 'local',
-      returnTo: '/section/local',
-    }) +
+    adSlot() +
     hubBox('local');
 
   return layout({
@@ -2683,13 +2674,7 @@ function localRegionPage({ region, articles }) {
     (articles.length
       ? cardGridWithAd(articles, { kicker: false })
       : '<p>No local stories from ' + esc(region.name) + ' yet. Check back after the next edition.</p>') +
-    signupModule({
-      heading: 'Get ' + region.name + ' News Alerts',
-      text: 'Local stories from ' + region.name + ', delivered when they publish.',
-      source: 'region-' + region.slug,
-      region: region.slug,
-      returnTo: path,
-    }) +
+    adSlot() +
     regionHubBox(region);
 
   return layout({
@@ -3031,41 +3016,13 @@ function articlePage(a, related, localStories, explainedRelated) {
     rectangleAdSlot() +
     '</aside></div>';
 
-  // Contextual newsletter module at the end of the article: the
-  // article's section is preselected as a topic, and the article's
-  // region too whenever it carries one — region is independent of
-  // section (dual categorization, owner directive 2026-11-12), so a
-  // topic story filed from a region preselects that region as well.
-  // The heading names the place or section so the offer matches
-  // the story the reader just finished.
+  // In-content ad at the end of the article, where the contextual
+  // newsletter signup module used to sit (owner directive,
+  // 2026-11-21: ad space instead of the signup box in page content,
+  // on articles and section pages alike). Satire pages carry no
+  // ads, as before.
   if (!isSatire(a)) {
-    const regionOfArticle = a.region ? regionSlug(a.region) : '';
-    const regionEntry = REGIONS.find((r) => r.slug === regionOfArticle);
-    let moduleHeading;
-    let moduleText;
-    if (regionEntry) {
-      moduleHeading = 'Get ' + regionEntry.name + ' News Delivered to Your Inbox';
-      moduleText =
-        a.section === 'local'
-          ? 'Local stories from ' + regionEntry.name +
-            ', plus the day\'s top Colorado news, by email.'
-          : sectionName(a.section) + ' stories from ' + regionEntry.name +
-            ', plus the day\'s top Colorado news, by email.';
-    } else {
-      moduleHeading =
-        'Get ' + sectionName(a.section) + ' News Delivered to Your Inbox';
-      moduleText =
-        'New ' + sectionName(a.section) +
-        ' stories from The Centennial Ledger, plus the day\'s top Colorado news, by email.';
-    }
-    body += signupModule({
-      heading: moduleHeading,
-      text: moduleText,
-      source: 'article-' + a.section,
-      topic: a.section,
-      region: regionEntry ? regionEntry.slug : '',
-      returnTo: '/article/' + a.slug,
-    });
+    body += adSlot();
   }
 
   if (related && related.length) {
