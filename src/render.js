@@ -2628,8 +2628,16 @@ function sectionPage({ section, articles }) {
   // instruction, 2026-11-03): the H1 alone heads the page.
   // Section H1s carry the full masthead form (owner directive,
   // 2026-11-21): "Colorado <Section> News" — a name already ending
-  // in "News" does not gain a second one.
-  const h1 = 'Colorado ' + name + (/news$/i.test(name) ? '' : ' News');
+  // in "News" does not gain a second one. Three sections have
+  // owner-set wording that differs from the pattern (same day).
+  const H1_OVERRIDES = {
+    politics: 'Colorado Political News',
+    business: 'Colorado Business & Tax News',
+    'energy-environment': 'Colorado Energy & Environmental News',
+  };
+  const h1 =
+    H1_OVERRIDES[section] ||
+    'Colorado ' + name + (/news$/i.test(name) ? '' : ' News');
   const body =
     '<h1 class="headline" style="font-size:2.4rem">' + esc(h1) + '</h1>' +
     sectionIntro(section) +
