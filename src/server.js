@@ -282,17 +282,18 @@ app.get('/', async (req, res) => {
   const articles = (await store.listArticles({ limit: 32 })).filter(
     (a) => !isSatire(a)
   );
-  // The three featured spots (lead, second and third feature) are
+  // The full-feature spots (lead and second feature) are
   // news only: Opinion pieces never take them (owner instruction,
   // 2026-11-02). Opinion reaches the homepage through the Editorial
   // Desk strip below, and Satire is already filtered out of the pool
-  // above. The features are simply the three most recent news
+  // above. The full features are simply the two most recent news
   // stories, newest first (owner instruction, 2026-11-08,
   // superseding the 2026-11-02 different-section rule), each shown
   // directly under the last in the same format. Since 2026-11-21
-  // the next four most recent follow as cards in a 2x2 grid under
-  // them (see gridFeatures below). All are pulled out
-  // of the shared pool so no story appears twice on the front page.
+  // the next eight most recent follow as cards in a grid two wide
+  // and four long under them (see gridFeatures below). All are
+  // pulled out of the shared pool so no story appears twice on the
+  // front page.
   // Colorado Explained explainers never take the featured spots
   // either (owner instruction, 2026-11-08): on the homepage they
   // appear only in their own module below.
@@ -301,15 +302,15 @@ app.get('/', async (req, res) => {
   );
   const lead = newsPool[0] || null;
   const second = newsPool[1] || null;
-  const third = newsPool[2] || null;
-  // Homepage feature grid (owner directive, 2026-11-21): under the
-  // three full features, a 2x2 grid of four more feature stories —
-  // the next most recent news stories after the full features, in
-  // the compact card format. All seven featured stories are pulled
-  // out of the shared pool so no story appears twice on the page.
-  const gridFeatures = newsPool.slice(3, 7);
+  // Homepage feature grid (owner directive, 2026-11-21, revised the
+  // same day): under the TWO full features, a grid of eight more
+  // feature stories, two cards wide and four rows long — the next
+  // most recent news stories after the full features, in the
+  // compact card format. All ten featured stories are pulled out
+  // of the shared pool so no story appears twice on the page.
+  const gridFeatures = newsPool.slice(2, 10);
   const featuredSlugs = new Set(
-    [lead, second, third, ...gridFeatures].filter(Boolean).map((a) => a.slug)
+    [lead, second, ...gridFeatures].filter(Boolean).map((a) => a.slug)
   );
   const rest = articles.filter((a) => !featuredSlugs.has(a.slug));
   // Rail groups (owner instruction, 2026-11-02): the right column
@@ -321,7 +322,7 @@ app.get('/', async (req, res) => {
   // contributes its next stories instead; a section with nothing
   // left has no group.
   const featureSlugs = new Set(
-    [lead, second, third, ...gridFeatures].filter(Boolean).map((a) => a.slug)
+    [lead, second, ...gridFeatures].filter(Boolean).map((a) => a.slug)
   );
   const railGroups = [];
   for (const slug of ['politics', 'business', 'energy-environment', 'education-health']) {
@@ -371,7 +372,7 @@ app.get('/', async (req, res) => {
     render.homePage({
       lead: lead || null,
       second,
-      third,
+      third: null,
       gridFeatures,
       latest: rest.slice(0, 12),
       railGroups,
