@@ -2584,8 +2584,9 @@ function homePage({ lead, second, third, gridFeatures, latest, railGroups, lates
     // explainers yet.
     if (explained && explained.featured) {
       // Thin leaderboard just above the How Colorado Works module
-      // (owner directive, 2026-11-21).
-      body += leaderboardAdSlot();
+      // (owner directive, 2026-11-21), with breathing room below
+      // the content above it (owner follow-up, same day).
+      body += '<div class="ad-breather">' + leaderboardAdSlot() + '</div>';
       body += explainedModule(explained);
     } else if (latestCards.length) {
       body +=
