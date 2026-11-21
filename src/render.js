@@ -1003,8 +1003,9 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 .explained-feature-headline a{color:inherit;text-decoration:none}
 .explained-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.25rem}
 @media (max-width:900px){.explained-grid{grid-template-columns:1fr}}
-.explained-more{margin-top:1rem;text-align:right}
-.explained-more a{font-family:var(--font-ui);font-weight:700;font-size:.9rem;color:var(--color-red);text-decoration:none}
+/* Left-justified, and the link inside is a .btn-read button now,
+   so no link styling of its own (owner directive, 2026-11-21). */
+.explained-more{margin-top:1rem;text-align:left}
 .explained-intro{margin:0 0 1.6rem}
 .explained-intro h2{font-family:var(--font-display);font-weight:700;font-size:1.65rem;line-height:1.2;margin:.6rem 0 .8rem}
 .explained-intro p{font-size:1.06rem;line-height:1.58;margin:.7rem 0}
