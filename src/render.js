@@ -2247,6 +2247,8 @@ function explainedPage({ articles, featured, category, cats }) {
   }
   if (featured) body += explainedFeature(featured);
   if (list.length) {
+    // Thin leaderboard above the grid (owner directive, 2026-11-21).
+    body += leaderboardAdSlot();
     body += '<div class="grid">' + list.map(articleCard).join('') + '</div>';
   } else if (!featured) {
     body += '<p>The first explainers are on the way.</p>';
