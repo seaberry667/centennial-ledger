@@ -1012,7 +1012,9 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 .explained-feature>.art-link{flex:0 0 340px;max-width:100%}
 .explained-feature figure.art-figure{margin:0}
 .explained-feature-text{flex:1;min-width:240px}
-.explained-feature-headline{font-family:var(--font-headline);font-size:1.9rem;line-height:1.15;margin:.2rem 0 .5rem}
+/* Explainer headlines match the H1 standard: headline face,
+   800, 2.4rem (owner directive, 2026-11-21). */
+.explained-feature-headline{font-family:var(--font-headline);font-weight:800;font-size:2.4rem;line-height:1.12;margin:.2rem 0 .5rem}
 .explained-feature-headline a{color:inherit;text-decoration:none}
 .explained-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.25rem}
 @media (max-width:900px){.explained-grid{grid-template-columns:1fr}}
@@ -1099,7 +1101,9 @@ article.full figure.article-hero{margin:1.1rem 0}
 .searchbox button{background:var(--color-navy);color:#fff;border:0;padding:.55rem 1.1rem;cursor:pointer;font-family:var(--font-ui)}
 .static-page{max-width:760px}
 .static-page.about-page{max-width:none}
-.static-page h1{font-family:var(--font-headline)}
+/* All H1s share the headline face at 2.4rem (owner directive,
+   2026-11-21). */
+.static-page h1{font-family:var(--font-headline);font-weight:800;font-size:2.4rem;line-height:1.12}
 .static-page h2{font-family:var(--font-headline);margin:1.6em 0 .5em}
 .static-page ul{margin:0 0 1em;padding-left:1.4em}
 .static-page li{margin-bottom:.45em;line-height:1.55}
@@ -2616,7 +2620,7 @@ function homePage({ lead, second, third, gridFeatures, latest, railGroups, lates
     body += '<div class="final-ad">' + leaderboardAdSlot() + '</div>';
     body += SAVE_SCRIPT + SHARE_SCRIPT;
   } else {
-    body += '<section class="lead-story"><h1 class="headline">Colorado news, reported plainly.</h1><p class="dek">New stories are on the way.</p></section>';
+    body += '<section class="lead-story"><h1 class="headline" style="font-size:2.4rem">Colorado news, reported plainly.</h1><p class="dek">New stories are on the way.</p></section>';
     body += briefingBox(briefingThanks, 'homepage');
     body += '<div class="final-ad">' + leaderboardAdSlot() + '</div>';
   }
@@ -3539,7 +3543,7 @@ function checkoutPage(tier) {
 
 function searchPage(q, results) {
   const body =
-    '<h1 class="headline" style="font-size:2.2rem">Search The Centennial Ledger</h1>' +
+    '<h1 class="headline" style="font-size:2.4rem">Search The Centennial Ledger</h1>' +
     '<form class="searchbox" method="get" action="/search"><input type="search" name="q" value="' +
     esc(q || '') + '" placeholder="Search Colorado stories" aria-label="Search"><button type="submit">Search</button></form>' +
     (q
