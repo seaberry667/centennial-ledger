@@ -18,7 +18,7 @@
 
 const FEED_URL = 'https://anchor.fm/s/11a0ed790/podcast/rss';
 const REFRESH_MS = 15 * 60 * 1000;
-const FETCH_TIMEOUT_MS = 3000;
+const FETCH_TIMEOUT_MS = 10000;
 
 /* The newest episode parsed from the feed:
  * { title, publishedAt, titles, image } — null until the first
