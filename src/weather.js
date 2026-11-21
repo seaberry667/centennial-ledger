@@ -8,7 +8,8 @@
  * cities all over Colorado in a single batch request, refreshed
  * every 15 minutes, and the bar rotates through the readings every
  * 10 seconds in the same shape it has always used:
- * "DENVER, COLORADO  45° · Fair". Denver leads the rotation and
+ * "DENVER 45° · Fair" (the state name was dropped from the
+ * segment on 2026-11-21 at the owner's order). Denver leads the rotation and
  * the remaining cities are jumbled at random on every page load
  * (owner, 2026-11-06), so the bar does not sweep region by region.
  *
@@ -54,7 +55,7 @@ const CITIES = [
   ['STERLING', 40.6255, -103.2077],
 ];
 
-const FALLBACK_SEGMENT = 'DENVER, COLORADO &nbsp; 54&deg; &middot; Fair';
+const FALLBACK_SEGMENT = 'DENVER 54&deg; &middot; Fair';
 const FEED_URL =
   'https://api.open-meteo.com/v1/forecast?latitude=' +
   CITIES.map((c) => c[1]).join(',') +
@@ -131,7 +132,7 @@ async function refresh() {
       const temp = Math.round(cur.temperature_2m);
       next.push(
         CITIES[i][0] +
-          ', COLORADO ' +
+          ' ' +
           temp +
           '° · ' +
           conditionFor(cur.weather_code)
@@ -146,8 +147,7 @@ async function refresh() {
 function htmlSegment(text) {
   return text
     .replace('°', '&deg;')
-    .replace('·', '&middot;')
-    .replace(/, COLORADO /, ', COLORADO &nbsp; ');
+    .replace('·', '&middot;');
 }
 
 function topbarSegment() {
