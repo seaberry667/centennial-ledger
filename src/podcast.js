@@ -145,7 +145,14 @@ function parseFeed(xml) {
     publishedAt: when.toISOString(),
     titles,
     blurb,
-    image: imageHref(channel) || imageHref(item),
+    /* Saturday history episodes (blurb present) always show the
+     * dedicated History cover, served from the site itself (owner
+     * directive, 2026-11-21) so the box never depends on the feed
+     * carrying per-episode artwork; weekday episodes keep the
+     * feed's show artwork. */
+    image: blurb
+      ? '/images/history-cover.jpg'
+      : imageHref(channel) || imageHref(item),
   };
 }
 
