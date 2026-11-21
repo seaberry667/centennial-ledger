@@ -2263,6 +2263,9 @@ function explainedPage({ articles, featured, category, cats }) {
   }
   body +=
     '<p class="last-reviewed">New explainers arrive every Tuesday and Friday. Each article lists its sources and the date it was last reviewed; explainers on law, taxes, and healthcare are rechecked at least every six months, and sooner when the law changes.</p>';
+  // Bottom leaderboard just above the footer, like the other
+  // section pages (owner directive, 2026-11-21).
+  body += '<div class="ad-breather">' + leaderboardAdSlot() + '</div>';
   return layout({
     title: fitTitle('How Colorado Works: how Colorado laws, water and taxes work', 70),
     description: fitDescription(
