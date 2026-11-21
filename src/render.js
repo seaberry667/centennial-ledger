@@ -782,6 +782,9 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
    button-styled listen link. */
 .podcast-box .podcast-art{display:block;width:100%;height:auto;object-fit:cover;border:1px solid var(--color-border);margin:.2rem 0 .6rem}
 .podcast-box .podcast-date{font-family:var(--font-ui);font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:#555;margin:0 0 .5rem}
+.podcast-box .podcast-ep-title{font-family:var(--font-headline);font-size:1.08rem;line-height:1.3;margin:0 0 .4rem;text-align:left}
+.podcast-box .podcast-ep-title a{color:inherit;text-decoration:none}
+.podcast-box .podcast-ep-title a:hover{text-decoration:underline}
 .podcast-box .podcast-titles{margin:0 0 .8rem;padding-left:1.15rem;text-align:left}
 .podcast-box .podcast-titles li{margin:.35rem 0;line-height:1.35}
 .podcast-box .podcast-titles a{color:inherit;text-decoration:none}
@@ -1489,7 +1492,13 @@ function podcastBox(episode, briefDates) {
         ? '<p class="podcast-date">' + esc(fmtMetaDate(episode.publishedAt)) + '</p>'
         : '') +
       (episode.blurb
-        ? '<p class="podcast-blurb"><a href="' + pageUrl + '">' +
+        ? /* Episode title above the description (owner order,
+           * 2026-11-21). Only the history layout has a real episode
+           * title to show: weekday feed titles are just the date,
+           * which the date line above already carries. */
+          '<p class="podcast-ep-title"><a href="' + pageUrl + '">' +
+          esc(episode.title) + '</a></p>' +
+          '<p class="podcast-blurb"><a href="' + pageUrl + '">' +
           esc(episode.blurb) + '</a></p>'
         : episode.titles && episode.titles.length
         ? '<ul class="podcast-titles">' +
