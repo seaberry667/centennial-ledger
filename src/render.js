@@ -2568,10 +2568,14 @@ function homePage({ lead, second, third, gridFeatures, latest, railGroups, lates
         '<section class="latest-home"><h2 class="latest-home-heading">Latest from Colorado</h2>' +
         '<div class="latest-grid">' + latestCards.map(latestCard).join('') + '</div></section>';
     }
+    // Thin leaderboard at the very bottom of the homepage, just
+    // above the footer (owner directive, 2026-11-21).
+    body += leaderboardAdSlot();
     body += SAVE_SCRIPT + SHARE_SCRIPT;
   } else {
     body += '<section class="lead-story"><h1 class="headline">Colorado news, reported plainly.</h1><p class="dek">New stories are on the way.</p></section>';
     body += briefingBox(briefingThanks, 'homepage');
+    body += leaderboardAdSlot();
   }
 
   return layout({
