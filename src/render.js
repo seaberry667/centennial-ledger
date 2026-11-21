@@ -2786,7 +2786,7 @@ const REGION_H1 = {
   'denver-metro': 'Denver Metro News',
   'northern-colorado': 'Northern Colorado News',
   'southern-colorado': 'Southern Colorado News',
-  'western-slope': 'Western Slope News',
+  'western-slope': 'Colorado Western Slope News',
   southwest: 'Southwest Colorado News',
   mountains: 'Colorado Mountain News',
   'eastern-plains': 'Colorado Eastern Plains News',
