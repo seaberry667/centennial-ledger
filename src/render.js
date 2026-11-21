@@ -878,7 +878,9 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
    floated right, the excerpt text wrapping around it — then the
    action buttons, the Why It Matters box and the sources line. */
 .lead-story{padding-bottom:0;margin-bottom:0}
-.feature-headline{font-size:clamp(2rem,4.5vw,2.875rem)}
+/* Same size as the section-page H1s (2.4rem; the font is already
+   the shared .headline face) — owner directive, 2026-11-21. */
+.feature-headline{font-size:2.4rem}
 .feature-intro{margin-top:1rem}
 .feature-intro::after{content:"";display:block;clear:both}
 .feature-intro figure.art-figure{float:right;width:52%;margin:.15rem 0 1rem 1.6rem}
