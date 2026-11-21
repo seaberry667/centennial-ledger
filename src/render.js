@@ -1055,7 +1055,9 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
   .article-layout{grid-template-columns:1fr}
   .article-rail{position:static}
 }
-article.full h1{font-family:var(--font-headline);font-weight:800;font-size:clamp(1.875rem,4.5vw,2.875rem);line-height:1.12;margin:.4rem 0}
+/* Size matched to the section-page H1s (2.4rem), same as the
+   homepage feature headlines — owner directive, 2026-11-21. */
+article.full h1{font-family:var(--font-headline);font-weight:800;font-size:2.4rem;line-height:1.12;margin:.4rem 0}
 article.full h2{font-family:var(--font-headline);font-weight:700;font-size:1.6875rem;line-height:1.25;margin:1.8rem 0 .8rem}
 article.full p{font-size:1.15rem;line-height:1.6;margin:0 0 .8em}
 article.full p.lead{font-size:1.15rem}
