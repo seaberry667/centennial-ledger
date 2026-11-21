@@ -473,8 +473,10 @@ function cardGridWithAd(articles, opts = {}) {
       (chunk, idx) =>
         // Between grids, a thin leaderboard like the one at the
         // top of the page (owner directive, 2026-11-21) — not the
-        // tall in-content unit.
-        (idx ? leaderboardAdSlot() : '') +
+        // tall in-content unit. The .grid-ad wrapper gives it
+        // breathing room below the grid above (owner follow-up,
+        // same day: it sat too close to that grid's bottom).
+        (idx ? '<div class="grid-ad">' + leaderboardAdSlot() + '</div>' : '') +
         '<div class="grid grid-4col">' +
         chunk.map((a) => articleCard(a, opts)).join('') +
         '</div>'
@@ -764,6 +766,9 @@ h2.headline,h1.headline{font-family:var(--font-headline);font-weight:800;line-he
 .byline{font-family:var(--font-ui);color:var(--color-muted);font-size:11px;text-transform:uppercase;letter-spacing:.14em}
 .meta{font-family:var(--font-ui);font-size:11px;color:var(--color-muted);text-transform:uppercase;letter-spacing:.14em}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.2rem}
+/* Breathing room above the between-grids leaderboard on listing
+   pages (owner directive, 2026-11-21). */
+.grid-ad{margin-top:1.4rem}
 /* Section intro text at the top of section pages (owner
    directive, 2026-11-21): plain content paragraphs, no box. */
 .section-intro{margin:.2rem 0 1.2rem}
@@ -2631,10 +2636,11 @@ function sectionPage({ section, articles }) {
     (articles.length
       ? listing
       : '<p>No stories in this section yet. Check back after the next edition.</p>') +
-    // In-content ad where the newsletter signup module used to sit
-    // (owner directive, 2026-11-21: ad space instead of the signup
-    // box in page content, on section pages and articles alike).
-    adSlot();
+    // Ad where the newsletter signup module used to sit (owner
+    // directive, 2026-11-21: ad space instead of the signup box in
+    // page content) — the narrow leaderboard form, like the
+    // between-grids ads (owner follow-up, same day).
+    leaderboardAdSlot();
   return layout({
     title: fitTitle(meta.title, 70),
     description: fitDescription(meta.description),
@@ -2690,7 +2696,7 @@ function localHubPage({ articles }) {
     (articles.length
       ? cardGridWithAd(articles, { kicker: false })
       : '<p>No local stories yet. Check back after the next edition.</p>') +
-    adSlot();
+    leaderboardAdSlot();
 
   return layout({
     title: fitTitle(SECTION_META.local.title, 70),
@@ -2713,7 +2719,7 @@ function localRegionPage({ region, articles }) {
     (articles.length
       ? cardGridWithAd(articles, { kicker: false })
       : '<p>No local stories from ' + esc(region.name) + ' yet. Check back after the next edition.</p>') +
-    adSlot() +
+    leaderboardAdSlot() +
     regionHubBox(region);
 
   return layout({
