@@ -2247,9 +2247,17 @@ function explainedPage({ articles, featured, category, cats }) {
   }
   if (featured) body += explainedFeature(featured);
   if (list.length) {
-    // Thin leaderboard above the grid (owner directive, 2026-11-21).
+    // Thin leaderboard above the grid, and another after every
+    // sixteen grid stories — grids of four wide by four deep,
+    // like the section pages (owner directive, 2026-11-21).
     body += leaderboardAdSlot();
-    body += '<div class="grid">' + list.map(articleCard).join('') + '</div>';
+    for (let i = 0; i < list.length; i += 16) {
+      if (i) body += leaderboardAdSlot();
+      body +=
+        '<div class="grid grid-4col">' +
+        list.slice(i, i + 16).map(articleCard).join('') +
+        '</div>';
+    }
   } else if (!featured) {
     body += '<p>The first explainers are on the way.</p>';
   }
