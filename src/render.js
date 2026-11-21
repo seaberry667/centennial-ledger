@@ -772,6 +772,17 @@ h2.headline,h1.headline{font-family:var(--font-headline);font-weight:800;line-he
 /* Same breathing room above the bottom leaderboard on section
    pages (owner directive, 2026-11-21). */
 .ad-breather{margin-top:1.4rem}
+/* Homepage final leaderboard, spaced exactly like the top ad
+   (owner directive, 2026-11-21). The top ad's gaps come from the
+   page frame itself: main's padding-top (1.2rem) above it and its
+   own 1.4rem margin below. The bottom ad sits at the end of main,
+   so without correction it would get main's 3rem padding-bottom
+   plus the footer's 2rem margin-top stacked under it. The
+   negative bottom margin cancels that stack: -3.6 + 3 + 2 = the
+   same 1.4rem below, and the wrapper's margin-top gives it the
+   same 1.2rem above. */
+.home-final-ad{margin-top:1.2rem}
+.home-final-ad .ad-slot.ad-leaderboard{margin-bottom:-3.6rem}
 
 /* Section intro text at the top of section pages (owner
    directive, 2026-11-21): plain content paragraphs, no box. */
@@ -2591,16 +2602,16 @@ function homePage({ lead, second, third, gridFeatures, latest, railGroups, lates
         '<div class="latest-grid">' + latestCards.map(latestCard).join('') + '</div></section>';
     }
     // Thin leaderboard at the very bottom of the homepage, just
-    // above the footer (owner directive, 2026-11-21), with the
-    // same spacing as the top ad — the plain slot, no extra
-    // wrapper (owner directive, same day, superseding an interim
-    // tighter-to-the-footer spacing).
-    body += leaderboardAdSlot();
+    // above the footer (owner directive, 2026-11-21), spaced
+    // exactly like the top ad (owner directive, same day): the
+    // .home-final-ad wrapper reproduces the top ad's gaps — see
+    // its CSS note.
+    body += '<div class="home-final-ad">' + leaderboardAdSlot() + '</div>';
     body += SAVE_SCRIPT + SHARE_SCRIPT;
   } else {
     body += '<section class="lead-story"><h1 class="headline">Colorado news, reported plainly.</h1><p class="dek">New stories are on the way.</p></section>';
     body += briefingBox(briefingThanks, 'homepage');
-    body += leaderboardAdSlot();
+    body += '<div class="home-final-ad">' + leaderboardAdSlot() + '</div>';
   }
 
   return layout({
