@@ -2866,11 +2866,13 @@ function localRegionPage({ region, articles }) {
   const path = '/local/' + region.slug;
   const body =
     leaderboardAdSlot() +
+    // The region nav bar sits just below the top ad (owner
+    // directive, 2026-11-21), above the breadcrumb and H1.
+    regionNavList(region.slug) +
     '<div class="breadcrumb"><a href="/">Home</a> &rsaquo; <a href="/section/local">Local News</a> &rsaquo; ' +
     esc(region.name) + '</div>' +
     '<h1 class="headline" style="font-size:2.4rem">' + esc(REGION_H1[region.slug] || region.name) + '</h1>' +
     regionIntro(region) +
-    regionNavList(region.slug) +
     (articles.length
       ? cardGridWithAd(articles, { kicker: false })
       : '<p>No local stories from ' + esc(region.name) + ' yet. Check back after the next edition.</p>') +
