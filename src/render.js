@@ -2223,7 +2223,9 @@ function explainedPage({ articles, featured, category, cats }) {
     // Owner-supplied top-of-page copy for the series archive
     // (John, 2026-11-08), verbatim.
     '<div class="explained-intro">' +
-    '<h2>How Colorado Works: Understanding the Centennial State</h2>' +
+    // The intro's H2 ("How Colorado Works: Understanding the
+    // Centennial State") was removed at the owner's order,
+    // 2026-11-21; the intro paragraphs remain.
     '<p>Colorado is a state of complicated laws, unique institutions, remarkable geography, and often-confusing public policies. <strong>How Colorado Works</strong>, an ongoing editorial series from <em>The Centennial Ledger</em>, breaks down the issues, systems, and questions that shape everyday life in the Centennial State. From Colorado\'s TABOR law, property taxes, and state government to water rights, energy policy, education, healthcare, housing, and public lands, our in-depth explainers make complex subjects easier to understand.</p>' +
     '<p>Explore thoroughly researched Colorado guides covering how state and local government works, where taxpayer dollars go, why certain laws exist, and how public policies affect Colorado residents and businesses. We examine the history, facts, competing arguments, and practical consequences behind important Colorado issues, providing clear answers without unnecessary political spin or bureaucratic jargon.</p>' +
     '<p>Whether you\'re trying to understand a ballot measure, decipher your property tax bill, navigate Colorado regulations, or learn something surprising about the state\'s history and geography, <strong>How Colorado Works helps you make sense of Colorado, one question at a time.</strong></p>' +
@@ -2562,6 +2564,9 @@ function homePage({ lead, second, third, gridFeatures, latest, railGroups, lates
     // remains only as the fallback while the store holds no
     // explainers yet.
     if (explained && explained.featured) {
+      // Thin leaderboard just above the How Colorado Works module
+      // (owner directive, 2026-11-21).
+      body += leaderboardAdSlot();
       body += explainedModule(explained);
     } else if (latestCards.length) {
       body +=
