@@ -2876,7 +2876,10 @@ function localRegionPage({ region, articles }) {
     (articles.length
       ? cardGridWithAd(articles, { kicker: false })
       : '<p>No local stories from ' + esc(region.name) + ' yet. Check back after the next edition.</p>') +
-    '<div class="ad-breather">' + leaderboardAdSlot() + '</div>';
+    // The page's last element now that the hub box moved to the
+    // top: the .final-ad wrapper, so its spacing matches every
+    // other bottom ad on the site (owner directive, 2026-11-21).
+    '<div class="final-ad">' + leaderboardAdSlot() + '</div>';
 
   const seo = REGION_SEO[region.slug] || {};
   return layout({
