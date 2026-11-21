@@ -2781,13 +2781,26 @@ function localHubPage({ articles }) {
 }
 
 /** A Local region page: Local-section stories carrying one region tag. */
+/* Region page H1s, owner-set wording (2026-11-21) — note San
+   Luis Valley carries no "News" suffix, as specified. */
+const REGION_H1 = {
+  'denver-metro': 'Denver Metro News',
+  'northern-colorado': 'Northern Colorado News',
+  'southern-colorado': 'Southern Colorado News',
+  'western-slope': 'Western Slope News',
+  southwest: 'Southwest Colorado News',
+  mountains: 'Colorado Mountain News',
+  'eastern-plains': 'Colorado Eastern Plains News',
+  'san-luis-valley': 'San Luis Valley',
+};
+
 function localRegionPage({ region, articles }) {
   const path = '/local/' + region.slug;
   const body =
     leaderboardAdSlot() +
     '<div class="breadcrumb"><a href="/">Home</a> &rsaquo; <a href="/section/local">Local News</a> &rsaquo; ' +
     esc(region.name) + '</div>' +
-    '<h1 class="headline" style="font-size:2.4rem">' + esc(region.name) + '</h1>' +
+    '<h1 class="headline" style="font-size:2.4rem">' + esc(REGION_H1[region.slug] || region.name) + '</h1>' +
     regionNavList(region.slug) +
     (articles.length
       ? cardGridWithAd(articles, { kicker: false })
