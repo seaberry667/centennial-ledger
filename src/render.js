@@ -2687,13 +2687,13 @@ function sectionPage({ section, articles }) {
     H1_OVERRIDES[section] ||
     'Colorado ' + name + (/news$/i.test(name) ? '' : ' News');
   const body =
+    // The first ad leads the page, above the H1, like the
+    // homepage (owner directive, 2026-11-21): as the first
+    // element it gets the frame's 1.2rem above and its own 1.4rem
+    // below, exactly the homepage top ad's spacing.
+    leaderboardAdSlot() +
     '<h1 class="headline" style="font-size:2.4rem">' + esc(h1) + '</h1>' +
     sectionIntro(section) +
-    // Top leaderboard restored (owner directive, 2026-11-21) in
-    // the plain slot form: the intro's 1.2rem bottom margin above
-    // it and its own 1.4rem below match the homepage top ad's
-    // spacing.
-    leaderboardAdSlot() +
     (articles.length
       ? listing
       : '<p>No stories in this section yet. Check back after the next edition.</p>') +
@@ -2753,9 +2753,9 @@ function collectionJsonLd(name, path, articles) {
 function localHubPage({ articles }) {
   // Same no-kicker rule as the section pages (owner, 2026-11-03).
   const body =
+    leaderboardAdSlot() +
     '<h1 class="headline" style="font-size:2.4rem">Colorado Local News</h1>' +
     sectionIntro('local') +
-    leaderboardAdSlot() +
     regionNavList('') +
     (articles.length
       ? cardGridWithAd(articles, { kicker: false })
@@ -2776,11 +2776,11 @@ function localHubPage({ articles }) {
 function localRegionPage({ region, articles }) {
   const path = '/local/' + region.slug;
   const body =
+    leaderboardAdSlot() +
     '<div class="breadcrumb"><a href="/">Home</a> &rsaquo; <a href="/section/local">Local News</a> &rsaquo; ' +
     esc(region.name) + '</div>' +
     '<h1 class="headline" style="font-size:2.4rem">' + esc(region.name) + '</h1>' +
     regionNavList(region.slug) +
-    leaderboardAdSlot() +
     (articles.length
       ? cardGridWithAd(articles, { kicker: false })
       : '<p>No local stories from ' + esc(region.name) + ' yet. Check back after the next edition.</p>') +
