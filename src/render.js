@@ -1288,6 +1288,7 @@ ${body}
           <li><a href="/section/energy-environment">Energy &amp; Environment</a></li>
           <li><a href="/section/education-health">Education &amp; Health</a></li>
           <li><a href="/section/local">Local News</a></li>
+          <li><a href="/about">About Us</a></li>
         </ul>
       </nav>
       <nav class="footer-col" aria-label="Colorado regions">
@@ -1297,9 +1298,8 @@ ${body}
         </ul>
       </nav>
       <div class="footer-col">
-        <h3>About</h3>
+        <h3>Social</h3>
         <ul>
-          <li><a href="/about">About Us</a></li>
           <li><a href="https://www.facebook.com/profile.php?id=61595978079628" target="_blank" rel="noopener">Facebook</a></li>
           <li><a href="https://www.instagram.com/centennialledger" target="_blank" rel="noopener">Instagram</a></li>
           <li><a href="https://open.spotify.com/show/5r0ObdqenGKnYskuKRxWrX" target="_blank" rel="noopener">Spotify</a></li>
