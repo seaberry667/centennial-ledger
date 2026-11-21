@@ -2781,8 +2781,7 @@ function localHubPage({ articles }) {
 }
 
 /** A Local region page: Local-section stories carrying one region tag. */
-/* Region page H1s, owner-set wording (2026-11-21) — note San
-   Luis Valley carries no "News" suffix, as specified. */
+/* Region page H1s, owner-set wording (2026-11-21). */
 const REGION_H1 = {
   'denver-metro': 'Denver Metro News',
   'northern-colorado': 'Northern Colorado News',
@@ -2791,7 +2790,7 @@ const REGION_H1 = {
   southwest: 'Southwest Colorado News',
   mountains: 'Colorado Mountain News',
   'eastern-plains': 'Colorado Eastern Plains News',
-  'san-luis-valley': 'San Luis Valley',
+  'san-luis-valley': 'San Luis Valley News',
 };
 
 function localRegionPage({ region, articles }) {
