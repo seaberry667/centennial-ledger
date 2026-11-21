@@ -289,7 +289,9 @@ app.get('/', async (req, res) => {
   // above. The features are simply the three most recent news
   // stories, newest first (owner instruction, 2026-11-08,
   // superseding the 2026-11-02 different-section rule), each shown
-  // directly under the last in the same format. All are pulled out
+  // directly under the last in the same format. Since 2026-11-21
+  // the next four most recent follow as cards in a 2x2 grid under
+  // them (see gridFeatures below). All are pulled out
   // of the shared pool so no story appears twice on the front page.
   // Colorado Explained explainers never take the featured spots
   // either (owner instruction, 2026-11-08): on the homepage they
@@ -300,8 +302,14 @@ app.get('/', async (req, res) => {
   const lead = newsPool[0] || null;
   const second = newsPool[1] || null;
   const third = newsPool[2] || null;
+  // Homepage feature grid (owner directive, 2026-11-21): under the
+  // three full features, a 2x2 grid of four more feature stories —
+  // the next most recent news stories after the full features, in
+  // the compact card format. All seven featured stories are pulled
+  // out of the shared pool so no story appears twice on the page.
+  const gridFeatures = newsPool.slice(3, 7);
   const featuredSlugs = new Set(
-    [lead, second, third].filter(Boolean).map((a) => a.slug)
+    [lead, second, third, ...gridFeatures].filter(Boolean).map((a) => a.slug)
   );
   const rest = articles.filter((a) => !featuredSlugs.has(a.slug));
   // Rail groups (owner instruction, 2026-11-02): the right column
@@ -312,7 +320,9 @@ app.get('/', async (req, res) => {
   // features. A section whose newest stories are features
   // contributes its next stories instead; a section with nothing
   // left has no group.
-  const featureSlugs = new Set([lead, second, third].filter(Boolean).map((a) => a.slug));
+  const featureSlugs = new Set(
+    [lead, second, third, ...gridFeatures].filter(Boolean).map((a) => a.slug)
+  );
   const railGroups = [];
   for (const slug of ['politics', 'business', 'energy-environment', 'education-health']) {
     const inSection = await store.listArticles({ section: slug, limit: 6 });
@@ -362,6 +372,7 @@ app.get('/', async (req, res) => {
       lead: lead || null,
       second,
       third,
+      gridFeatures,
       latest: rest.slice(0, 12),
       railGroups,
       latestRow,

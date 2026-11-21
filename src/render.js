@@ -882,6 +882,13 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 /* Gold filigree divider between homepage features. */
 .feature-divider{text-align:center;margin:1.2rem 0}
 .feature-divider img{display:block;width:100%;max-width:100%;height:auto}
+/* Homepage feature grid (owner directive, 2026-11-21): four more
+   feature stories as compact cards, 2x2, inside the main column
+   under the three full features. Cards reuse the Latest card dress. */
+.feature-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.25rem}
+@media (max-width:767px){
+  .feature-grid{grid-template-columns:1fr}
+}
 /* Homepage rail story rows: thumbnail left (no outline, engraving at
    its natural edges), red category label, serif headline. */
 .rail-latest{margin-bottom:1.4rem}
@@ -2394,7 +2401,7 @@ function briefIndexPage(pages) {
   });
 }
 
-function homePage({ lead, second, third, latest, railGroups, latestRow, localStories, opinion, briefingThanks, explained, podcast, briefDates }) {
+function homePage({ lead, second, third, gridFeatures, latest, railGroups, latestRow, localStories, opinion, briefingThanks, explained, podcast, briefDates }) {
   const jsonLd = [
     {
       '@context': 'https://schema.org',
@@ -2427,11 +2434,20 @@ function homePage({ lead, second, third, latest, railGroups, latestRow, localSto
     // and third feature were pulled out of `latest` by the route.
     let features = featureStory(lead);
     // Second and third features, directly under the lead in the
-    // same format, each from a different section (selected by the
-    // home route), with the gold filigree divider between features.
-    // Either is absent when no different-section story exists.
+    // same format (the most recent news stories after the lead,
+    // selected by the home route), with the gold filigree divider
+    // between features; then the 2x2 feature-card grid.
     if (second) features += featureDivider() + featureStory(second);
     if (third) features += featureDivider() + featureStory(third);
+    // Feature grid (owner directive, 2026-11-21): four more feature
+    // stories as compact cards in a 2x2 grid under the full
+    // features, picked by the home route as the next most recent
+    // news stories. Absent when the pool runs out.
+    const gridCards = (Array.isArray(gridFeatures) ? gridFeatures : []).filter(Boolean);
+    if (gridCards.length) {
+      features += featureDivider() +
+        '<div class="feature-grid">' + gridCards.map(latestCard).join('') + '</div>';
+    }
     // The rail groups the five news sections (Politics, Rights,
     // Taxes, Energy, Schools), each with its two most recent
     // stories under the section heading, picked by the home route
