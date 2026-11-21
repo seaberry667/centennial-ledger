@@ -2083,6 +2083,29 @@ function sectionIntro(section) {
   );
 }
 
+/**
+ * The region blurb as plain intro paragraphs at the top of the
+ * region page, mirroring sectionIntro on the section pages
+ * (owner directive, 2026-11-21: the same move the section pages
+ * got — blurb from the bottom box to the top, no box, no H2).
+ * Same source text as the old bottom box.
+ */
+function regionIntro(region) {
+  const d = REGION_DESCRIPTIONS[region.slug];
+  const paragraphs = d
+    ? d.paragraphs
+    : [
+        REGION_META[region.slug] ||
+          'Local news from ' + region.name +
+            ', Colorado: county commissions, city councils, sheriffs and school boards, with the original sources linked. Read the latest.',
+      ];
+  return (
+    '<div class="section-intro">' +
+    paragraphs.map((p) => '<p>' + esc(p) + '</p>').join('') +
+    '</div>'
+  );
+}
+
 /** Region variant of the hub box for Local region pages. */
 function regionHubBox(region) {
   const d = REGION_DESCRIPTIONS[region.slug];
@@ -2846,12 +2869,12 @@ function localRegionPage({ region, articles }) {
     '<div class="breadcrumb"><a href="/">Home</a> &rsaquo; <a href="/section/local">Local News</a> &rsaquo; ' +
     esc(region.name) + '</div>' +
     '<h1 class="headline" style="font-size:2.4rem">' + esc(REGION_H1[region.slug] || region.name) + '</h1>' +
+    regionIntro(region) +
     regionNavList(region.slug) +
     (articles.length
       ? cardGridWithAd(articles, { kicker: false })
       : '<p>No local stories from ' + esc(region.name) + ' yet. Check back after the next edition.</p>') +
-    '<div class="ad-breather">' + leaderboardAdSlot() + '</div>' +
-    regionHubBox(region);
+    '<div class="ad-breather">' + leaderboardAdSlot() + '</div>';
 
   const seo = REGION_SEO[region.slug] || {};
   return layout({
