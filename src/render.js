@@ -2232,7 +2232,7 @@ function explainedModule(ex) {
   }
   s +=
     // Dressed as a Read More button (owner directive, 2026-11-21).
-    '<div class="explained-more"><a class="btn-read" href="/explained">Explore How Colorado Works &rarr;</a></div></section>';
+    '<div class="explained-more"><a class="btn-read" href="/explained">More on How Colorado Works &rarr;</a></div></section>';
   return s;
 }
 
