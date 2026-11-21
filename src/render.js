@@ -772,17 +772,20 @@ h2.headline,h1.headline{font-family:var(--font-headline);font-weight:800;line-he
 /* Same breathing room above the bottom leaderboard on section
    pages (owner directive, 2026-11-21). */
 .ad-breather{margin-top:1.4rem}
-/* Homepage final leaderboard, spaced exactly like the top ad
+/* Final leaderboard on any page, spaced exactly like the top ad
    (owner directive, 2026-11-21). The top ad's gaps come from the
    page frame itself: main's padding-top (1.2rem) above it and its
-   own 1.4rem margin below. The bottom ad sits at the end of main,
+   own 1.4rem margin below. A bottom ad sits at the end of main,
    so without correction it would get main's 3rem padding-bottom
    plus the footer's 2rem margin-top stacked under it. The
-   negative bottom margin cancels that stack: -3.6 + 3 + 2 = the
-   same 1.4rem below, and the wrapper's margin-top gives it the
-   same 1.2rem above. */
-.home-final-ad{margin-top:1.2rem}
-.home-final-ad .ad-slot.ad-leaderboard{margin-bottom:-3.6rem}
+   wrapper's margins cancel that stack: the slot's own bottom
+   margin is zeroed inside the wrapper (its margin would collapse
+   with the wrapper's and throw the sum off), so the below-gap is
+   exactly -3.6 + 3 + 2 = 1.4rem, and the wrapper's 1.2rem top
+   margin gives it the same 1.2rem above. */
+.final-ad{margin-top:1.2rem;margin-bottom:-3.6rem}
+.final-ad .ad-slot.ad-leaderboard{margin-bottom:0}
+.final-ad .ad-slot.ad-incontent{margin-bottom:0}
 
 /* Section intro text at the top of section pages (owner
    directive, 2026-11-21): plain content paragraphs, no box. */
@@ -2278,8 +2281,9 @@ function explainedPage({ articles, featured, category, cats }) {
   body +=
     '<p class="last-reviewed">New explainers arrive every Tuesday and Friday. Each article lists its sources and the date it was last reviewed; explainers on law, taxes, and healthcare are rechecked at least every six months, and sooner when the law changes.</p>';
   // Bottom leaderboard just above the footer, like the other
-  // section pages (owner directive, 2026-11-21).
-  body += '<div class="ad-breather">' + leaderboardAdSlot() + '</div>';
+  // section pages (owner directive, 2026-11-21), in the .final-ad
+  // wrapper so its spacing matches the top ad.
+  body += '<div class="final-ad">' + leaderboardAdSlot() + '</div>';
   return layout({
     title: fitTitle('How Colorado Works: how Colorado laws, water and taxes work', 70),
     description: fitDescription(
@@ -2602,16 +2606,15 @@ function homePage({ lead, second, third, gridFeatures, latest, railGroups, lates
         '<div class="latest-grid">' + latestCards.map(latestCard).join('') + '</div></section>';
     }
     // Thin leaderboard at the very bottom of the homepage, just
-    // above the footer (owner directive, 2026-11-21), spaced
-    // exactly like the top ad (owner directive, same day): the
-    // .home-final-ad wrapper reproduces the top ad's gaps — see
+    // above the footer (owner directive, 2026-11-21), in the
+    // .final-ad wrapper so its spacing matches the top ad — see
     // its CSS note.
-    body += '<div class="home-final-ad">' + leaderboardAdSlot() + '</div>';
+    body += '<div class="final-ad">' + leaderboardAdSlot() + '</div>';
     body += SAVE_SCRIPT + SHARE_SCRIPT;
   } else {
     body += '<section class="lead-story"><h1 class="headline">Colorado news, reported plainly.</h1><p class="dek">New stories are on the way.</p></section>';
     body += briefingBox(briefingThanks, 'homepage');
-    body += '<div class="home-final-ad">' + leaderboardAdSlot() + '</div>';
+    body += '<div class="final-ad">' + leaderboardAdSlot() + '</div>';
   }
 
   return layout({
@@ -2686,15 +2689,21 @@ function sectionPage({ section, articles }) {
   const body =
     '<h1 class="headline" style="font-size:2.4rem">' + esc(h1) + '</h1>' +
     sectionIntro(section) +
+    // Top leaderboard restored (owner directive, 2026-11-21) in
+    // the plain slot form: the intro's 1.2rem bottom margin above
+    // it and its own 1.4rem below match the homepage top ad's
+    // spacing.
+    leaderboardAdSlot() +
     (articles.length
       ? listing
       : '<p>No stories in this section yet. Check back after the next edition.</p>') +
     // Ad where the newsletter signup module used to sit (owner
     // directive, 2026-11-21: ad space instead of the signup box in
     // page content) — the narrow leaderboard form, like the
-    // between-grids ads (owner follow-up, same day), with the same
-    // breathing room above it.
-    '<div class="ad-breather">' + leaderboardAdSlot() + '</div>';
+    // between-grids ads (owner follow-up, same day), in the
+    // .final-ad wrapper so its spacing matches the top ad (owner
+    // directive, same day).
+    '<div class="final-ad">' + leaderboardAdSlot() + '</div>';
   return layout({
     title: fitTitle(meta.title, 70),
     description: fitDescription(meta.description),
@@ -2746,11 +2755,12 @@ function localHubPage({ articles }) {
   const body =
     '<h1 class="headline" style="font-size:2.4rem">Colorado Local News</h1>' +
     sectionIntro('local') +
+    leaderboardAdSlot() +
     regionNavList('') +
     (articles.length
       ? cardGridWithAd(articles, { kicker: false })
       : '<p>No local stories yet. Check back after the next edition.</p>') +
-    '<div class="ad-breather">' + leaderboardAdSlot() + '</div>';
+    '<div class="final-ad">' + leaderboardAdSlot() + '</div>';
 
   return layout({
     title: fitTitle(SECTION_META.local.title, 70),
@@ -2770,6 +2780,7 @@ function localRegionPage({ region, articles }) {
     esc(region.name) + '</div>' +
     '<h1 class="headline" style="font-size:2.4rem">' + esc(region.name) + '</h1>' +
     regionNavList(region.slug) +
+    leaderboardAdSlot() +
     (articles.length
       ? cardGridWithAd(articles, { kicker: false })
       : '<p>No local stories from ' + esc(region.name) + ' yet. Check back after the next edition.</p>') +
@@ -3119,9 +3130,15 @@ function articlePage(a, related, localStories, explainedRelated) {
   // newsletter signup module used to sit (owner directive,
   // 2026-11-21: ad space instead of the signup box in page content,
   // on articles and section pages alike). Satire pages carry no
-  // ads, as before.
+  // ads, as before. When no related-stories grid follows, the ad
+  // is the page's last element, so it takes the .final-ad wrapper
+  // and its spacing matches the top ad (owner directive, same
+  // day); with the grid below it, it is a mid-page ad as-is.
   if (!isSatire(a)) {
-    body += adSlot();
+    body +=
+      related && related.length
+        ? adSlot()
+        : '<div class="final-ad">' + adSlot() + '</div>';
   }
 
   if (related && related.length) {
