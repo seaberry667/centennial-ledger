@@ -1078,7 +1078,7 @@ article.full figure.article-hero{margin:1.1rem 0}
 /* Podcast brief pages (2026-11-16): one page per episode, short
    story versions with a source list under each story. */
 .brief-kicker{font-family:var(--font-ui);color:var(--color-red);font-size:.82rem;font-weight:bold;letter-spacing:.14em;text-transform:uppercase;margin:0 0 .4rem}
-.brief-story{border-top:1px solid var(--color-border);margin-top:1.6rem;padding-top:1.1rem;max-width:760px;scroll-margin-top:1.2rem}
+.brief-story{border-top:1px solid var(--color-border);margin-top:1.6rem;padding-top:1.1rem;scroll-margin-top:1.2rem}
 .brief-dateline{font-family:var(--font-ui);font-size:.85rem;letter-spacing:.06em;text-transform:uppercase;color:#555;margin:.3rem 0 .8rem}
 .brief-story h2{font-family:var(--font-headline);font-size:1.55rem;line-height:1.2;margin:.1rem 0 .6rem}
 .brief-story h3{font-family:var(--font-headline);font-size:1.25rem;line-height:1.25;margin:.1rem 0 .5rem}
@@ -1087,8 +1087,8 @@ article.full figure.article-hero{margin:1.1rem 0}
 .brief-sources h3,.brief-sources h4{font-family:var(--font-ui);font-size:.78rem;font-weight:bold;letter-spacing:.12em;text-transform:uppercase;color:#666;margin:0 0 .3rem}
 .brief-listen{display:inline-block;background:var(--color-navy);color:#fff;text-decoration:none;padding:.55rem 1.1rem;font-family:var(--font-ui);margin:.2rem 0 .6rem}
 .brief-around{font-family:var(--font-headline);font-size:1.7rem;margin:2.2rem 0 .2rem}
-.brief-nav{display:flex;justify-content:space-between;gap:1rem;margin-top:2.2rem;font-family:var(--font-ui);font-size:.95rem;max-width:760px}
-.brief-index-list{list-style:none;margin:1rem 0;padding:0;max-width:760px}
+.brief-nav{display:flex;justify-content:space-between;gap:1rem;margin-top:2.2rem;font-family:var(--font-ui);font-size:.95rem}
+.brief-index-list{list-style:none;margin:1rem 0;padding:0}
 .brief-index-list li{border-top:1px solid var(--color-border);padding:.7rem 0}
 .brief-index-list a{font-family:var(--font-headline);font-size:1.2rem;color:var(--color-navy);text-decoration:none}
 /* ---------- Subscribe / static pages ---------- */
