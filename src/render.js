@@ -761,6 +761,10 @@ h2.headline,h1.headline{font-family:var(--font-headline);font-weight:800;line-he
 .byline{font-family:var(--font-ui);color:var(--color-muted);font-size:11px;text-transform:uppercase;letter-spacing:.14em}
 .meta{font-family:var(--font-ui);font-size:11px;color:var(--color-muted);text-transform:uppercase;letter-spacing:.14em}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.2rem}
+/* Section intro text at the top of section pages (owner
+   directive, 2026-11-21): plain content paragraphs, no box. */
+.section-intro{margin:.2rem 0 1.2rem}
+.section-intro p{margin:0 0 .7em;line-height:1.55}
 /* Listing-page grids (owner directive, 2026-11-21): exactly four
    cards wide on desktop, collapsing on narrower screens. */
 .grid-4col{grid-template-columns:repeat(4,minmax(0,1fr))}
@@ -2013,6 +2017,37 @@ function hubBox(section) {
   );
 }
 
+/**
+ * The section's descriptive text as plain page content (owner
+ * directive, 2026-11-21): the words that used to sit in the hub
+ * box at the bottom of the section page now run as ordinary
+ * paragraphs at the top, under the H1 and above the first ad.
+ * Same source text as hubBox (SECTION_DESCRIPTIONS, with the
+ * Local hub and SECTION_META fallbacks), without the box or its
+ * H2 title.
+ */
+function sectionIntro(section) {
+  const d = SECTION_DESCRIPTIONS[section];
+  let paragraphs;
+  if (d) {
+    paragraphs = d.paragraphs;
+  } else if (section === 'local') {
+    paragraphs = [LOCAL_HUB.description];
+  } else if (SECTION_META[section]) {
+    paragraphs = [SECTION_META[section].description];
+  } else {
+    paragraphs = [
+      'Colorado ' + sectionName(section).toLowerCase() +
+        ' news reported with the facts first and the original sources linked, from communities across the state.',
+    ];
+  }
+  return (
+    '<div class="section-intro">' +
+    paragraphs.map((p) => '<p>' + esc(p) + '</p>').join('') +
+    '</div>'
+  );
+}
+
 /** Region variant of the hub box for Local region pages. */
 function regionHubBox(region) {
   const d = REGION_DESCRIPTIONS[region.slug];
@@ -2584,16 +2619,16 @@ function sectionPage({ section, articles }) {
   // No small red section-name label above the title (owner
   // instruction, 2026-11-03): the H1 alone heads the page.
   const body =
-    leaderboardAdSlot() +
     '<h1 class="headline" style="font-size:2.4rem">' + esc(name) + '</h1>' +
+    sectionIntro(section) +
+    leaderboardAdSlot() +
     (articles.length
       ? listing
       : '<p>No stories in this section yet. Check back after the next edition.</p>') +
     // In-content ad where the newsletter signup module used to sit
     // (owner directive, 2026-11-21: ad space instead of the signup
     // box in page content, on section pages and articles alike).
-    adSlot() +
-    hubBox(section);
+    adSlot();
   return layout({
     title: fitTitle(meta.title, 70),
     description: fitDescription(meta.description),
@@ -2643,14 +2678,14 @@ function collectionJsonLd(name, path, articles) {
 function localHubPage({ articles }) {
   // Same no-kicker rule as the section pages (owner, 2026-11-03).
   const body =
-    leaderboardAdSlot() +
     '<h1 class="headline" style="font-size:2.4rem">Local News</h1>' +
+    sectionIntro('local') +
+    leaderboardAdSlot() +
     regionNavList('') +
     (articles.length
       ? cardGridWithAd(articles, { kicker: false })
       : '<p>No local stories yet. Check back after the next edition.</p>') +
-    adSlot() +
-    hubBox('local');
+    adSlot();
 
   return layout({
     title: fitTitle(SECTION_META.local.title, 70),
