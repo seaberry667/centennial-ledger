@@ -785,6 +785,9 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 .podcast-box .podcast-titles{margin:0 0 .8rem;padding-left:1.15rem;text-align:left}
 .podcast-box .podcast-titles li{margin:.35rem 0;line-height:1.35}
 .podcast-box .podcast-titles a{color:inherit;text-decoration:none}
+.podcast-box .podcast-blurb{margin:0 0 .8rem;text-align:left;line-height:1.45}
+.podcast-box .podcast-blurb a{color:inherit;text-decoration:none}
+.podcast-box .podcast-blurb a:hover{text-decoration:underline}
 .podcast-box .podcast-titles a:hover{text-decoration:underline}
 .podcast-box .podcast-listen-wrap{text-align:center}
 .podcast-box .podcast-read{display:block;text-align:center;margin-top:.55rem;font-family:var(--font-body);font-size:.85rem;color:var(--color-red);text-decoration:underline}
@@ -1463,9 +1466,12 @@ function podcastBox(episode, briefDates) {
    * story's anchor on the episode's own podcast page
    * (/podcast/YYYY-MM-DD#story-N, stories in the same order on
    * both). briefDates carries the dates that have a companion
-   * page; an episode without one (the Saturday history edition
-   * has none) links its headlines and its read line to the
-   * /podcast archive instead of a page that does not exist. */
+   * page; an episode without one links its headlines and its
+   * read line to the /podcast archive instead of a page that
+   * does not exist. A Saturday history episode carries no story
+   * rundown; the box shows its description's summary paragraph
+   * as a blurb (owner request, 2026-11-21), linked to the same
+   * page target. */
   const epYmd = episode && episode.publishedAt ? fmtDenverYmd(episode.publishedAt) : '';
   const hasPage = !!(epYmd && briefDates && briefDates.has(epYmd));
   const pageUrl = hasPage ? '/podcast/' + epYmd : '/podcast';
@@ -1482,7 +1488,10 @@ function podcastBox(episode, briefDates) {
       (episode.publishedAt
         ? '<p class="podcast-date">' + esc(fmtMetaDate(episode.publishedAt)) + '</p>'
         : '') +
-      (episode.titles && episode.titles.length
+      (episode.blurb
+        ? '<p class="podcast-blurb"><a href="' + pageUrl + '">' +
+          esc(episode.blurb) + '</a></p>'
+        : episode.titles && episode.titles.length
         ? '<ul class="podcast-titles">' +
           episode.titles
             .map(

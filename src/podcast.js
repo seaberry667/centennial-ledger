@@ -106,6 +106,26 @@ function titlesOf(html) {
  * fallback). Returns null on anything unusable, so a malformed
  * feed keeps the last good episode.
  */
+/**
+ * The Saturday history edition's description opens with a
+ * dateline paragraph ("Colorado history for Saturday, ...")
+ * followed by a full summary paragraph of what's in the episode.
+ * For those episodes the box shows that summary as a blurb
+ * instead of a story-title list (owner request, 2026-11-21).
+ * Returns '' for anything that is not a history-edition
+ * description, so weekday episodes are untouched.
+ */
+function blurbOf(html) {
+  const paras = String(html || '').match(/<p[^>]*>[\s\S]*?<\/p>/gi) || [];
+  if (!paras.length) return '';
+  const text = (p) =>
+    decodeEntities(p.replace(/<[^>]*>/g, ' ')).replace(/\s+/g, ' ').trim();
+  if (!/^Colorado history for\b/i.test(text(paras[0]))) return '';
+  const summary = paras.length > 1 ? text(paras[1]) : '';
+  if (!summary || /^Next\b/i.test(summary) || /^Disclosure\b/i.test(summary)) return '';
+  return summary;
+}
+
 function parseFeed(xml) {
   if (!xml || typeof xml !== 'string') return null;
   const itemAt = xml.indexOf('<item');
@@ -116,12 +136,15 @@ function parseFeed(xml) {
   const pubDate = tagText(item, 'pubDate');
   const when = pubDate ? new Date(pubDate) : null;
   if (!title || !when || Number.isNaN(when.getTime())) return null;
-  const titles = titlesOf(tagText(item, 'description'));
-  if (!titles.length) return null;
+  const description = tagText(item, 'description');
+  const blurb = blurbOf(description);
+  const titles = blurb ? [] : titlesOf(description);
+  if (!titles.length && !blurb) return null;
   return {
     title,
     publishedAt: when.toISOString(),
     titles,
+    blurb,
     image: imageHref(channel) || imageHref(item),
   };
 }
