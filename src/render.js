@@ -2419,17 +2419,25 @@ function briefPage(page, newer, older) {
           : '') +
         '</figure>';
     }
-    body += page.stories
-      .map(
-        (s, i) =>
-          '<article class="brief-story" id="story-' + (i + 1) + '"><h2>' +
-          esc(s.headline) + '</h2>' +
-          (Array.isArray(s.body) ? s.body : [])
-            .map((p) => '<p>' + inline(p) + '</p>')
-            .join('') +
-          '</article>'
-      )
-      .join('');
+    const sectionHtml = page.stories.map(
+      (s, i) =>
+        '<article class="brief-story" id="story-' + (i + 1) + '"><h2>' +
+        esc(s.headline) + '</h2>' +
+        (Array.isArray(s.body) ? s.body : [])
+          .map((p) => '<p>' + inline(p) + '</p>')
+          .join('') +
+        '</article>'
+    );
+    // A leaderboard halfway through the sections (owner
+    // directive, 2026-11-21).
+    if (sectionHtml.length >= 2) {
+      sectionHtml.splice(
+        Math.floor(sectionHtml.length / 2),
+        0,
+        leaderboardAdSlot()
+      );
+    }
+    body += sectionHtml.join('');
     const seen = new Set();
     const allSources = [];
     for (const s of page.stories) {
@@ -2455,11 +2463,20 @@ function briefPage(page, newer, older) {
         '</div>';
     }
   } else {
-    body += page.stories
-      .map((s, i) => briefStoryHtml(s, 'h2', 'story-' + (i + 1)))
-      .join('');
     const around = Array.isArray(page.aroundColorado) ? page.aroundColorado : [];
+    const storyHtml = page.stories.map((s, i) =>
+      briefStoryHtml(s, 'h2', 'story-' + (i + 1))
+    );
+    // A leaderboard halfway through (owner directive,
+    // 2026-11-21): between the top stories and Around Colorado
+    // when that block exists, otherwise midway through the top
+    // stories.
+    if (!around.length && storyHtml.length >= 2) {
+      storyHtml.splice(Math.floor(storyHtml.length / 2), 0, leaderboardAdSlot());
+    }
+    body += storyHtml.join('');
     if (around.length) {
+      body += leaderboardAdSlot();
       body += '<h2 class="brief-around">Around Colorado</h2>';
       body += around.map((s) => briefStoryHtml(s, 'h3')).join('');
     }
