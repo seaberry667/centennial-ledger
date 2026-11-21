@@ -3054,9 +3054,9 @@ function articlePage(a, related, localStories, explainedRelated) {
     // The Why It Matters callout goes after the first complete
     // section (also when it is the only section), before the
     // second H2.
-    if (i === 0) body += whyBox + adSlot();
+    if (i === 0) body += whyBox + leaderboardAdSlot();
   });
-  if (!sections.length) body += whyBox + adSlot();
+  if (!sections.length) body += whyBox + leaderboardAdSlot();
 
   // Sources block: the article's full stored source list, one link
   // per source (owner instruction, 2026-11-03: list them all — the
@@ -3126,19 +3126,22 @@ function articlePage(a, related, localStories, explainedRelated) {
     rectangleAdSlot() +
     '</aside></div>';
 
-  // In-content ad at the end of the article, where the contextual
-  // newsletter signup module used to sit (owner directive,
-  // 2026-11-21: ad space instead of the signup box in page content,
-  // on articles and section pages alike). Satire pages carry no
-  // ads, as before. When no related-stories grid follows, the ad
-  // is the page's last element, so it takes the .final-ad wrapper
-  // and its spacing matches the top ad (owner directive, same
-  // day); with the grid below it, it is a mid-page ad as-is.
+  // Ad at the end of the article, where the contextual newsletter
+  // signup module used to sit (owner directive, 2026-11-21: ad
+  // space instead of the signup box in page content, on articles
+  // and section pages alike) — a thin leaderboard like the section
+  // pages, not the tall in-content unit (owner directive, same
+  // day; all article-page placeholders are leaderboards now).
+  // Satire pages carry no ads, as before. When no related-stories
+  // grid follows, the ad is the page's last element, so it takes
+  // the .final-ad wrapper and its spacing matches the top ad
+  // (owner directive, same day); with the grid below it, it is a
+  // mid-page ad as-is.
   if (!isSatire(a)) {
     body +=
       related && related.length
-        ? adSlot()
-        : '<div class="final-ad">' + adSlot() + '</div>';
+        ? leaderboardAdSlot()
+        : '<div class="final-ad">' + leaderboardAdSlot() + '</div>';
   }
 
   if (related && related.length) {
