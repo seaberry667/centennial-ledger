@@ -2476,6 +2476,9 @@ function briefPage(page, newer, older) {
       : '<span></span>';
     body += '</nav>';
   }
+  // Bottom leaderboard with the standard .final-ad spacing
+  // (owner directive, 2026-11-21: every page gets one).
+  body += '<div class="final-ad">' + leaderboardAdSlot() + '</div>';
   return layout({
     title: fitTitle('Colorado Daily News Brief: ' + page.episodeTitle, 70),
     description: fitDescription(
@@ -2521,6 +2524,7 @@ function briefIndexPage(pages) {
   } else {
     body += '<p>The first episode pages are on the way.</p>';
   }
+  body += '<div class="final-ad">' + leaderboardAdSlot() + '</div>';
   return layout({
     title: fitTitle('Colorado Daily News Brief: episode stories and sources', 70),
     description: fitDescription(
@@ -3312,7 +3316,8 @@ function subscribePage(opts) {
     '<button class="nl-primary" type="submit">Subscribe for Free</button>' +
     '<p class="nl-note-small">Free to subscribe. No spam. Unsubscribe or change your preferences anytime.</p>' +
     '<p class="nl-note-small">If you pick topics or regions, we will also send a digest of matching stories, once a day on weekdays by default. You can change the frequency, pause, or stop it in your preferences at any time.</p>' +
-    '</form>';
+    '</form>' +
+    '<div class="final-ad">' + leaderboardAdSlot() + '</div>';
   return layout({
     title: fitTitle('Colorado News by Email: Free Weekday Newsletter & Local Digests', 70),
     description: fitDescription(
@@ -3336,7 +3341,8 @@ function preferencesLandingPage(opts) {
         '<input id="pref-email" type="email" name="email" required placeholder="Your email address"></div>' +
         '<button class="nl-primary" type="submit">Email Me the Link</button>' +
         '</form>') +
-    '</div>';
+    '</div>' +
+    '<div class="final-ad">' + leaderboardAdSlot() + '</div>';
   return layout({
     title: fitTitle('Manage your email preferences, The Centennial Ledger', 70),
     description: fitDescription(
@@ -3422,7 +3428,8 @@ function preferencesPage({ sub, token, saved, error }) {
     '<form class="nl-panel" method="post" action="' + action + '/unsubscribe">' +
     '<p>Stop all Ledger email: the weekday newsletter, digests and breaking news.</p>' +
     '<button class="nl-danger" type="submit">Unsubscribe From All Emails</button>' +
-    '</form></div>';
+    '</form></div>' +
+    '<div class="final-ad">' + leaderboardAdSlot() + '</div>';
   return layout({
     title: fitTitle('Your email preferences, The Centennial Ledger', 70),
     description: fitDescription(
@@ -3440,7 +3447,8 @@ function unsubscribeConfirmPage(token) {
     '<p>Stop all email from The Centennial Ledger: the weekday newsletter, digests and breaking news alerts. You can subscribe again at any time.</p>' +
     '<form method="post" action="/unsubscribe/' + esc(token) + '">' +
     '<button class="nl-danger" type="submit">Unsubscribe Me</button></form>' +
-    '<p class="nl-note-small">Changed your mind about some of it? <a href="/preferences">Manage your preferences</a> instead.</p></div>';
+    '<p class="nl-note-small">Changed your mind about some of it? <a href="/preferences">Manage your preferences</a> instead.</p></div>' +
+    '<div class="final-ad">' + leaderboardAdSlot() + '</div>';
   return layout({
     title: fitTitle('Unsubscribe from Ledger email, The Centennial Ledger', 70),
     description: fitDescription(
@@ -3641,7 +3649,8 @@ function searchPage(q, results) {
       ? results.length
         ? '<div class="grid">' + results.map(articleCard).join('') + '</div>'
         : '<p>No stories matched &ldquo;' + esc(q) + '&rdquo;. Try a town, a county, or a topic.</p>'
-      : '<p>Search headlines, topics, and regions across every section.</p>');
+      : '<p>Search headlines, topics, and regions across every section.</p>') +
+    '<div class="final-ad">' + leaderboardAdSlot() + '</div>';
   return layout({
     title: fitTitle('Search Colorado news by town, county, topic and headline', 70),
     description: fitDescription(
@@ -3684,7 +3693,9 @@ function staticPage(kind) {
     title: fitTitle(meta.title, 70),
     description: fitDescription(meta.description),
     path: '/' + kind,
-    body: '<div class="static-page"><h1>' + title + '</h1>' + content + '</div>',
+    body:
+      '<div class="static-page"><h1>' + title + '</h1>' + content + '</div>' +
+      '<div class="final-ad">' + leaderboardAdSlot() + '</div>',
   });
 }
 
@@ -3785,7 +3796,8 @@ function aboutPage() {
     path: '/about',
     body:
       leaderboardAdSlot() +
-      '<div class="static-page about-page">' + nameplate + main + closing + '</div>',
+      '<div class="static-page about-page">' + nameplate + main + closing + '</div>' +
+      '<div class="final-ad">' + leaderboardAdSlot() + '</div>',
   });
 }
 
