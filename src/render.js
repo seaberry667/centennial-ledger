@@ -1104,6 +1104,7 @@ article.full figure.article-hero{margin:1.1rem 0}
 .searchbox input{flex:1;padding:.55rem;font-size:1rem;font-family:var(--font-body)}
 .searchbox button{background:var(--color-navy);color:#fff;border:0;padding:.55rem 1.1rem;cursor:pointer;font-family:var(--font-ui)}
 .static-page{max-width:760px}
+.static-page.static-wide{max-width:none}
 .static-page.about-page{max-width:none}
 /* All H1s share the headline face at 2.4rem (owner directive,
    2026-11-21). */
@@ -3746,7 +3747,7 @@ function staticPage(kind) {
     description: fitDescription(meta.description),
     path: '/' + kind,
     body:
-      '<div class="static-page"><h1>' + title + '</h1>' + content + '</div>' +
+      '<div class="static-page' + (isStandards ? ' static-wide' : '') + '"><h1>' + title + '</h1>' + content + '</div>' +
       '<div class="final-ad">' + leaderboardAdSlot() + '</div>',
   });
 }
