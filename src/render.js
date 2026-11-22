@@ -1461,6 +1461,7 @@ ${body}
   </div>
 </footer>
 ${NAV_SCRIPT}
+${SAVE_SCRIPT}${SHARE_SCRIPT}
 </body>
 </html>`;
 }
@@ -2817,7 +2818,9 @@ function homePage({ lead, second, third, gridFeatures, latest, railGroups, lates
     // .final-ad wrapper so its spacing matches the top ad — see
     // its CSS note.
     body += '<div class="final-ad">' + leaderboardAdSlot() + '</div>';
-    body += SAVE_SCRIPT + SHARE_SCRIPT;
+    // Save/Share scripts are added by layout() on every page
+    // (2026-11-22: they used to be appended only here, which
+    // left the same buttons dead on section and article pages).
   } else {
     body += '<section class="lead-story"><h1 class="headline" style="font-size:2.4rem">Colorado news, reported plainly.</h1><p class="dek">New stories are on the way.</p></section>';
     body += briefingBox(briefingThanks, 'homepage');
@@ -3330,6 +3333,13 @@ function articlePage(a, related, localStories, explainedRelated) {
     '<h1>' + esc(a.headline) + '</h1>' +
     (a.dek ? '<p class="dek">' + inline(dekText(a)) + '</p>' : '') +
     '<div class="byline">' + bylineLine(a) + '</div>';
+
+  // Save and Share controls under the byline (owner order,
+  // 2026-11-22: the buttons from the homepage features, now on
+  // article pages too; their behavior ships in layout()).
+  body +=
+    '<div class="feature-actions"><button type="button" class="btn-save" data-save-slug="' + esc(a.slug) +
+    '" aria-pressed="false">📌 Save</button>' + shareControl(a) + '</div>';
 
   // Full-width hero illustration, in its own figure directly under
   // the byline: no float, no crop, caption beneath.
