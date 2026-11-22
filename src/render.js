@@ -1818,11 +1818,15 @@ function featureDivider() {
  * for the lead story and the features under it (each drawn from a
  * different section by the home route).
  */
-function featureStory(a) {
+function featureStory(a, opts = {}) {
+  // On listing pages the page's H1 is the section title, so the
+  // featured article's headline renders as an H2 with the same
+  // .feature-headline dress (owner directive, 2026-11-21).
+  const tag = opts.heading === 'h2' ? 'h2' : 'h1';
   const excerpt = leadExcerpt(a);
   let s =
-    '<section class="lead-story"><h1 class="headline feature-headline"><a style="text-decoration:none" href="/article/' +
-    esc(a.slug) + '">' + esc(a.headline) + '</a></h1>' +
+    '<section class="lead-story"><' + tag + ' class="headline feature-headline"><a style="text-decoration:none" href="/article/' +
+    esc(a.slug) + '">' + esc(a.headline) + '</a></' + tag + '>' +
     (a.dek ? '<p class="dek">' + inline(dekText(a)) + '</p>' : '') +
     '<div class="byline">' + bylineLine(a) + '</div>';
   if (excerpt) {
@@ -2821,8 +2825,14 @@ function sectionPage({ section, articles }) {
   const satireItems = section === 'opinion' ? articles.filter(isSatire) : [];
   const cardItems =
     section === 'opinion' ? articles.filter((a) => !isSatire(a)) : articles;
+  // The most recent story leads the page as a featured article
+  // below the H1 and the opening paragraph, and the grids carry
+  // the rest (owner directive, 2026-11-21).
   const listing =
-    cardGridWithAd(cardItems, { kicker: false }) +
+    (cardItems.length
+      ? featureStory(cardItems[0], { heading: 'h2' }) + featureDivider()
+      : '') +
+    cardGridWithAd(cardItems.slice(1), { kicker: false }) +
     (satireItems.length
       ? '<h2 class="section-subhead">Satire &amp; Editorial Cartoons</h2>' +
         '<div class="satire-list">' +
@@ -2915,7 +2925,12 @@ function localHubPage({ articles }) {
     sectionIntro('local') +
     regionNavList('') +
     (articles.length
-      ? cardGridWithAd(articles, { kicker: false })
+      ? // Featured article at the top: the most recent story,
+        // below the H1 and the opening paragraph (owner
+        // directive, 2026-11-21); the grids carry the rest.
+        featureStory(articles[0], { heading: 'h2' }) +
+        featureDivider() +
+        cardGridWithAd(articles.slice(1), { kicker: false })
       : '<p>No local stories yet. Check back after the next edition.</p>') +
     '<div class="final-ad">' + leaderboardAdSlot() + '</div>';
 
@@ -3000,7 +3015,12 @@ function localRegionPage({ region, articles }) {
     '<h1 class="headline" style="font-size:2.4rem">' + esc(REGION_H1[region.slug] || region.name) + '</h1>' +
     regionIntro(region) +
     (articles.length
-      ? cardGridWithAd(articles, { kicker: false })
+      ? // Featured article at the top: the region's most recent
+        // story, below the H1 and the opening paragraph (owner
+        // directive, 2026-11-21); the grids carry the rest.
+        featureStory(articles[0], { heading: 'h2' }) +
+        featureDivider() +
+        cardGridWithAd(articles.slice(1), { kicker: false })
       : '<p>No local stories from ' + esc(region.name) + ' yet. Check back after the next edition.</p>') +
     // The page's last element now that the hub box moved to the
     // top: the .final-ad wrapper, so its spacing matches every
