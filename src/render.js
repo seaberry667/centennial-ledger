@@ -3747,6 +3747,10 @@ function staticPage(kind) {
     description: fitDescription(meta.description),
     path: '/' + kind,
     body:
+      // The Editorial Standards page also carries a top
+      // leaderboard, first on the page like the section pages
+      // (owner directive, 2026-11-21).
+      (isStandards ? leaderboardAdSlot() : '') +
       '<div class="static-page' + (isStandards ? ' static-wide' : '') + '"><h1>' + title + '</h1>' + content + '</div>' +
       '<div class="final-ad">' + leaderboardAdSlot() + '</div>',
   });
