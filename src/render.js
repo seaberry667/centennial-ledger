@@ -3193,12 +3193,18 @@ function satirePage(a, prev, next) {
         : '') +
       '</nav>';
   }
+  // The usual ads (owner order, 2026-11-22): a leaderboard above
+  // the comic and the standard .final-ad bottom leaderboard,
+  // superseding the earlier no-ads exception for satire pages.
+  // The comic, its caption and the Previous/Next nav are unchanged.
   const body =
+    leaderboardAdSlot() +
     '<div class="satire-wrap">' +
     articleFigure(a, 'satire-hero', { noCaption: true, width: 1000 }) +
     satireCaptionHtml(a) +
     nav +
-    '</div>';
+    '</div>' +
+    '<div class="final-ad">' + leaderboardAdSlot() + '</div>';
   return layout({
     title,
     description,
