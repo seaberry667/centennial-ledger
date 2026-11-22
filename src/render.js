@@ -1052,7 +1052,11 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 .article-layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:2.2rem;align-items:start}
 .article-rail{position:sticky;top:1rem}
 .article-rail .briefing{margin:0 0 1.2rem}
-.article-rail .ad-slot{margin:0}
+/* The rail's rectangle carries the standard ad spacing (1.2rem
+   above, 1.4rem below) like every other ad on the site — with
+   margin:0 it sat flush against the end-of-article leaderboard
+   below the grid (owner flag, 2026-11-21). */
+.article-rail .ad-slot{margin:1.2rem 0 1.4rem}
 @media (max-width:900px){
   .article-layout{grid-template-columns:1fr}
   .article-rail{position:static}
