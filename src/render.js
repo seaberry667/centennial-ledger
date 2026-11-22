@@ -809,7 +809,7 @@ h2.headline,h1.headline{font-family:var(--font-headline);font-weight:800;line-he
 @media (max-width:600px){
   .grid-4col{grid-template-columns:minmax(0,1fr)}
 }
-.card{border-top:3px solid var(--color-text);padding-top:.6rem}
+.card{border-top:2px solid var(--color-text);padding-top:.6rem}
 .card h3{font-family:var(--font-headline);font-size:1.125rem;margin:.25rem 0;line-height:1.25}
 .card h3 a{text-decoration:none}
 .card p{color:#444;font-size:.95rem;margin:.3rem 0}
