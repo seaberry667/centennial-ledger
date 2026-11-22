@@ -959,14 +959,17 @@ ins.adsbygoogle[data-ad-status="unfilled"]{display:none}
 @media (max-width:767px){.satire-list{grid-template-columns:1fr}}
 .satire-list figure.art-figure{margin:0}
 .satire-list .satire-caption{margin-top:.7rem}
-/* Gold filigree divider between homepage features. */
-.feature-divider{text-align:center;margin:1.2rem 0;overflow:hidden}
-/* The divider art renders at exactly its natural size
+/* Gold filigree divider between homepage features. The art is
+   the wrapper's background, not an <img> (owner report,
+   2026-11-22: the <img> form rendered stretched in his viewer
+   even though the served rule pinned it to natural size — a
+   background cannot be stretched by image rules or viewer
+   overrides at all). It renders at exactly its natural size
    (1152x26, height 26px) — never stretched larger or shrunk
-   smaller (owner directive, 2026-11-21). It stays centered;
-   on screens narrower than the art, the wrapper clips the
-   edges instead of scaling it. */
-.feature-divider img{display:block;width:1152px;height:26px;max-width:none;position:relative;left:50%;transform:translateX(-50%)}
+   smaller (owner directive, 2026-11-21) — centered, and on
+   screens narrower than the art the wrapper clips the edges
+   instead of scaling it. */
+.feature-divider{height:26px;margin:1.2rem 0;background:url(/section-break.png) no-repeat center/1152px 26px}
 /* Homepage feature grid (owner directive, 2026-11-21): eight more
    feature stories as compact cards, two wide and four long, inside
    the main column under the two full features. Cards reuse the
@@ -1844,12 +1847,10 @@ const SHARE_SCRIPT =
   'document.addEventListener("keydown",function(e){if(e.key==="Escape")closeAll();});' +
   '})();</script>';
 
-/** Gold filigree divider, used between homepage features. */
+/** Gold filigree divider: an empty div whose CSS background is
+ * the section-break art at natural size (see .feature-divider). */
 function featureDivider() {
-  return (
-    '<div class="feature-divider" aria-hidden="true">' +
-    '<img src="/section-break.png" alt="" width="1152" height="26"></div>'
-  );
+  return '<div class="feature-divider" aria-hidden="true"></div>';
 }
 
 /**
