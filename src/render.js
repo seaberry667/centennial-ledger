@@ -1421,7 +1421,7 @@ ${body}
           <li><a href="/section/energy-environment">Energy &amp; Environment</a></li>
           <li><a href="/section/education-health">Education &amp; Health</a></li>
           <li><a href="/section/local">Local News</a></li>
-          <li><a href="/section/opinion">Opinion</a></li>
+          <li><a href="/section/opinion">Opinion &amp; Satire</a></li>
           <li><a href="/podcast">Podcast</a></li>
           <li><a href="/about">About Us</a></li>
         </ul>
@@ -2894,7 +2894,7 @@ function sectionPage({ section, articles }) {
     politics: 'Colorado Political News',
     business: 'Colorado Business & Tax News',
     'energy-environment': 'Colorado Energy & Environmental News',
-    opinion: 'Colorado Opinion',
+    opinion: 'Colorado Opinion & Satire',
   };
   const h1 =
     H1_OVERRIDES[section] ||
