@@ -2560,7 +2560,7 @@ function briefIndexPage(pages) {
     // the intro text wrap around it, at the homepage podcast
     // box's size (the rail is 300px and the box art fills it)
     // — owner directive, 2026-11-21.
-    '<img class="podcast-page-art" src="/images/podcast-cover.jpg" alt="Colorado Daily News Brief &mdash; a Centennial Ledger podcast" width="300" height="300">' +
+    '<a href="https://open.spotify.com/show/5r0ObdqenGKnYskuKRxWrX" target="_blank" rel="noopener"><img class="podcast-page-art" src="/images/podcast-cover.jpg" alt="Colorado Daily News Brief &mdash; a Centennial Ledger podcast" width="300" height="300"></a>' +
     '<p class="dek">The Centennial Ledger&rsquo;s morning podcast: Colorado news, weather, and sports to start the day &mdash; and every episode&rsquo;s stories in print, with their sources.</p>' +
     '<div class="section-intro">' +
     '<p>Colorado Daily News Brief is the weekday podcast of The Centennial Ledger. A new episode is published every weekday morning by 6:00 AM, covering the day&rsquo;s statewide news &mdash; politics, business, energy, education, and local stories from across all 64 counties &mdash; along with Colorado weather and sports. On Saturdays, the show turns to Colorado history with a long-form story from the state&rsquo;s past.</p>' +
