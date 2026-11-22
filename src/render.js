@@ -680,6 +680,9 @@ a{color:inherit}
 .topbar{background:var(--color-navy);color:#e8e4d8;font-family:var(--font-bar);font-size:.78rem;min-height:34px;padding:.3rem 1rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;border-bottom:1px solid var(--color-gold)}
 .topbar .center{font-style:italic;font-family:var(--font-body);flex:1;text-align:center}
 .topbar .topbar-left{letter-spacing:.05em;font-weight:bold;white-space:nowrap}
+/* One city's weather segment never splits across lines on a
+   narrow screen; the bar wraps around it instead (2026-11-22). */
+#wx-rotor{white-space:nowrap}
 .topbar .topbar-right{display:flex;align-items:center;gap:.9rem;white-space:nowrap}
 .topbar a{color:#fff;text-decoration:none}
 .btn-subscribe{background:var(--color-red);color:#fff!important;padding:.3rem .8rem;border-radius:3px;font-weight:bold}
@@ -804,7 +807,7 @@ h2.headline,h1.headline{font-family:var(--font-headline);font-weight:800;line-he
   .grid-4col{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media (max-width:600px){
-  .grid-4col{grid-template-columns:1fr}
+  .grid-4col{grid-template-columns:minmax(0,1fr)}
 }
 .card{border-top:3px solid var(--color-text);padding-top:.6rem}
 .card h3{font-family:var(--font-headline);font-size:1.125rem;margin:.25rem 0;line-height:1.25}
@@ -849,7 +852,11 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 .podcast-box .podcast-listen-wrap{text-align:center}
 .podcast-box .podcast-read{display:block;text-align:center;margin-top:.55rem;font-family:var(--font-body);font-size:.85rem;color:var(--color-red);text-decoration:underline}
 /* ---------- Advertisements ---------- */
-.ad-slot{margin:1.2rem 0;text-align:center}
+/* An ad unit can never push the page wider than the screen:
+   the slot clips to its container and the unit caps at 100%
+   (mobile fix, 2026-11-22). */
+.ad-slot{margin:1.2rem 0;text-align:center;max-width:100%;overflow:hidden}
+.ad-slot ins,.ad-slot iframe{max-width:100%}
 .ad-placeholder{border:1px dashed #bbb;color:#999;font-family:var(--font-ui);font-size:.75rem;text-transform:uppercase;letter-spacing:.15em;padding:1.4rem 0}
 .ad-placeholder.ad-horizontal{padding:2.4rem 0}
 .ad-leaderboard{background:var(--color-ivory);border:1px solid var(--color-border);text-align:center;padding:.9rem 1rem 1rem;margin-bottom:1.4rem}
@@ -875,7 +882,16 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 .home-rail .ad-slot.rail-ad{padding:0;min-height:250px}
 .home-rail .rail-ad .adsbygoogle{display:block;margin:0 auto}
 @media (max-width:900px){
-  .home-layout{grid-template-columns:1fr}
+  /* minmax(0,1fr), not plain 1fr: a plain 1fr track is
+     minmax(auto,1fr), so a grid item's content (the 1152px
+     divider art, wide ad units) can force the single mobile
+     column far past the screen and every headline, card and
+     rail box inside it renders at that blown-out width
+     (owner report, 2026-11-22: mobile view "totally messed
+     up"). minmax(0,1fr) caps the track at the container, and
+     min-width:0 lets the items shrink with it. */
+  .home-layout{grid-template-columns:minmax(0,1fr)}
+  .home-layout>*{min-width:0}
   .home-features{grid-column:auto;grid-row:auto}
   .home-rail{grid-column:auto;grid-row:auto;position:static}
 }
@@ -949,7 +965,7 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
    Latest card dress. */
 .feature-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.25rem}
 @media (max-width:767px){
-  .feature-grid{grid-template-columns:1fr}
+  .feature-grid{grid-template-columns:minmax(0,1fr)}
 }
 /* Homepage rail story rows: thumbnail left (no outline, engraving at
    its natural edges), red category label, serif headline. */
@@ -1028,7 +1044,7 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 .explained-feature-headline{font-family:var(--font-headline);font-weight:800;font-size:2.4rem;line-height:1.12;margin:.2rem 0 .5rem}
 .explained-feature-headline a{color:inherit;text-decoration:none}
 .explained-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.25rem}
-@media (max-width:900px){.explained-grid{grid-template-columns:1fr}}
+@media (max-width:900px){.explained-grid{grid-template-columns:minmax(0,1fr)}}
 /* Left-justified, and the link inside is a .btn-read button now,
    so no link styling of its own (owner directive, 2026-11-21). */
 .explained-more{margin-top:1rem;text-align:left}
@@ -1046,7 +1062,7 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 .latest-home-heading::after{content:"";flex:1;height:2px;background:var(--color-gold)}
 .latest-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.25rem}
 @media (max-width:767px){
-  .latest-grid{grid-template-columns:1fr}
+  .latest-grid{grid-template-columns:minmax(0,1fr)}
 }
 .latest-card h3{font-family:var(--font-headline);font-size:1.125rem;margin:.25rem 0;line-height:1.25}
 .latest-card h3 a{text-decoration:none}
@@ -1069,7 +1085,11 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
    below the grid (owner flag, 2026-11-21). */
 .article-rail .ad-slot{margin:1.2rem 0 1.4rem}
 @media (max-width:900px){
-  .article-layout{grid-template-columns:1fr}
+  /* Same minmax(0,1fr) fix as .home-layout (2026-11-22): plain
+     1fr let article content push the single column ~30px past
+     the screen on phones. */
+  .article-layout{grid-template-columns:minmax(0,1fr)}
+  .article-layout>*{min-width:0}
   .article-rail{position:static}
 }
 /* Size matched to the section-page H1s (2.4rem), same as the
