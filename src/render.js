@@ -1346,7 +1346,7 @@ ${body}
     <div class="footer-grid">
       <div class="footer-col footer-brand">
         <a href="/" aria-label="The Centennial Ledger: back to the front page"><picture><source srcset="/footer-logo-v2.webp" type="image/webp"><img src="/footer-logo-v2.png" alt="The Centennial Ledger" width="285" height="117"></picture></a>
-        <p>Covering Colorado’s Capitol and all 64 counties. Independent and unaffiliated with any party or campaign. Stories are AI-generated. Always check original sources for full context.</p>
+        <p>Covering Colorado’s Capitol and all 64 counties. Independent and unaffiliated with any party or campaign. Articles are produced with AI-assisted tools under human editorial review, with sources linked on every story.</p>
       </div>
       <nav class="footer-col" aria-label="Sections">
         <h3>Sections</h3>
@@ -1357,6 +1357,7 @@ ${body}
           <li><a href="/section/education-health">Education &amp; Health</a></li>
           <li><a href="/section/local">Local News</a></li>
           <li><a href="/about">About Us</a></li>
+          <li><a href="/editorial-standards">Editorial Standards</a></li>
         </ul>
       </nav>
       <nav class="footer-col" aria-label="Colorado regions">
@@ -1385,7 +1386,7 @@ ${body}
   </div>
   <div class="footer-bar">
     <div class="footer-bar-inner">
-      <span><a href="/privacy">Privacy Policy</a> | <a href="/terms">Terms of Use</a></span>
+      <span><a href="/privacy">Privacy Policy</a> | <a href="/terms">Terms of Use</a> | <a href="/editorial-standards">Editorial Standards</a></span>
       <span>&copy; ${new Date().getFullYear()} ${SITE_NAME}. All rights reserved.</span>
     </div>
   </div>
@@ -3678,10 +3679,34 @@ function searchPage(q, results) {
   });
 }
 
+/* Editorial Standards page body (owner order, 2026-11-21): the
+ * publication's standards, stated plainly — human review, primary
+ * sources, attribution, fairness without false equivalence,
+ * corrections, transparency, and AI-assisted tools under human
+ * editorial oversight. */
+const EDITORIAL_STANDARDS_HTML =
+  '<p>The Centennial Ledger is an independent Colorado news and public-affairs publication. These standards govern how our reporting is produced, reviewed, and corrected, and they apply to every article we publish.</p>' +
+  '<h2>Human editorial review</h2><p>Every article undergoes human editorial review before publication. Material information — factual claims, statistics, quotations, names, dates, and figures — is checked for accuracy against the underlying sources. Editorial content is reviewed for accuracy, fairness, completeness, context, and clarity.</p>' +
+  '<h2>Sources</h2><p>Reporting relies on credible sources, with primary sources prioritized whenever they are available: government documents, court records, legislative materials, official data, and public records, supplemented by reporting from established news organizations. Material claims are checked against the record before they are published as fact.</p>' +
+  '<h2>Attribution</h2><p>Articles attribute the information they rely on and carry a Sources list linking to the supporting documentation, so readers can examine the record behind a story for themselves.</p>' +
+  '<h2>News, analysis, opinion, and satire</h2><p>Factual news reporting is distinguished from analysis, opinion, commentary, and satire, and each is presented so readers can tell them apart. Opinion content argues a position openly; it is never disguised as impartial reporting.</p>' +
+  '<h2>Fairness without false equivalence</h2><p>Reporting strives to represent relevant perspectives fairly. Fairness does not mean treating substantiated facts and unsupported claims as equals: where the evidence settles a question, our coverage says so.</p>' +
+  '<h2>Original editorial value</h2><p>Articles are expected to add original editorial value — research, analysis, historical context, and Colorado-specific relevance that helps readers understand government, politics, business, education, energy, and public policy — rather than republishing or lightly rewriting other publications\' content.</p>' +
+  '<h2>Transparency</h2><p>The Ledger is transparent about its editorial practices, sources, ownership, and authorship. The publication is independently owned and operated and is unaffiliated with any political party, candidate, campaign, or government agency. Stories carry the byline of the desk responsible for them — News Desk for reporting, Editorial Desk for opinion.</p>' +
+  '<h2>Corrections</h2><p>Errors are addressed through an established corrections process. Readers may report an error to <a href="mailto:news@centennialledger.com">news@centennialledger.com</a> with the article URL and any supporting documentation. Reports are reviewed; confirmed errors are corrected promptly and identified within the affected article.</p>' +
+  '<h2>AI-assisted tools</h2><p>AI-assisted research and writing tools are used to support the editorial process — gathering, organizing, and drafting material. They do not replace human editorial oversight, and they do not carry accountability: the publication answers for every story it publishes. Illustrations produced with AI assistance are captioned as illustrations and are never presented as documentary photographs.</p>';
+
 function staticPage(kind) {
   const isPrivacy = kind === 'privacy';
-  const title = isPrivacy ? 'Privacy Policy' : 'Terms of Use';
-  const content = isPrivacy
+  const isStandards = kind === 'editorial-standards';
+  const title = isPrivacy
+    ? 'Privacy Policy'
+    : isStandards
+      ? 'Editorial Standards'
+      : 'Terms of Use';
+  const content = isStandards
+    ? EDITORIAL_STANDARDS_HTML
+    : isPrivacy
     ? '<p>The Centennial Ledger collects the least information needed to run this site. When you sign up for the weekday newsletter, we store your email address so we can send it. When you subscribe, our payment processor handles your payment details; we never see or store full card numbers.</p>' +
       '<h2>What we collect</h2><p>Email addresses for the briefing and subscriptions, basic server logs (pages visited, browser type, approximate location from your IP address), and cookies used for site function and, where enabled, advertising through Google AdSense.</p>' +
       '<h2>Advertising</h2><p>We may run Google AdSense advertising. Google and its partners may use cookies to serve ads based on your visits to this and other sites. You can opt out of personalized advertising in your Google account settings.</p>' +
@@ -3691,11 +3716,17 @@ function staticPage(kind) {
       '<h2>Managing your subscription</h2><p>Every newsletter carries an unsubscribe link that works without a password or an account, and a link to a preference center where you can change topics, regions and frequency, pause your subscription, change your email address, or unsubscribe from everything. Unsubscribed addresses stay on a suppression list so they are not emailed again by mistake. To have your information removed entirely, contact the publisher through the address on this page.</p>' +
       '<h2>Advertisers and sponsors</h2><p>We do not sell or share subscriber email addresses with advertisers or sponsors. When a newsletter carries a sponsored placement, it is delivered by The Centennial Ledger itself as part of the email; sponsors never receive the subscriber list.</p>' +
       '<h2>Changes</h2><p>We will post changes to this policy on this page with a new effective date. Effective November 1, 2026.</p>'
-    : '<p>By using The Centennial Ledger you agree to these terms. The site provides news and analysis for general information. Stories are written from source material linked on each article page; we work to correct errors promptly when they are brought to our attention.</p>' +
+    : '<p>By using The Centennial Ledger you agree to these terms. The site provides news and analysis for general information. Every article is reviewed by a human editor before publication and links to the sources behind it; errors are corrected through the corrections process set out in our <a href="/editorial-standards">Editorial Standards</a>.</p>' +
       '<h2>Subscriptions</h2><p>Paid tiers (Patriot and Founding) are billed monthly once checkout is active and can be cancelled at any time, effective at the end of the billing period. Free content remains free.</p>' +
       '<h2>Acceptable use</h2><p>Do not scrape the site at a rate that burdens the service, misrepresent Ledger content as your own, or use the site for unlawful purposes. Brief quotations with attribution and a link are welcome.</p>' +
       '<h2>Liability</h2><p>Content is provided as is, without warranties of any kind. To the extent allowed by law, The Centennial Ledger is not liable for indirect damages arising from use of the site. Effective November 1, 2026.</p>';
-  const meta = isPrivacy
+  const meta = isStandards
+    ? {
+        title: 'Editorial Standards: How The Centennial Ledger Reports & Reviews',
+        description:
+          'Read how The Centennial Ledger reviews every article before publication: primary sources first, linked attribution, fairness, corrections and oversight.',
+      }
+    : isPrivacy
     ? {
         title: 'Colorado News Privacy Policy: Reader Data, Cookies & Ad Choices',
         description:
@@ -3747,6 +3778,7 @@ function aboutPage() {
     "<p><strong>The Centennial Ledger</strong> is an independent digital newspaper dedicated to Colorado politics, government, public policy, and local affairs. We cover the stories that affect how Coloradans live, work, raise families, spend their money, and exercise their freedoms.</p>" +
     "<p>Our mission is straightforward: make Colorado news accessible, informative, and worth reading.</p>" +
     "<p>We believe good journalism should ask difficult questions, follow the public's money, challenge official narratives, and explain why events matter. We also believe a newspaper should have some personality. Serious reporting and a sharp editorial wit have shared newspaper pages for centuries. We see no reason to abandon that tradition.</p>" +
+    "<p>Nothing appears on this site unreviewed. Every article is read and checked by a human editor before publication, and every story carries links to the sources behind it. The standards behind that process are published in full on our <a href=\"/editorial-standards\">Editorial Standards</a> page.</p>" +
     '</div>' +
     '<div class="about-grid">' +
     '<section class="about-section about-s-statewide">' +
@@ -3757,25 +3789,19 @@ function aboutPage() {
     '</section>' +
     '<section class="about-section about-s-produced">' +
     "<h2>How Our Stories Are Produced</h2>" +
-    "<p>We believe readers deserve to know how their news is made.</p>" +
-    "<p>The Centennial Ledger uses artificial intelligence to research, organize, and write much of its news coverage from publicly available sources, including government documents, court records, legislative materials, official announcements, and reporting by established news organizations.</p>" +
-    "<p><strong>We are transparent about this process.</strong> AI-generated writing is not a substitute for firsthand reporting or independent verification, and it can contain errors. We encourage readers to consult the original materials linked in our articles, particularly when evaluating disputed claims or developing stories.</p>" +
-    "<p>Our editorial standards emphasize:</p>" +
-    "<ul class=\"about-standards\">" +
-    "<li><strong>Source transparency:</strong> We aim to link directly to the documents, records, and original reporting supporting our coverage.</li>" +
-    "<li><strong>Accurate attribution:</strong> Information originating with another news organization should be properly credited.</li>" +
-    "<li><strong>Facts before conclusions:</strong> Allegations, opinions, and established facts should be clearly distinguished.</li>" +
-    "<li><strong>Context and fairness:</strong> Readers deserve the relevant background and competing perspectives necessary to understand a story.</li>" +
-    "<li><strong>Accountability:</strong> Errors should be acknowledged and corrected, not quietly ignored.</li>" +
-    "</ul>" +
-    "<p>We do not present AI-generated material as firsthand eyewitness reporting or fabricate interviews, quotations, or sources.</p>" +
+    "<p>We believe readers deserve to know how their news is made — and who answers for it.</p>" +
+    "<p>Every article published by The Centennial Ledger undergoes human editorial review before publication. Factual claims, statistics, quotations, and other material information are checked for accuracy against the underlying sources, and each story is reviewed for accuracy, fairness, completeness, context, and clarity before it appears.</p>" +
+    "<p>Our reporting relies on credible sources, with primary sources prioritized whenever they are available: government documents, court records, legislative materials, official data, and public announcements, supplemented by reporting from established news organizations. Articles attribute the information they rely on, and each story's Sources list links to the supporting documentation, so readers can examine the record behind a story for themselves.</p>" +
+    "<p>We use AI-assisted research and writing tools to help gather, organize, and draft coverage. Those tools support the editorial process; they do not replace it. Human editorial oversight governs what is published, and the publication — not the software — is accountable for every story. We do not fabricate interviews, quotations, or sources, and assisted material is never presented as firsthand eyewitness reporting.</p>" +
+    "<p>Our aim is original editorial value: research, analysis, historical context, and Colorado-specific relevance that helps readers understand what a development means — not a republished or lightly rewritten version of another publication's work. And when we get something wrong, we correct it through the corrections process described below.</p>" +
     '</section>' +
     '<section class="about-section about-s-news">' +
     "<h2>News, Opinion &amp; Satire</h2>" +
-    "<p>Our news coverage is intended to inform. Our opinion pages are intended to provoke thought, encourage debate, and occasionally raise an eyebrow.</p>" +
+    "<p>News reports the facts. Analysis explains what those facts mean. Opinion argues a position. Satire uses humor and exaggeration to make a point. Each is what it says it is: factual reporting is distinguished from analysis, opinion, commentary, and satire, and each is presented so readers can tell them apart.</p>" +
     "<p>Editorials and commentary may take strong positions on the issues and personalities shaping Colorado. Those views belong in clearly identified opinion content, not disguised as impartial reporting.</p>" +
+    "<p>Fairness in our news pages means representing relevant perspectives honestly. It does not mean creating a false equivalence between substantiated facts and unsupported claims: where the evidence settles a question, our coverage says so.</p>" +
     "<p>Our satire and political cartoons draw on the long tradition of American newspaper commentary, where humor, caricature, and pointed criticism have always had a place.</p>" +
-    "<p>Illustrations, including AI-generated imagery, are used to complement our coverage. Such images are illustrative representations, not documentary photographs of actual events, unless explicitly identified otherwise.</p>" +
+    "<p>Illustrations, including AI-assisted imagery, are used to complement our coverage and are captioned as illustrations. Such images are illustrative representations, not documentary photographs of actual events, unless explicitly identified otherwise.</p>" +
     '</section>' +
     '</div>' +
     '<section class="about-section about-mission">' +
@@ -3784,7 +3810,8 @@ function aboutPage() {
     '</section>' +
     '<section class="about-section">' +
     "<h2>Independence &amp; Ownership</h2>" +
-    "<p>The Centennial Ledger is an independently operated publication. We are not affiliated with any political party, candidate, political campaign, or government agency.</p>" +
+    "<p>The Centennial Ledger is an independently owned and operated publication. We are not affiliated with any political party, candidate, political campaign, or government agency.</p>" +
+    "<p>We are transparent about how this publication operates: our editorial practices and standards are published on this site, our stories carry their sources, and bylines identify the desk responsible for each piece — News Desk for reporting, Editorial Desk for opinion.</p>" +
     "<p>Editorial independence does not require the absence of opinions. It requires the freedom to question powerful institutions, scrutinize public officials, and follow the facts regardless of whom they favor.</p>" +
     "<p>Our allegiance is to our readers and to Colorado.</p>" +
     '</section>' +
@@ -3793,8 +3820,8 @@ function aboutPage() {
     '<div class="about-closing">' +
     '<section>' +
     "<h2>Corrections &amp; Accountability</h2>" +
-    "<p>Accuracy matters. When we get something wrong, we want to make it right.</p>" +
-    "<p>Readers are encouraged to report factual errors, misleading context, broken source links, or questionable attributions. Substantive corrections should be made promptly and identified within the affected article. Significant developments may also warrant an updated story.</p>" +
+    "<p>Accuracy matters. When we get something wrong, we make it right — openly.</p>" +
+    "<p>Our corrections process is established and straightforward. Readers can report a factual error, misleading context, broken source link, or questionable attribution at the address below. Reports are reviewed, and when an error is confirmed, the article is corrected promptly and the correction is identified within the affected article. Significant developments may also warrant an updated or follow-up story.</p>" +
     "<p>To request a correction or submit feedback, contact us at <a href=\"mailto:news@centennialledger.com\">news@centennialledger.com</a>. Please include the article URL and a brief explanation of the issue, along with supporting documentation when available.</p>" +
     '</section>' +
     '<section>' +

@@ -647,6 +647,10 @@ app.get('/terms', (req, res) => {
   res.type('html').send(render.staticPage('terms'));
 });
 
+app.get('/editorial-standards', (req, res) => {
+  res.type('html').send(render.staticPage('editorial-standards'));
+});
+
 app.get('/signin', (req, res) => {
   res.type('html').send(
     render.simplePage(
@@ -1179,6 +1183,7 @@ app.get('/sitemap.xml', async (req, res) => {
     })),
     { loc: base + '/subscribe', changefreq: 'monthly', priority: '0.5' },
     { loc: base + '/about', changefreq: 'monthly', priority: '0.5' },
+    { loc: base + '/editorial-standards', changefreq: 'monthly', priority: '0.5' },
     { loc: base + '/privacy', changefreq: 'yearly', priority: '0.2' },
     { loc: base + '/terms', changefreq: 'yearly', priority: '0.2' },
     ...articles.map((a) => ({
