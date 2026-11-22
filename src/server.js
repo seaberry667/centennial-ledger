@@ -410,18 +410,25 @@ const SECTION_REDIRECTS = {
 };
 
 app.get('/section/:slug', async (req, res) => {
-  // Opinion and Satire have no public section pages (owner orders,
-  // 2026-11-08 and 2026-11-20): their section URLs go home and
-  // nothing on the site links to them. Satire pieces themselves
-  // resolve at their own article URLs (direct access only, at the
-  // store's read layer); Opinion editorials still 404.
-  if (req.params.slug === 'opinion' || req.params.slug === 'satire') {
-    return res.redirect(301, '/');
+  // Opinion is a public section again (owner order, 2026-11-22,
+  // superseding the 2026-11-08 hiding for this page): its old URL
+  // /section/opinion lists every Opinion editorial and satire
+  // piece, and the old Satire section URL lands there too. The
+  // page is linked only from the footer — never the top nav —
+  // and Opinion pieces stay out of the homepage, the other
+  // sections, search and the sitemaps, because the store's
+  // general listing filter is unchanged.
+  if (req.params.slug === 'satire') {
+    return res.redirect(301, '/section/opinion');
   }
   const redirect = SECTION_REDIRECTS[req.params.slug];
   if (redirect) return res.redirect(301, '/section/' + redirect);
   const section = SECTIONS.find((s) => s.slug === req.params.slug);
   if (!section) return res.status(404).type('html').send(notFound());
+  if (section.slug === 'opinion') {
+    const articles = await store.listOpinionArticles(120);
+    return res.type('html').send(render.sectionPage({ section: 'opinion', articles }));
+  }
   const articles = await store.listArticles({ section: section.slug, limit: 120 });
   if (section.slug === 'local') {
     return res.type('html').send(render.localHubPage({ articles }));

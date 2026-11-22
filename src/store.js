@@ -406,8 +406,15 @@ function isHiddenArticle(a) {
 // DIRECT access — the article page itself and its plate image —
 // resolves a satire piece, via this narrower check. Opinion
 // editorials remain fully hidden everywhere.
+//
+// Owner order (2026-11-22) supersedes the editorial half of that:
+// Opinion pieces are public again at their own article URLs and
+// on the /section/opinion page (see listOpinionArticles), so
+// direct access now hides only retracted slugs. The general
+// listing filter above is unchanged, so Opinion still stays out
+// of the homepage, the other sections, search and the sitemaps.
 function isDirectAccessHidden(a) {
-  return RETRACTED_SLUGS.has(a.slug) || (a.section === 'opinion' && !isSatire(a));
+  return RETRACTED_SLUGS.has(a.slug);
 }
 
 /**
@@ -1457,6 +1464,17 @@ class FileStore {
       .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
   }
 
+  /* Opinion section listing (owner order, 2026-11-22): every
+   * Opinion-section piece — editorials and satire-format pieces
+   * alike — for the /section/opinion page, the one public listing
+   * of them. Retracted slugs stay excluded. Newest first. */
+  async listOpinionArticles(limit = 120) {
+    return this.data.articles
+      .filter((a) => a.section === 'opinion' && !RETRACTED_SLUGS.has(a.slug))
+      .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
+      .slice(0, limit);
+  }
+
   async listArticles({ section = null, region = null, spotlight = null, search = null, limit = 50 } = {}) {
     let rows = this.data.articles.filter((a) => !isHiddenArticle(a));
     if (section) rows = rows.filter((a) => a.section === section);
@@ -2386,9 +2404,10 @@ class PgStore {
     if (RETRACTED_SLUGS.has(slug)) return null;
     const res = await this.pool.query('SELECT * FROM articles WHERE slug = $1', [slug]);
     const row = this._row(res.rows[0]);
-    // Direct access only (owner order, 2026-11-20): a satire piece
-    // resolves at its own URL; Opinion editorials stay hidden.
-    return row && (row.section !== 'opinion' || isSatire(row)) ? row : null;
+    // Direct access (owner order, 2026-11-22): every stored piece
+    // resolves at its own URL, Opinion editorials included; only
+    // retracted slugs stay hidden (handled above).
+    return row || null;
   }
 
   /* Satire pieces for the satire pages' Previous/Next navigation
@@ -2402,6 +2421,25 @@ class PgStore {
     }
     const res = await this.pool.query(
       'SELECT * FROM articles WHERE ' + where + ' ORDER BY published_at DESC',
+      params
+    );
+    return res.rows.map((r) => this._row(r));
+  }
+
+  /* Opinion section listing (owner order, 2026-11-22): every
+   * Opinion-section piece — editorials and satire-format pieces
+   * alike — for the /section/opinion page, the one public listing
+   * of them. Retracted slugs stay excluded. Newest first. */
+  async listOpinionArticles(limit = 120) {
+    const params = [];
+    let where = "section = 'opinion'";
+    if (RETRACTED_SLUGS.size) {
+      params.push([...RETRACTED_SLUGS]);
+      where += ` AND slug <> ALL($${params.length})`;
+    }
+    params.push(limit);
+    const res = await this.pool.query(
+      'SELECT * FROM articles WHERE ' + where + ` ORDER BY published_at DESC LIMIT $${params.length}`,
       params
     );
     return res.rows.map((r) => this._row(r));
