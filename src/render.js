@@ -1093,6 +1093,19 @@ article.full figure.article-hero{margin:1.1rem 0}
 .brief-around{font-family:var(--font-headline);font-size:1.7rem;margin:2.2rem 0 .2rem}
 .brief-nav{display:flex;justify-content:space-between;gap:1rem;margin-top:2.2rem;font-family:var(--font-ui);font-size:.95rem}
 .brief-index-list{list-style:none;margin:1rem 0;padding:0}
+.podcast-listen{display:flex;gap:.7rem;flex-wrap:wrap;margin:1rem 0 1.6rem}
+.podcast-feature{border-top:2px solid var(--color-navy);border-bottom:1px solid var(--color-border);padding:1.1rem 0 1.3rem;margin:0 0 1.6rem}
+.podcast-feature-headline{font-family:var(--font-headline);font-size:1.9rem;line-height:1.2;margin:.2rem 0 .5rem}
+.podcast-feature-headline a{color:var(--color-navy);text-decoration:none}
+.podcast-feature-headline a:hover{text-decoration:underline}
+.podcast-feature-intro{font-family:var(--font-body);font-size:1.06rem;line-height:1.55;margin:0 0 .8rem}
+.podcast-feature-stories{list-style:none;margin:.4rem 0 0;padding:0}
+.podcast-feature-stories li{border-top:1px dotted var(--color-border);padding:.45rem 0}
+.podcast-feature-stories a{font-family:var(--font-headline);font-size:1.05rem;color:var(--color-navy);text-decoration:none}
+.podcast-feature-stories a:hover{text-decoration:underline}
+.podcast-archive-title{font-family:var(--font-headline);font-size:1.7rem;margin:1.8rem 0 .2rem}
+.brief-index-list .bi-date{display:block;font-family:var(--font-ui);font-size:.76rem;font-weight:bold;letter-spacing:.12em;text-transform:uppercase;color:#666;margin-bottom:.15rem}
+.brief-index-list .bi-title{font-family:var(--font-headline);font-size:1.2rem;color:var(--color-navy)}
 .brief-index-list li{border-top:1px solid var(--color-border);padding:.7rem 0}
 .brief-index-list a{font-family:var(--font-headline);font-size:1.2rem;color:var(--color-navy);text-decoration:none}
 /* ---------- Subscribe / static pages ---------- */
@@ -1361,6 +1374,7 @@ ${body}
           <li><a href="/section/energy-environment">Energy &amp; Environment</a></li>
           <li><a href="/section/education-health">Education &amp; Health</a></li>
           <li><a href="/section/local">Local News</a></li>
+          <li><a href="/podcast">Podcast</a></li>
           <li><a href="/about">About Us</a></li>
           <li><a href="/editorial-standards">Editorial Standards</a></li>
         </ul>
@@ -2268,9 +2282,10 @@ function explainedPage({ articles, featured, category, cats }) {
       })),
     },
   ];
-  // No top leaderboard on this page (owner directive, 2026-11-21,
-  // matching the section pages).
-  let body = '';
+  // Top leaderboard restored (owner directive, 2026-11-21,
+  // reversing the same-day removal): first element, above the
+  // H1, like the section pages.
+  let body = leaderboardAdSlot();
   body +=
     '<h1 class="headline" style="font-size:2.4rem">How Colorado Works</h1>' +
     '<p class="dek">The laws, institutions, history, and peculiarities that make Colorado tick.</p>' +
@@ -2527,21 +2542,98 @@ function briefIndexPage(pages) {
       isPartOf: { '@type': 'WebSite', name: SITE_NAME, url: siteUrl() + '/' },
     },
   ];
+  const dateLine = (iso) =>
+    new Date(iso + 'T12:00:00-07:00').toLocaleDateString('en-US', {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+      timeZone: 'America/Denver',
+    });
   let body = leaderboardAdSlot();
   body +=
     '<p class="brief-kicker">Podcast</p>' +
     '<h1 class="headline" style="font-size:2.4rem">Colorado Daily News Brief</h1>' +
-    '<p class="dek">Every weekday episode&rsquo;s stories in short form, each with its sources &mdash; the full reporting behind the podcast, in print.</p>';
+    '<p class="dek">The Centennial Ledger&rsquo;s morning podcast: Colorado news, weather, and sports to start the day &mdash; and every episode&rsquo;s stories in print, with their sources.</p>' +
+    '<div class="section-intro">' +
+    '<p>Colorado Daily News Brief is the weekday podcast of The Centennial Ledger. A new episode is published every weekday morning by 6:00 AM, covering the day&rsquo;s statewide news &mdash; politics, business, energy, education, and local stories from across all 64 counties &mdash; along with Colorado weather and sports. On Saturdays, the show turns to Colorado history with a long-form story from the state&rsquo;s past.</p>' +
+    '<p>Every episode gets a companion page here with short print versions of its stories and the sources behind them, so listeners can read the reporting and check the record for themselves. The podcast is produced by The Centennial Ledger with AI-generated voices; the reporting is gathered and verified by people.</p>' +
+    '</div>' +
+    '<div class="podcast-listen">' +
+    '<a class="btn-read" href="https://open.spotify.com/show/5r0ObdqenGKnYskuKRxWrX" target="_blank" rel="noopener">Listen on Spotify</a>' +
+    '<a class="btn-read" href="https://www.pandora.com/podcast/colorado-daily-news-brief/PC:1001124564" target="_blank" rel="noopener">Listen on Pandora</a>' +
+    '<a class="btn-read" href="https://www.stitcher.com/show/1124564" target="_blank" rel="noopener">Listen on Stitcher</a>' +
+    '</div>';
   if (list.length) {
+    const latest = list[0];
+    const isHistory = latest.format === 'article';
+    const featureHeadline = isHistory
+      ? latest.episodeTitle
+      : (latest.stories[0] && latest.stories[0].headline) || latest.episodeTitle;
+    body += '<section class="podcast-feature">';
     body +=
+      '<p class="brief-kicker">Latest Episode' +
+      (isHistory ? ' &middot; Saturday History Edition' : '') +
+      (latest.episodeNumber ? ' &middot; Episode ' + latest.episodeNumber : '') +
+      '</p>';
+    body += '<p class="brief-dateline">' + esc(dateLine(latest.date)) + '</p>';
+    if (isHistory && latest.illustration && latest.illustration.src) {
+      body +=
+        '<figure class="art-figure"><img src="' + esc(latest.illustration.src) +
+        '" alt="' + esc(latest.illustration.alt || '') + '" loading="lazy">' +
+        (latest.illustration.caption
+          ? '<figcaption>' + esc(latest.illustration.caption) + '</figcaption>'
+          : '') +
+        '</figure>';
+    }
+    body +=
+      '<h2 class="podcast-feature-headline"><a href="/podcast/' + esc(latest.date) + '">' +
+      esc(featureHeadline) + '</a></h2>';
+    if (latest.intro) {
+      body += '<p class="podcast-feature-intro">' + inline(latest.intro) + '</p>';
+    }
+    if (!isHistory && latest.stories.length > 1) {
+      body +=
+        '<ul class="podcast-feature-stories">' +
+        latest.stories
+          .map(
+            (s, i) =>
+              '<li><a href="/podcast/' + esc(latest.date) + '#story-' + (i + 1) + '">' +
+              esc(s.headline) +
+              '</a></li>'
+          )
+          .join('') +
+        '</ul>';
+    }
+    body += '<div class="podcast-listen">';
+    body +=
+      '<a class="btn-read" href="/podcast/' + esc(latest.date) + '">Read the Episode&rsquo;s Stories</a>';
+    if (latest.spotifyUrl) {
+      body +=
+        '<a class="btn-read" href="' + esc(latest.spotifyUrl) +
+        '" target="_blank" rel="noopener">Listen to This Episode</a>';
+    }
+    body += '</div></section>';
+    body +=
+      '<h2 class="podcast-archive-title">Episode Archive</h2>' +
       '<ul class="brief-index-list">' +
       list
-        .map(
-          (p) =>
+        .map((p) => {
+          const title =
+            p.format === 'article'
+              ? p.episodeTitle
+              : (p.stories[0] && p.stories[0].headline) || p.episodeTitle;
+          const meta =
+            (p.episodeNumber ? 'Episode ' + p.episodeNumber + ' &middot; ' : '') +
+            (p.format === 'article' ? 'Saturday History Edition &middot; ' : '') +
+            esc(dateLine(p.date));
+          return (
             '<li><a href="/podcast/' + esc(p.date) + '">' +
-            esc(p.episodeTitle) +
+            '<span class="bi-date">' + meta + '</span>' +
+            '<span class="bi-title">' + esc(title) + '</span>' +
             '</a></li>'
-        )
+          );
+        })
         .join('') +
       '</ul>';
   } else {
@@ -2549,9 +2641,9 @@ function briefIndexPage(pages) {
   }
   body += '<div class="final-ad">' + leaderboardAdSlot() + '</div>';
   return layout({
-    title: fitTitle('Colorado Daily News Brief: episode stories and sources', 70),
+    title: fitTitle('Colorado Daily News Brief Podcast: News, Weather & Sports Daily', 70),
     description: fitDescription(
-      'Short article versions of every Colorado Daily News Brief episode story, each with its sources, from The Centennial Ledger.'
+      'Listen to the Colorado Daily News Brief from The Centennial Ledger: weekday Colorado news, weather and sports by 6 AM, a Saturday history edition, and sources.'
     ),
     path: '/podcast',
     jsonLd,
