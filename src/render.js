@@ -857,6 +857,14 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
    (mobile fix, 2026-11-22). */
 .ad-slot{margin:1.2rem 0;text-align:center;max-width:100%;overflow:hidden}
 .ad-slot ins,.ad-slot iframe{max-width:100%}
+/* Collapse ad slots Google leaves unfilled (owner directive,
+   2026-11-22): while the site awaits AdSense review, an
+   unfilled unit reserves hundreds of pixels of blank space.
+   AdSense marks an unfilled unit data-ad-status="unfilled";
+   such a slot hides entirely, and returns on its own the
+   moment a real creative fills it (status becomes "filled"). */
+ins.adsbygoogle[data-ad-status="unfilled"]{display:none}
+.ad-slot:has(> ins.adsbygoogle[data-ad-status="unfilled"]){display:none}
 .ad-placeholder{border:1px dashed #bbb;color:#999;font-family:var(--font-ui);font-size:.75rem;text-transform:uppercase;letter-spacing:.15em;padding:1.4rem 0}
 .ad-placeholder.ad-horizontal{padding:2.4rem 0}
 .ad-leaderboard{background:var(--color-ivory);border:1px solid var(--color-border);text-align:center;padding:.9rem 1rem 1rem;margin-bottom:1.4rem}
