@@ -1937,9 +1937,9 @@ const SECTION_META = {
       'Read Colorado news from all 64 counties, covering city councils, commissioners, school boards, public safety, zoning, budgets and development. Explore today.',
   },
   opinion: {
-    title: 'Colorado opinion and commentary: politics, taxes, schools',
+    title: 'Colorado Opinion, Commentary & Satire on Politics, Taxes & Schools',
     description:
-      'Colorado opinion, editorials and satire on state politics, taxes, schools and energy, examining what the governing majority in Denver delivers. Read more.',
+      'Read Colorado opinion columns, editorials, cartoons and satire on politics, taxes, schools and state decisions, with sharp arguments worth weighing. Read today.',
   },
 };
 
