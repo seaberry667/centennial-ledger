@@ -691,7 +691,7 @@ a{color:inherit}
 .masthead-banner a{display:inline-block;text-decoration:none}
 .masthead-banner img{display:block;width:990px;max-width:100%;height:auto;margin:0 auto}
 .tagline{display:flex;align-items:center;gap:.9rem;font-style:italic;font-size:1.15rem;max-width:600px;margin:-.65rem auto 0;line-height:1;position:relative}
-.tagline::before,.tagline::after{content:"";flex:1 1 0;height:2px;background:var(--color-red)}
+.tagline::before,.tagline::after{content:"";flex:1 1 0;height:2px;background:var(--color-gold)}
 /* ---------- Navigation: white, thin double black rules, serif labels ---------- */
 nav.main{background:#fff;border-top:4px double var(--color-text);border-bottom:4px double var(--color-text);position:relative}
 nav.main ul.nav-list{display:flex;justify-content:flex-start;align-items:center;flex-wrap:wrap;gap:.2rem .55rem;list-style:none;margin:0 auto;padding:.5rem 24px;max-width:1200px}
@@ -809,7 +809,7 @@ h2.headline,h1.headline{font-family:var(--font-headline);font-weight:800;line-he
 @media (max-width:600px){
   .grid-4col{grid-template-columns:minmax(0,1fr)}
 }
-.card{border-top:2px solid var(--color-text);padding-top:.6rem}
+.card{border-top:2px solid var(--color-gold);padding-top:.6rem}
 .card h3{font-family:var(--font-headline);font-size:1.125rem;margin:.25rem 0;line-height:1.25}
 .card h3 a{text-decoration:none}
 .card p{color:#444;font-size:.95rem;margin:.3rem 0}
@@ -1401,7 +1401,7 @@ ${tickerHtml()}
   <!-- Masthead banner: the owner's supplied artwork — the engraved
        lettering flanked by both mountain engravings in a single
        image (WebP with a PNG fallback), centered on white. Below
-       it, the tagline flanked by short red rules. -->
+       it, the tagline flanked by short gold rules. -->
   <div class="masthead-banner"><a href="/" aria-label="${SITE_NAME}"><picture><source srcset="/masthead-banner.webp" type="image/webp"><img src="/masthead-banner.png" alt="The Centennial Ledger" width="990" height="101"></picture></a></div>
   <div class="tagline">${TAGLINE}</div>
 </header>
