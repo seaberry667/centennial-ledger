@@ -766,6 +766,12 @@ h2.headline,h1.headline{font-family:var(--font-headline);font-weight:800;line-he
 .byline{font-family:var(--font-ui);color:var(--color-muted);font-size:11px;text-transform:uppercase;letter-spacing:.14em}
 .meta{font-family:var(--font-ui);font-size:11px;color:var(--color-muted);text-transform:uppercase;letter-spacing:.14em}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.2rem}
+/* On the listing pages the featured article leads straight
+   into the card grid: a little air between its Why It Matters
+   box and the grid (owner directive, 2026-11-21). The homepage
+   never puts a .grid directly after a .lead-story, so this
+   touches only the listing pages. */
+.lead-story + .grid{margin-top:1.2rem}
 /* Breathing room above the between-grids leaderboard on listing
    pages (owner directive, 2026-11-21). */
 .grid-ad{margin-top:1.4rem}
@@ -2830,7 +2836,7 @@ function sectionPage({ section, articles }) {
   // the rest (owner directive, 2026-11-21).
   const listing =
     (cardItems.length
-      ? featureDivider() + featureStory(cardItems[0], { heading: 'h2' })
+      ? featureDivider() + featureStory(cardItems[0], { heading: 'h2' }) + featureDivider()
       : '') +
     cardGridWithAd(cardItems.slice(1), { kicker: false }) +
     (satireItems.length
@@ -2930,6 +2936,7 @@ function localHubPage({ articles }) {
         // directive, 2026-11-21); the grids carry the rest.
         featureDivider() +
         featureStory(articles[0], { heading: 'h2' }) +
+        featureDivider() +
         cardGridWithAd(articles.slice(1), { kicker: false })
       : '<p>No local stories yet. Check back after the next edition.</p>') +
     '<div class="final-ad">' + leaderboardAdSlot() + '</div>';
@@ -3020,6 +3027,7 @@ function localRegionPage({ region, articles }) {
         // directive, 2026-11-21); the grids carry the rest.
         featureDivider() +
         featureStory(articles[0], { heading: 'h2' }) +
+        featureDivider() +
         cardGridWithAd(articles.slice(1), { kicker: false })
       : '<p>No local stories from ' + esc(region.name) + ' yet. Check back after the next edition.</p>') +
     // The page's last element now that the hub box moved to the
