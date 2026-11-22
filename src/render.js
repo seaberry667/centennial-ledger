@@ -2879,7 +2879,8 @@ function sectionPage({ section, articles }) {
       : '') +
     cardGridWithAd(cardItems.slice(1), { kicker: false }) +
     (satireItems.length
-      ? '<h2 class="section-subhead">Satire &amp; Editorial Cartoons</h2>' +
+      ? featureDivider() +
+        '<h2 class="section-subhead">Satire &amp; Editorial Cartoons</h2>' +
         '<div class="satire-list">' +
         satireItems.map(satireListItem).join('') +
         '</div>'
