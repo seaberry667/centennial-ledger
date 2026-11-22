@@ -936,8 +936,13 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 .satire-list figure.art-figure{margin:0}
 .satire-list .satire-caption{margin-top:.7rem}
 /* Gold filigree divider between homepage features. */
-.feature-divider{text-align:center;margin:1.2rem 0}
-.feature-divider img{display:block;width:100%;max-width:100%;height:auto}
+.feature-divider{text-align:center;margin:1.2rem 0;overflow:hidden}
+/* The divider art renders at exactly its natural size
+   (1152x26, height 26px) — never stretched larger or shrunk
+   smaller (owner directive, 2026-11-21). It stays centered;
+   on screens narrower than the art, the wrapper clips the
+   edges instead of scaling it. */
+.feature-divider img{display:block;width:1152px;height:26px;max-width:none;position:relative;left:50%;transform:translateX(-50%)}
 /* Homepage feature grid (owner directive, 2026-11-21): eight more
    feature stories as compact cards, two wide and four long, inside
    the main column under the two full features. Cards reuse the
@@ -1809,7 +1814,7 @@ const SHARE_SCRIPT =
 function featureDivider() {
   return (
     '<div class="feature-divider" aria-hidden="true">' +
-    '<img src="/section-break.png" alt="" width="642" height="26"></div>'
+    '<img src="/section-break.png" alt="" width="1152" height="26"></div>'
   );
 }
 
