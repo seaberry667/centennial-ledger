@@ -1093,7 +1093,9 @@ article.full figure.article-hero{margin:1.1rem 0}
 .brief-around{font-family:var(--font-headline);font-size:1.7rem;margin:2.2rem 0 .2rem}
 .brief-nav{display:flex;justify-content:space-between;gap:1rem;margin-top:2.2rem;font-family:var(--font-ui);font-size:.95rem}
 .brief-index-list{list-style:none;margin:1rem 0;padding:0}
-.podcast-listen{display:flex;gap:.7rem;flex-wrap:wrap;margin:1rem 0 1.6rem}
+.podcast-listen{display:flex;gap:.7rem;flex-wrap:wrap;margin:1rem 0 1.6rem;clear:both}
+.podcast-page-art{float:right;width:300px;height:auto;margin:.2rem 0 .8rem 1.4rem;border:1px solid var(--color-border)}
+@media (max-width:640px){.podcast-page-art{width:160px;margin-left:1rem}}
 .podcast-feature{border-top:2px solid var(--color-navy);border-bottom:1px solid var(--color-border);padding:1.1rem 0 1.3rem;margin:0 0 1.6rem}
 .podcast-feature-headline{font-family:var(--font-headline);font-size:1.9rem;line-height:1.2;margin:.2rem 0 .5rem}
 .podcast-feature-headline a{color:var(--color-navy);text-decoration:none}
@@ -2556,6 +2558,10 @@ function briefIndexPage(pages) {
     '<h1 class="headline" style="font-size:2.4rem">Colorado Daily News Brief</h1>' +
     '<p class="dek">The Centennial Ledger&rsquo;s morning podcast: Colorado news, weather, and sports to start the day &mdash; and every episode&rsquo;s stories in print, with their sources.</p>' +
     '<div class="section-intro">' +
+    // The show cover, floated right of the first paragraph at
+    // the homepage podcast box's size (the rail is 300px and
+    // the box art fills it) — owner directive, 2026-11-21.
+    '<img class="podcast-page-art" src="/images/podcast-cover.jpg" alt="Colorado Daily News Brief &mdash; a Centennial Ledger podcast" width="300" height="300">' +
     '<p>Colorado Daily News Brief is the weekday podcast of The Centennial Ledger. A new episode is published every weekday morning by 6:00 AM, covering the day&rsquo;s statewide news &mdash; politics, business, energy, education, and local stories from across all 64 counties &mdash; along with Colorado weather and sports. On Saturdays, the show turns to Colorado history with a long-form story from the state&rsquo;s past.</p>' +
     '<p>Every episode gets a companion page here with short print versions of its stories and the sources behind them, so listeners can read the reporting and check the record for themselves. The podcast is produced by The Centennial Ledger with AI-generated voices; the reporting is gathered and verified by people.</p>' +
     '</div>' +
