@@ -1108,6 +1108,12 @@ article.full p{font-size:1.15rem;line-height:1.6;margin:0 0 .8em}
 article.full p.lead{font-size:1.15rem}
 article.full figure.article-hero{margin:1.1rem 0}
 .why{border-left:4px solid var(--color-red);background:var(--color-ivory);padding:20px;margin:24px 0}
+.series-box{border-left:4px solid var(--color-red);background:var(--color-ivory);padding:16px 20px;margin:20px 0}
+.series-box .series-label{font-family:var(--font-ui);color:var(--color-red);font-size:.82rem;font-weight:bold;letter-spacing:.14em;text-transform:uppercase;margin-bottom:.3rem}
+.series-box .series-title{font-family:var(--font-headline);font-size:1.15rem;font-weight:700;margin-bottom:.5rem}
+.series-box ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:.4rem 1.4rem}
+.series-box li{font-family:var(--font-ui);font-size:.95rem}
+.series-box li.current{font-weight:bold}
 .why .why-label{font-family:var(--font-ui);color:var(--color-red);font-size:.82rem;font-weight:bold;letter-spacing:.14em;text-transform:uppercase;margin-bottom:.4rem}
 .why p{margin:0 0 .6em;font-size:1.06rem}
 .why p:last-child{margin-bottom:0}
@@ -3222,6 +3228,43 @@ function satirePage(a, prev, next) {
   });
 }
 
+/* Article series (owner order, 2026-11-22): each installment of
+ * the Opinion series "Colorado Wasn't Just Flipped. It Was
+ * Engineered." carries a series box — at the top of the article
+ * and again at its end — naming the series and linking every part,
+ * so a reader landing on any installment can reach the others.
+ * The part being read is shown in bold, not as a link. */
+const ARTICLE_SERIES = [
+  {
+    title: "Colorado Wasn't Just Flipped. It Was Engineered.",
+    parts: [
+      { slug: 'colorado-wasnt-just-flipped-it-was-engineered-part-one', label: 'Part 1' },
+      { slug: 'colorado-wasnt-just-flipped-it-was-engineered-part-two', label: 'Part 2' },
+      { slug: 'colorado-wasnt-just-flipped-it-was-engineered-part-three', label: 'Part 3' },
+      { slug: 'colorado-wasnt-just-flipped-it-was-engineered-part-four', label: 'Part 4' },
+    ],
+  },
+];
+
+function seriesBox(a) {
+  const series = ARTICLE_SERIES.find((s) => s.parts.some((p) => p.slug === a.slug));
+  if (!series) return '';
+  const items = series.parts
+    .map((p) =>
+      p.slug === a.slug
+        ? '<li class="current">' + esc(p.label) + ' (this part)</li>'
+        : '<li><a href="/article/' + p.slug + '">' + esc(p.label) + '</a></li>'
+    )
+    .join('');
+  return (
+    '<nav class="series-box" aria-label="Series: ' + esc(series.title) + '">' +
+    '<div class="series-label">A four-part series</div>' +
+    '<div class="series-title">' + esc(series.title) + '</div>' +
+    '<ul>' + items + '</ul>' +
+    '</nav>'
+  );
+}
+
 function articlePage(a, related, localStories, explainedRelated) {
   const url = absUrl('/article/' + a.slug);
   const title = fitTitle(a.seoTitle || a.headline, 70);
@@ -3288,6 +3331,7 @@ function articlePage(a, related, localStories, explainedRelated) {
 
   // Full-width hero illustration, in its own figure directly under
   // the byline: no float, no crop, caption beneath.
+  body += seriesBox(a);
   body += articleFigure(a, 'article-hero', { width: 1200 });
   body += '<div class="article-body">';
   sections.forEach((s, i) => {
@@ -3418,6 +3462,8 @@ function articlePage(a, related, localStories, explainedRelated) {
     localStatewideBox(localStories) +
     rectangleAdSlot() +
     '</aside></div>';
+
+  body += seriesBox(a);
 
   // Ad at the end of the article, where the contextual newsletter
   // signup module used to sit (owner directive, 2026-11-21: ad
