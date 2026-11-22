@@ -238,6 +238,22 @@ const REGION_FIX_2026 = {
   'losing-chaffee-county-sheriff-candidate-pays-4-500-for-election-recount-3gw5c': 'Mountains',
 };
 
+// Owner order (2026-11-22): the four installments of the Opinion
+// series "Colorado Wasn't Just Flipped. It Was Engineered." carry
+// their part numbers in the headline itself. Both backends rewrite
+// the stored headline only while it differs from the mapped value,
+// so later boots change nothing.
+const RETITLE_ENGINEERED_2026 = {
+  'colorado-wasnt-just-flipped-it-was-engineered-part-one':
+    "Colorado Wasn't Just Flipped. It Was Engineered. Part 1",
+  'colorado-wasnt-just-flipped-it-was-engineered-part-two':
+    "Colorado Wasn't Just Flipped. It Was Engineered. Part 2",
+  'colorado-wasnt-just-flipped-it-was-engineered-part-three':
+    "Colorado Wasn't Just Flipped. It Was Engineered. Part 3",
+  'colorado-wasnt-just-flipped-it-was-engineered-part-four':
+    "Colorado Wasn't Just Flipped. It Was Engineered. Part 4",
+};
+
 // The three inaugural Colorado Explained articles were reviewed on
 // 2026-11-08 (the date the newsroom holds), but the upload pipeline
 // shifted the date one day back in transit, so the live store holds
@@ -1179,6 +1195,11 @@ class FileStore {
         a.lastReviewed = backdate.lastReviewed;
         recategorized = true;
       }
+      const retitle = RETITLE_ENGINEERED_2026[a.slug];
+      if (retitle && a.headline !== retitle) {
+        a.headline = retitle;
+        recategorized = true;
+      }
     }
     if (recategorized) this._save();
     // Part Two restructure (see PART_TWO_SECTIONS above): swap the
@@ -1897,6 +1918,16 @@ class PgStore {
         `UPDATE articles SET section = $2, format = $3
           WHERE slug = $1 AND (section <> $2 OR COALESCE(format, '') <> $3)`,
         [slug, target[0], target[1] || '']
+      );
+    }
+    // Owner-ordered series retitles (see RETITLE_ENGINEERED_2026
+    // above): each UPDATE lands only while the stored headline
+    // differs from the mapped value.
+    for (const [slug, headline] of Object.entries(RETITLE_ENGINEERED_2026)) {
+      await this.pool.query(
+        `UPDATE articles SET headline = $2
+          WHERE slug = $1 AND headline <> $2`,
+        [slug, headline]
       );
     }
     for (const [slug, region] of Object.entries(REGION_FIX_2026)) {
