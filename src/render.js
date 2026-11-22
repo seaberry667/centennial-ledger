@@ -2830,7 +2830,7 @@ function sectionPage({ section, articles }) {
   // the rest (owner directive, 2026-11-21).
   const listing =
     (cardItems.length
-      ? featureStory(cardItems[0], { heading: 'h2' }) + featureDivider()
+      ? featureDivider() + featureStory(cardItems[0], { heading: 'h2' })
       : '') +
     cardGridWithAd(cardItems.slice(1), { kicker: false }) +
     (satireItems.length
@@ -2928,8 +2928,8 @@ function localHubPage({ articles }) {
       ? // Featured article at the top: the most recent story,
         // below the H1 and the opening paragraph (owner
         // directive, 2026-11-21); the grids carry the rest.
-        featureStory(articles[0], { heading: 'h2' }) +
         featureDivider() +
+        featureStory(articles[0], { heading: 'h2' }) +
         cardGridWithAd(articles.slice(1), { kicker: false })
       : '<p>No local stories yet. Check back after the next edition.</p>') +
     '<div class="final-ad">' + leaderboardAdSlot() + '</div>';
@@ -3018,8 +3018,8 @@ function localRegionPage({ region, articles }) {
       ? // Featured article at the top: the region's most recent
         // story, below the H1 and the opening paragraph (owner
         // directive, 2026-11-21); the grids carry the rest.
-        featureStory(articles[0], { heading: 'h2' }) +
         featureDivider() +
+        featureStory(articles[0], { heading: 'h2' }) +
         cardGridWithAd(articles.slice(1), { kicker: false })
       : '<p>No local stories from ' + esc(region.name) + ' yet. Check back after the next edition.</p>') +
     // The page's last element now that the hub box moved to the
