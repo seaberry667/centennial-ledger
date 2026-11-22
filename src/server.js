@@ -47,6 +47,20 @@ app.use(async (req, res, next) => {
   }
 });
 
+// Rendered pages revalidate on every load (owner incident,
+// 2026-11-22: the responses carried no Cache-Control, a browser
+// heuristically cached a page, and it kept showing an old
+// build's stretched divider long after the fix shipped — the
+// same pages looked right in a private window). no-cache still
+// allows the ETag check, so an unchanged page costs a 304, not
+// a re-download. Static assets keep their week-long cache above
+// (that middleware answers before this one runs), and handlers
+// that set their own Cache-Control override this.
+app.use((req, res, next) => {
+  res.set('Cache-Control', 'no-cache');
+  next();
+});
+
 /**
  * Stories for the "Local & Statewide" strip (homepage and article
  * sidebar): the eight most recent stories that are Local OR carry a
