@@ -954,7 +954,7 @@ ins.adsbygoogle[data-ad-status="unfilled"]{display:none}
 .satire-nav a{display:inline-block;font-family:var(--font-ui);font-weight:bold;font-size:.95rem;text-decoration:none;padding:.55rem 1.15rem;border-radius:3px;border:1px solid var(--color-red);color:var(--color-red);background:#fff}
 .satire-nav a.prev{margin-right:auto}
 .satire-nav a.next{background:var(--color-red);color:#fff;margin-left:auto}
-.section-subhead{font-family:var(--font-headline);font-size:1.5rem;margin:1.8rem 0 .9rem}
+.section-subhead{font-family:var(--font-headline);font-size:2.4rem;font-weight:800;line-height:1.12;margin:1.8rem 0 .9rem}
 .satire-list{display:grid;grid-template-columns:1fr 1fr;gap:2.4rem 2rem}
 @media (max-width:767px){.satire-list{grid-template-columns:1fr}}
 .satire-list figure.art-figure{margin:0}
