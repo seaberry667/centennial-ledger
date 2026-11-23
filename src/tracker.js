@@ -663,8 +663,8 @@ function renderTrackerPage(h) {
     '<h1 class="headline trk-h1">Colorado vs. the Constitution: Federal Lawsuit Tracker</h1>' +
     '<p class="dek trk-dek">Colorado keeps testing the limits of constitutional rights. Federal judges keep reminding the state where those limits are.</p>' +
     '<p class="trk-updated">Last updated: ' + UPDATED + ' · The Centennial Ledger</p>' +
-    '<figure class="trk-hero"><img src="/images/federal-lawsuit-tracker-plate.webp" alt="Engraving of the U.S. Supreme Court building with the Colorado flag and the scales of justice">' +
-    '<figcaption>The U.S. Supreme Court in Washington, where Colorado keeps ending up. AI illustration.</figcaption></figure>' +
+    '<figure class="trk-hero"><img src="/images/federal-lawsuit-tracker-hero.webp" alt="Political cartoon: Colorado state attorney hands a Supreme Court loyalty card, five defeats punched, to a smug clerk">' +
+    '<figcaption>From the Ledger\'s satire desk: Colorado\'s Supreme Court loyalty card — one more defeat and the next appeal is free.</figcaption></figure>' +
     '<div class="trk-prose">' + paras(INTRO) + '</div>' +
     scoreboard +
     sectionHead('The Scorecard', "Colorado's Constitutional Litigation: Current Status", esc) +
