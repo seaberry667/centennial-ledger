@@ -1055,7 +1055,11 @@ ins.adsbygoogle[data-ad-status="unfilled"]{display:none}
 .trk-seg-majority.trk-seg-loss{background:var(--color-red);border-color:var(--color-red)}
 .trk-seg-majority.trk-seg-win{background:var(--color-navy);border-color:var(--color-navy)}
 .trk-seg-pending{background:#FBF6E9;border:1px dashed var(--color-gold)}
-.trk-hero{margin:1.2rem 0 .4rem}
+.trk-hero{float:right;width:340px;margin:.35rem 0 1rem 1.6rem}
+.trk-prose::after{content:"";display:block;clear:both}
+@media (max-width:767px){
+  .trk-hero{float:none;width:100%;margin:0 0 1rem}
+}
 .trk-hero img{display:block;width:100%;height:auto;border:1px solid var(--color-border)}
 .trk-hero figcaption{font-family:var(--font-ui);font-size:.8rem;color:var(--color-muted);margin-top:.45rem}
 .trk-vote-note{font-family:var(--font-ui);font-size:.8rem;font-weight:600;color:var(--color-muted)}
