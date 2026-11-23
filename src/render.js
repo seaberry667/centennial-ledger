@@ -2094,8 +2094,8 @@ function featureDivider() {
 function broncosWinBanner() {
   if (Date.now() >= Date.parse('2026-11-24T01:15:00Z')) return '';
   return '<div class="win-banner"><picture>' +
-    '<source srcset="/broncos-win-v4.webp" type="image/webp">' +
-    '<img src="/broncos-win-v4.png" alt="Broncos & Nuggets Win! Engraving of a Bronco running with the football beside the Nuggets mountain lion dunking a basketball" width="1880" height="782">' +
+    '<source srcset="/broncos-win-v5.webp" type="image/webp">' +
+    '<img src="/broncos-win-v5.png" alt="Broncos & Nuggets Win! Engraving of a celebrating Bronco and the Nuggets mountain lion over the Denver skyline" width="2118" height="599">' +
     '</picture></div>' + featureDivider();
 }
 
