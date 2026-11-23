@@ -565,6 +565,52 @@ function voteBar(c, esc) {
   );
 }
 
+/**
+ * Paragraph grouping (owner order, 2026-11-23): the owner's text
+ * arrives as many one-sentence paragraphs; group consecutive
+ * short paragraphs into longer ones — sentences kept verbatim and
+ * in order — so the page reads as developed prose. A paragraph
+ * that already runs three sentences or more stands on its own,
+ * and no group exceeds five sentences.
+ */
+function sentenceCount(t) {
+  const m = String(t).match(/[.!?]+(?=["')\]]?(?:\s|$))/g);
+  return m ? m.length : 0;
+}
+function groupParas(list) {
+  const out = [];
+  let buf = '';
+  let bufSentences = 0;
+  const flush = () => {
+    if (buf) {
+      out.push(buf);
+      buf = '';
+      bufSentences = 0;
+    }
+  };
+  const items = list || [];
+  for (let idx = 0; idx < items.length; idx++) {
+    const p = items[idx];
+    const s = sentenceCount(p);
+    if (s >= 3) {
+      flush();
+      out.push(p);
+      continue;
+    }
+    if (buf && bufSentences + s > 5) flush();
+    buf = buf ? buf + ' ' + p : p;
+    bufSentences += s;
+    // Flush at three sentences — unless the only paragraph left
+    // is a lone single sentence, which then joins this group
+    // instead of standing alone as the section's last paragraph.
+    const nextIsLoneShort =
+      idx === items.length - 2 && sentenceCount(items[idx + 1]) <= 1;
+    if (bufSentences >= 3 && !nextIsLoneShort) flush();
+  }
+  flush();
+  return out;
+}
+
 function caseCard(c, esc, withVote) {
   const meta =
     '<dl class="trk-meta">' +
@@ -574,7 +620,7 @@ function caseCard(c, esc, withVote) {
     .map(
       (s) =>
         '<h4 class="trk-subhead">' + esc(s[0]) + '</h4>' +
-        s[1].map((p) => '<p>' + esc(p) + '</p>').join('')
+        groupParas(s[1]).map((p) => '<p>' + esc(p) + '</p>').join('')
     )
     .join('');
   return (
@@ -598,7 +644,7 @@ function sectionHead(kicker, title, esc) {
 
 function renderTrackerPage(h) {
   const { esc, layout, leaderboardAdSlot, featureDivider, absUrl, fitTitle, fitDescription } = h;
-  const paras = (arr) => arr.map((p) => '<p>' + esc(p) + '</p>').join('');
+  const paras = (arr) => groupParas(arr).map((p) => '<p>' + esc(p) + '</p>').join('');
 
   const scoreboard =
     '<section class="trk-board" aria-label="Colorado at the Supreme Court: the record">' +
