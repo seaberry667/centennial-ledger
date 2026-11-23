@@ -63,28 +63,40 @@ function decodeEntities(text) {
   });
 }
 
-/**
- * The episode's major story titles, from the description's
- * rundown paragraph (owner request, 2026-11-12: list them all,
- * in full, never truncated; weather and sports excluded). The
- * rundown reads "Colorado news for <date>: <story>. <story>.
- * Plus statewide weather and Colorado sports: ..." — so: take
- * the first paragraph, drop the dateline lead-in, split it into
- * sentences, and drop the closing weather-and-sports roundup
- * (and any production-credit lines, if the paragraph split ever
- * fails). Returns [] when nothing usable parses.
- */
-function titlesOf(html) {
-  const raw = String(html || '');
-  const firstPara = /<p[^>]*>([\s\S]*?)<\/p>/i.exec(raw);
-  let text = decodeEntities((firstPara ? firstPara[1] : raw).replace(/<[^>]*>/g, ' '))
+/** One description paragraph as plain text, with <br> line
+ * breaks preserved as newlines. */
+function paraText(p) {
+  return decodeEntities(
+    String(p || '')
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<[^>]*>/g, ' ')
+  );
+}
+
+/** A rundown line that is NOT one of the episode's story
+ * subjects: weather, sports, the combined Around Colorado line
+ * (its items are not story titles and have no matching story
+ * anchor), the full-stories pointer and the production credits. */
+function isNonSubject(line) {
+  return (
+    /^(Weather|Sports|Around Colorado):/i.test(line) ||
+    /^Full stories\b/i.test(line) ||
+    /produced by The Centennial Ledger/i.test(line) ||
+    /^The voices you hear/i.test(line)
+  );
+}
+
+/** Split a prose paragraph into its sentences, dropping the
+ * dateline lead-in and the weather-and-sports roundup. */
+function sentencesOf(text) {
+  const clean = String(text || '')
     .replace(/\s+/g, ' ')
-    .trim();
-  text = text.replace(/^Colorado news for [^:]+:\s*/i, '');
+    .trim()
+    .replace(/^Colorado news for [^:]+:\s*/i, '');
   /* Protect abbreviation periods so the sentence split survives
    * "U.S. Senate" and the like. */
   const DOT = '\u0001';
-  const protectedText = text.replace(/\b(?:U\.S\.|D\.C\.|U\.K\.|a\.m\.|p\.m\.)/g, (m) =>
+  const protectedText = clean.replace(/\b(?:U\.S\.|D\.C\.|U\.K\.|a\.m\.|p\.m\.)/g, (m) =>
     m.replace(/\./g, DOT)
   );
   return protectedText
@@ -98,6 +110,63 @@ function titlesOf(html) {
         !/produced by The Centennial Ledger/i.test(s) &&
         !/^The voices you hear/i.test(s)
     );
+}
+
+/**
+ * The episode's major story titles for the homepage box (owner
+ * request, 2026-11-12: list them all, in full, never truncated;
+ * weather and sports excluded).
+ *
+ * Two description formats exist. The ORIGINAL format carries the
+ * rundown as sentences inside the first paragraph: "Colorado
+ * news for <date>: <story>. <story>. Plus statewide weather and
+ * Colorado sports: ...". The SEO format (episodes from
+ * 2026-11-23) opens with a dateline-only paragraph ("Colorado
+ * news for Monday, November 23, 2026."), then a prose summary,
+ * then a rundown paragraph with one subject per line (the story
+ * lines match the companion page's stories, in order, so the
+ * box's #story-N anchors line up), then the weather and sports
+ * lines. The parser tries, in order: a multi-line rundown
+ * paragraph; headline-style one-line paragraphs; the summary
+ * paragraph's sentences when the first paragraph is dateline
+ * only; and finally the original first-paragraph sentences.
+ * Returns [] when nothing usable parses.
+ */
+function titlesOf(html) {
+  const raw = String(html || '');
+  const paras = (raw.match(/<p[^>]*>[\s\S]*?<\/p>/gi) || [raw]).map(paraText);
+  const tidy = (s) => s.replace(/\s+/g, ' ').trim().replace(/[.]$/, '');
+  /* 1. A paragraph of rundown lines (separated by <br> or
+   * newlines in the feed markup). */
+  for (const para of paras) {
+    const lines = para.split('\n').map(tidy).filter(Boolean);
+    if (lines.length < 3) continue;
+    const subjects = lines.filter((s) => !isNonSubject(s));
+    if (subjects.length >= 3) return subjects;
+  }
+  /* 2. The rundown lines as separate one-line paragraphs
+   * (headline style: no terminal punctuation). */
+  const headlineParas = paras
+    .map((p) => tidy(p.replace(/\n/g, ' ')))
+    .filter(
+      (s) =>
+        s.length > 0 &&
+        s.length <= 140 &&
+        !/[.!?]$/.test(s) &&
+        !/^Colorado (news|history) for\b/i.test(s) &&
+        !isNonSubject(s)
+    );
+  if (headlineParas.length >= 3) return headlineParas;
+  const texts = paras.map((p) => p.replace(/\s+/g, ' ').trim()).filter(Boolean);
+  /* 3. Dateline-only first paragraph (SEO format): the subjects
+   * are the summary paragraph's sentences. */
+  if (texts.length > 1 && /^Colorado news for [^.]+\.$/i.test(texts[0])) {
+    const fromSummary = sentencesOf(texts[1]);
+    if (fromSummary.length) return fromSummary;
+  }
+  /* 4. Original format: rundown sentences in the first
+   * paragraph. */
+  return sentencesOf(texts[0] || '');
 }
 
 /**
