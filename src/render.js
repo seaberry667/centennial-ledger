@@ -1125,7 +1125,7 @@ ins.adsbygoogle[data-ad-status="unfilled"]{display:none}
 .trk-chip-loss{background:#F9E8E9;color:#7E161C;border-color:#E3B7BA}
 .trk-chip-win{background:#E8EDF3;color:var(--color-navy);border-color:#B9C6D4}
 .trk-chip-pending{background:#F5EDD9;color:#7A5E22;border-color:#DCC794}
-.trk-chip-mixed{background:#F1EFE9;color:#555555;border-color:var(--color-border)}
+.trk-chip-mixed{background:#F9E8E9;color:#7E161C;border-color:#E3B7BA}
 .trk-note{background:var(--color-ivory);border-left:3px solid var(--color-gold);padding:.9rem 1.1rem;margin:1.2rem 0;font-size:.95rem;line-height:1.55}
 .trk-promo{display:block;background:var(--color-navy);color:var(--color-ivory);padding:1.1rem 1.3rem;margin:1.2rem 0 .4rem;text-decoration:none;border-left:4px solid var(--color-gold)}
 .trk-promo:hover{text-decoration:none}

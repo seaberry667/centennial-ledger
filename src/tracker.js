@@ -15,7 +15,9 @@ const TRACKER_PATH = '/politics/federal-lawsuit-tracker';
 const UPDATED = 'November 23, 2026';
 
 /* Status table rows: [case, court and year, status, chip kind].
-   Chip kinds: loss (red), win (navy), pending (gold), mixed (muted). */
+   Chip kinds: loss (red), win (navy), pending (gold), mixed (red —
+   the mixed postures here still went against Colorado; owner order
+   2026-11-23: red like a loss, not gray). */
 const STATUS_ROWS = [
   ['Romer v. Evans', 'U.S. Supreme Court, 1996', "Colorado's Amendment 2 struck down, 6–3", 'loss', 'romer-v-evans'],
   ['Coalition for Secular Government v. Williams', 'Tenth Circuit, 2016', "Colorado's disclosure rules held unconstitutional as applied", 'loss', 'coalition-for-secular-government-v-williams'],
