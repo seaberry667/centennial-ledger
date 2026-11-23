@@ -611,17 +611,47 @@ function groupParas(list) {
   return out;
 }
 
+/**
+ * Split off a text's first sentence, guarding the abbreviations
+ * that pepper case prose (U.S., v., No., initials) so the split
+ * never lands mid-citation.
+ */
+const SENTENCE_ABBREV = new Set([
+  'U.S', 'U.S.C', 'D.C', 'v', 'No', 'St', 'Mt', 'Dr', 'Mr', 'Mrs',
+  'Ms', 'Jr', 'Sr', 'e.g', 'i.e',
+]);
+function splitFirstSentence(text) {
+  const re = /[.!?]+(?=["')\]]?(?:\s|$))/g;
+  let m;
+  while ((m = re.exec(text))) {
+    const word = (text.slice(0, m.index).match(/([A-Za-z][A-Za-z.]*)$/) || [])[1] || '';
+    if (SENTENCE_ABBREV.has(word) || /^[A-Z]$/.test(word)) continue;
+    return [text.slice(0, m.index + m[0].length), text.slice(m.index + m[0].length)];
+  }
+  return [text, ''];
+}
+
 function caseCard(c, esc, withVote) {
   const meta =
     '<dl class="trk-meta">' +
     c.meta.map((m) => '<div><dt>' + esc(m[0]) + '</dt><dd>' + esc(m[1]) + '</dd></div>').join('') +
     '</dl>';
   const sections = c.sections
-    .map(
-      (s) =>
-        '<h4 class="trk-subhead">' + esc(s[0]) + '</h4>' +
-        groupParas(s[1]).map((p) => '<p>' + esc(p) + '</p>').join('')
-    )
+    .map((s) => {
+      const grouped = groupParas(s[1]);
+      const rendered = grouped
+        .map((p, i) => {
+          // Owner order, 2026-11-23: the first sentence of every
+          // "What the Supreme Court decided" section runs bold.
+          if (i === 0 && s[0] === 'What the Supreme Court decided') {
+            const parts = splitFirstSentence(p);
+            return '<p><strong>' + esc(parts[0]) + '</strong>' + esc(parts[1]) + '</p>';
+          }
+          return '<p>' + esc(p) + '</p>';
+        })
+        .join('');
+      return '<h4 class="trk-subhead">' + esc(s[0]) + '</h4>' + rendered;
+    })
     .join('');
   return (
     '<article class="trk-card" id="case-' + c.id + '">' +
