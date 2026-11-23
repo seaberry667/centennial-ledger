@@ -657,6 +657,24 @@ function railSectionGroup(g) {
   );
 }
 
+/**
+ * The rail's Sports score strip (owner order, 2026-11-23): the
+ * same rail-group dress as the section groups, but the heading is
+ * plain text and the rows are bare score lines — the box links
+ * nowhere and expands into nothing. Absent when no Colorado team
+ * has a recent or upcoming game. Lines come from src/scores.js.
+ */
+function sportsRailBox(lines) {
+  const rows = (Array.isArray(lines) ? lines : []).filter(Boolean);
+  if (!rows.length) return '';
+  return (
+    '<div class="rail-group sports-box">' +
+    '<h3 class="rail-group-title">Sports</h3>' +
+    rows.map((l) => '<div class="sports-line">' + esc(l) + '</div>').join('') +
+    '</div>'
+  );
+}
+
 const CSS = `
 :root{
   --color-bg:#FFFFFF;--color-text:#111111;--color-red:#981E24;--color-navy:#102438;
@@ -1104,6 +1122,8 @@ ins.adsbygoogle[data-ad-status="unfilled"]{display:none}
 .rail-group-title::after{content:"";flex:1;height:1px;background:var(--color-gold)}
 .rail-group-title a{text-decoration:none;color:inherit}
 .rail-group-title a:hover{text-decoration:underline}
+.sports-line{font-family:var(--font-ui);font-size:.9rem;padding:.38rem 0;border-bottom:1px solid var(--color-border)}
+.sports-line:last-child{border-bottom:0;padding-bottom:0}
 .rail-row-text h4{font-family:var(--font-headline);font-size:1.03rem;line-height:1.28;margin:.15rem 0 .3rem}
 .rail-row-text h4 a{text-decoration:none}
 .rail-row-text h4 a:hover{text-decoration:underline}
@@ -2832,7 +2852,7 @@ function briefIndexPage(pages) {
   });
 }
 
-function homePage({ lead, second, third, gridFeatures, latest, railGroups, latestRow, localStories, opinion, briefingThanks, explained, podcast, briefDates }) {
+function homePage({ lead, second, third, gridFeatures, latest, railGroups, latestRow, localStories, opinion, briefingThanks, explained, podcast, briefDates, sportsLines }) {
   const jsonLd = [
     {
       '@context': 'https://schema.org',
@@ -2912,6 +2932,9 @@ function homePage({ lead, second, third, gridFeatures, latest, railGroups, lates
         ? '<section class="rail-latest" aria-label="Latest stories by section">' +
           groups.map(railSectionGroup).join('') + '</section>'
         : '') +
+      // Sports score strip directly under the last rail group
+      // (Education & Health) — owner order, 2026-11-23.
+      sportsRailBox(sportsLines) +
       briefingBox(briefingThanks, 'homepage') +
       localStatewideBox(localStories) +
       homeRailAdSlot() +

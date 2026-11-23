@@ -704,7 +704,7 @@ function renderTrackerPage(h) {
     sectionHead('About This Tracker', 'Tracker Updates and Methodology', esc) +
     '<div class="trk-method">' +
     '<p><strong>Last reviewed:</strong> ' + UPDATED + '</p>' +
-    '<p>This tracker covers selected constitutional cases involving Colorado state laws, state officials, state agencies, and significant Colorado judicial decisions. It is not a complete inventory of every federal lawsuit involving Colorado.</p>' +
+    '<p>This tracker covers the most significant constitutional cases involving Colorado state laws, state officials, state agencies, and significant Colorado judicial decisions. It is not a complete inventory of every federal lawsuit involving Colorado.</p>' +
     '<h4 class="trk-subhead">Latest developments to monitor</h4><ul class="trk-monitor">' +
     MONITOR.map((m) => '<li><strong>' + esc(m[0]) + ':</strong> ' + esc(m[1]) + '</li>').join('') +
     '</ul>' +

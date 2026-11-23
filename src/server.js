@@ -16,6 +16,7 @@ const newsletter = require('./newsletter');
 const mailer = require('./mailer');
 const { startWeatherUpdates } = require('./weather');
 const podcastFeed = require('./podcast');
+const scores = require('./scores');
 
 const app = express();
 app.disable('x-powered-by');
@@ -406,6 +407,11 @@ app.get('/', async (req, res) => {
       briefDates: new Set(
         (await store.listBriefPages()).map((p) => p.date)
       ),
+      // Sports score strip for the rail (owner order, 2026-11-23):
+      // brief plain-text lines from the cached ESPN pull in
+      // src/scores.js; empty when no Colorado team has a game in
+      // the window, and the box is then absent.
+      sportsLines: await scores.getSportsLines(),
     })
   );
 });
