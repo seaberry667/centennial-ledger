@@ -254,6 +254,15 @@ const RETITLE_ENGINEERED_2026 = {
     "Colorado Wasn't Just Flipped. It Was Engineered. Part 4",
 };
 
+// Owner order (2026-11-22): headlines use the % sign, never the word
+// "Percent" — a standing style rule for all headlines. This entry
+// applies it to the October jobs story; both backends rewrite the
+// stored headline only while it differs from the mapped value.
+const RETITLE_HEADLINES_2026 = {
+  'colorado-loses-5700-jobs-in-october-unemployment-rises-to-44-percent':
+    'Colorado Loses 5,700 Jobs in October as Unemployment Jumps to 4.4%',
+};
+
 // The three inaugural Colorado Explained articles were reviewed on
 // 2026-11-08 (the date the newsroom holds), but the upload pipeline
 // shifted the date one day back in transit, so the live store holds
@@ -1200,6 +1209,11 @@ class FileStore {
         a.headline = retitle;
         recategorized = true;
       }
+      const headlineFix = RETITLE_HEADLINES_2026[a.slug];
+      if (headlineFix && a.headline !== headlineFix) {
+        a.headline = headlineFix;
+        recategorized = true;
+      }
     }
     if (recategorized) this._save();
     // Part Two restructure (see PART_TWO_SECTIONS above): swap the
@@ -1924,6 +1938,15 @@ class PgStore {
     // above): each UPDATE lands only while the stored headline
     // differs from the mapped value.
     for (const [slug, headline] of Object.entries(RETITLE_ENGINEERED_2026)) {
+      await this.pool.query(
+        `UPDATE articles SET headline = $2
+          WHERE slug = $1 AND headline <> $2`,
+        [slug, headline]
+      );
+    }
+    // Owner-ordered headline fixes (see RETITLE_HEADLINES_2026
+    // above): same idempotent pattern.
+    for (const [slug, headline] of Object.entries(RETITLE_HEADLINES_2026)) {
       await this.pool.query(
         `UPDATE articles SET headline = $2
           WHERE slug = $1 AND headline <> $2`,
