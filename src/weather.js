@@ -4,18 +4,27 @@
  * expanded to a statewide rotation, 2026-11-06).
  *
  * The bar's weather line used to be fixed text for one city. It
- * now pulls Open-Meteo's free current-conditions feed for notable
- * cities all over Colorado in a single batch request, refreshed
- * every 15 minutes, and the bar rotates through the readings every
- * 10 seconds in the same shape it has always used:
- * "DENVER 45° · Fair" (the state name was dropped from the
- * segment on 2026-11-21 at the owner's order). Denver leads the rotation and
- * the remaining cities are jumbled at random on every page load
- * (owner, 2026-11-06), so the bar does not sweep region by region.
+ * now pulls current conditions for notable cities all over
+ * Colorado in a single batch request, refreshed every 15 minutes,
+ * and the bar rotates through the readings every 6 seconds in the
+ * same shape it has always used: "DENVER 45° · Fair" (the state
+ * name was dropped from the segment on 2026-11-21 at the owner's
+ * order). Denver leads the rotation and the remaining cities are
+ * jumbled at random on every page load (owner, 2026-11-06), so
+ * the bar does not sweep region by region.
+ *
+ * Sources, in order (failover added 2026-11-23 after the live
+ * server sat on the fallback text while Open-Meteo requests from
+ * the host's network never landed):
+ *   1. Open-Meteo's free current-conditions feed (one batch call).
+ *   2. The National Weather Service (api.weather.gov): each city's
+ *      nearest observation station's latest reading. Station IDs
+ *      are resolved once and cached; observations are actual
+ *      station measurements, typically updated hourly.
  *
  * Rendering never waits on the network: pages read the last good
  * readings from memory, and before the first successful fetch (or
- * if the feed is down) the bar falls back to the original fixed
+ * if both feeds are down) the bar falls back to the original fixed
  * Centennial text. A city whose reading is missing is skipped for
  * that cycle rather than breaking the rotation.
  */
@@ -113,33 +122,132 @@ function conditionFor(code) {
   }
 }
 
+/* NWS text descriptions ("Partly Cloudy", "Snow Showers", ...) ->
+ * the same short condition words the bar uses. */
+function conditionFromText(desc) {
+  const d = String(desc || '').toLowerCase();
+  if (!d) return 'Fair';
+  if (d.includes('thunder')) return 'Thunderstorm';
+  if (d.includes('snow')) return d.includes('shower') ? 'Snow showers' : 'Snow';
+  if (d.includes('freezing rain')) return 'Freezing rain';
+  if (d.includes('freezing drizzle')) return 'Freezing drizzle';
+  if (d.includes('drizzle')) return 'Drizzle';
+  if (d.includes('fog')) return 'Fog';
+  if (d.includes('shower')) return 'Showers';
+  if (d.includes('rain')) return 'Rain';
+  if (d.includes('partly')) return 'Partly cloudy';
+  if (d.includes('cloudy') || d.includes('overcast')) return 'Cloudy';
+  return 'Fair';
+}
+
+async function fetchJson(url, headers, ms) {
+  const ctl = new AbortController();
+  const to = setTimeout(() => ctl.abort(), ms || 8000);
+  try {
+    const res = await fetch(url, { signal: ctl.signal, headers });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return await res.json();
+  } finally {
+    clearTimeout(to);
+  }
+}
+
 /* Last good readings, as plain display strings, in rotation order. */
 let readings = [];
 
+async function refreshFromOpenMeteo() {
+  const data = await fetchJson(FEED_URL, undefined, 8000);
+  if (data && data.error) {
+    throw new Error('Open-Meteo error: ' + (data.reason || 'unknown'));
+  }
+  const list = Array.isArray(data) ? data : [data];
+  const next = [];
+  for (let i = 0; i < CITIES.length; i++) {
+    const cur = list[i] && list[i].current;
+    if (!cur || typeof cur.temperature_2m !== 'number') continue;
+    const temp = Math.round(cur.temperature_2m);
+    next.push(
+      CITIES[i][0] +
+        ' ' +
+        temp +
+        '° · ' +
+        conditionFor(cur.weather_code)
+    );
+  }
+  if (!next.length) throw new Error('Open-Meteo returned no usable readings');
+  return next;
+}
+
+/* NWS asks API users to identify themselves in the User-Agent. */
+const NWS_HEADERS = {
+  'User-Agent': 'CentennialLedger/1.0 (centennialledger@gmail.com)',
+  Accept: 'application/geo+json',
+};
+const stationCache = new Map();
+
+async function nwsReading(city) {
+  const name = city[0];
+  let station = stationCache.get(name);
+  if (!station) {
+    const points = await fetchJson(
+      'https://api.weather.gov/points/' + city[1] + ',' + city[2],
+      NWS_HEADERS
+    );
+    const listUrl =
+      points && points.properties && points.properties.observationStations;
+    if (!listUrl) return null;
+    const stations = await fetchJson(listUrl, NWS_HEADERS);
+    const first = stations && stations.features && stations.features[0];
+    station = first && first.properties && first.properties.stationIdentifier;
+    if (!station) return null;
+    stationCache.set(name, station);
+  }
+  const obs = await fetchJson(
+    'https://api.weather.gov/stations/' +
+      station +
+      '/observations/latest',
+    NWS_HEADERS
+  );
+  const props = obs && obs.properties;
+  if (
+    !props ||
+    !props.temperature ||
+    typeof props.temperature.value !== 'number'
+  ) {
+    return null;
+  }
+  const tempF = Math.round((props.temperature.value * 9) / 5 + 32);
+  return name + ' ' + tempF + '° · ' + conditionFromText(props.textDescription);
+}
+
+async function refreshFromNws() {
+  const next = [];
+  for (let i = 0; i < CITIES.length; i += 8) {
+    const chunk = CITIES.slice(i, i + 8);
+    const results = await Promise.allSettled(chunk.map(nwsReading));
+    for (const r of results) {
+      if (r.status === 'fulfilled' && r.value) next.push(r.value);
+    }
+  }
+  if (!next.length) throw new Error('NWS returned no usable readings');
+  return next;
+}
+
 async function refresh() {
   try {
-    const ctl = new AbortController();
-    const to = setTimeout(() => ctl.abort(), 8000);
-    const res = await fetch(FEED_URL, { signal: ctl.signal });
-    clearTimeout(to);
-    if (!res.ok) return;
-    const data = await res.json();
-    const list = Array.isArray(data) ? data : [data];
-    const next = [];
-    for (let i = 0; i < CITIES.length; i++) {
-      const cur = list[i] && list[i].current;
-      if (!cur || typeof cur.temperature_2m !== 'number') continue;
-      const temp = Math.round(cur.temperature_2m);
-      next.push(
-        CITIES[i][0] +
-          ' ' +
-          temp +
-          '° · ' +
-          conditionFor(cur.weather_code)
-      );
-    }
-    if (next.length) readings = next;
-  } catch {
+    readings = await refreshFromOpenMeteo();
+    return;
+  } catch (e) {
+    console.error(
+      '[weather] Open-Meteo refresh failed (' +
+        e.message +
+        '); falling back to the National Weather Service'
+    );
+  }
+  try {
+    readings = await refreshFromNws();
+  } catch (e) {
+    console.error('[weather] NWS fallback failed (' + e.message + ')');
     /* Keep the last good readings; the bar never breaks on a feed error. */
   }
 }
