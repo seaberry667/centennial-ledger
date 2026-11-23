@@ -970,6 +970,13 @@ ins.adsbygoogle[data-ad-status="unfilled"]{display:none}
    screens narrower than the art the wrapper clips the edges
    instead of scaling it. */
 .feature-divider{height:26px;margin:1.2rem 0;background:url(/section-break.png) no-repeat center/1152px 26px}
+/* One-day Broncos win banner (owner order, 2026-11-22): the owner's
+   "Broncos Win!" cartoon sits above the top headline on the homepage
+   for 24 hours only. The render gate in homePage stops emitting it
+   after 2026-11-24T01:15:00Z (24h from placement), so it removes
+   itself with no second deploy. */
+.win-banner{margin:0 0 1.1rem}
+.win-banner img{display:block;width:100%;height:auto}
 /* Homepage feature grid (owner directive, 2026-11-21): eight more
    feature stories as compact cards, two wide and four long, inside
    the main column under the two full features. Cards reuse the
@@ -1852,6 +1859,17 @@ const SHARE_SCRIPT =
  * the section-break art at natural size (see .feature-divider). */
 function featureDivider() {
   return '<div class="feature-divider" aria-hidden="true"></div>';
+}
+
+/** One-day Broncos win banner (owner order, 2026-11-22): emitted only
+ * until 2026-11-24T01:15:00Z — 24 hours from placement — then the
+ * homepage returns to normal with no further deploy. */
+function broncosWinBanner() {
+  if (Date.now() >= Date.parse('2026-11-24T01:15:00Z')) return '';
+  return '<div class="win-banner"><picture>' +
+    '<source srcset="/broncos-win.webp" type="image/webp">' +
+    '<img src="/broncos-win.png" alt="Broncos Win! Cartoon of a Bronco running with the football past a flattened Raider" width="2172" height="724">' +
+    '</picture></div>';
 }
 
 /**
@@ -2740,7 +2758,7 @@ function homePage({ lead, second, third, gridFeatures, latest, railGroups, lates
     // an Opinion piece exists) and the three-card "Latest from
     // Colorado" grid. The lead
     // and third feature were pulled out of `latest` by the route.
-    let features = featureStory(lead);
+    let features = broncosWinBanner() + featureStory(lead);
     // Second feature, directly under the lead in the
     // same format (the most recent news story after the lead,
     // selected by the home route), with the gold filigree divider
