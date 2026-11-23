@@ -1676,7 +1676,6 @@ ${body}
           <li><a href="https://www.instagram.com/centennialledger" target="_blank" rel="noopener">Instagram</a></li>
           <li><a href="https://open.spotify.com/show/5r0ObdqenGKnYskuKRxWrX" target="_blank" rel="noopener">Spotify</a></li>
           <li><a href="https://www.pandora.com/podcast/colorado-daily-news-brief/PC:1001124564" target="_blank" rel="noopener">Pandora</a></li>
-          <li><a href="https://www.stitcher.com/show/1124564" target="_blank" rel="noopener">Stitcher</a></li>
         </ul>
         <p class="footer-stay-text">Sign up for your free daily newsletter.</p>
         <form class="footer-signup" method="post" action="/briefing">
@@ -2865,7 +2864,6 @@ function briefIndexPage(pages) {
     '<div class="podcast-listen">' +
     '<a class="btn-read" href="https://open.spotify.com/show/5r0ObdqenGKnYskuKRxWrX" target="_blank" rel="noopener">Listen on Spotify</a>' +
     '<a class="btn-read" href="https://www.pandora.com/podcast/colorado-daily-news-brief/PC:1001124564" target="_blank" rel="noopener">Listen on Pandora</a>' +
-    '<a class="btn-read" href="https://www.stitcher.com/show/1124564" target="_blank" rel="noopener">Listen on Stitcher</a>' +
     '</div>';
   if (list.length) {
     const latest = list[0];
