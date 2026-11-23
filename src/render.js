@@ -727,13 +727,45 @@ function railSectionGroup(g) {
  * nowhere and expands into nothing. Absent when no Colorado team
  * has a recent or upcoming game. Lines come from src/scores.js.
  */
+/**
+ * Small stroke icons marking each sports-strip line's sport
+ * (owner order, 2026-11-23): football, basketball, hockey,
+ * baseball, soccer — drawn in the site's navy, no links.
+ */
+const SPORT_ICONS = {
+  football:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12c3.5-4.6 14.5-4.6 18 0-3.5 4.6-14.5 4.6-18 0Z"/><path d="M9.3 12h5.4"/><path d="M10.8 10.6v2.8"/><path d="M13.2 10.6v2.8"/></svg>',
+  basketball:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17"/><path d="M12 3.5c3.2 2.7 3.2 14.3 0 17"/><path d="M12 3.5c-3.2 2.7-3.2 14.3 0 17"/></svg>',
+  hockey:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16.5 2.8v11l-6.8 3.4"/><ellipse cx="8.2" cy="20.4" rx="4" ry="1.5"/></svg>',
+  baseball:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M6.6 5.4c3 3.9 3 9.3 0 13.2"/><path d="M17.4 5.4c-3 3.9-3 9.3 0 13.2"/></svg>',
+  soccer:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 8.2l3.1 2.3-1.2 3.6h-3.8l-1.2-3.6L12 8.2Z"/><path d="M12 3.5v4.7"/><path d="M20.3 10.3l-5.2.2"/><path d="M16.9 19.4l-3-5.3"/><path d="M7.1 19.4l3-5.3"/><path d="M3.7 10.3l5.2.2"/></svg>',
+};
+
 function sportsRailBox(lines) {
   const rows = (Array.isArray(lines) ? lines : []).filter(Boolean);
   if (!rows.length) return '';
   return (
     '<div class="rail-group sports-box">' +
     '<h3 class="rail-group-title">Sports</h3>' +
-    rows.map((l) => '<div class="sports-line">' + esc(l) + '</div>').join('') +
+    rows
+      .map((l) => {
+        const text = typeof l === 'string' ? l : l.text || '';
+        const sport = typeof l === 'object' ? l.sport || '' : '';
+        const icon = SPORT_ICONS[sport]
+          ? '<span class="sports-icon">' + SPORT_ICONS[sport] + '</span>'
+          : '';
+        // The sport is named outright in a small tag as well as
+        // marked by the icon (owner order, 2026-11-23).
+        const tag = sport
+          ? '<span class="sports-tag">' + esc(sport) + '</span>'
+          : '';
+        return '<div class="sports-line">' + icon + tag + esc(text) + '</div>';
+      })
+      .join('') +
     '</div>'
   );
 }
@@ -1191,6 +1223,9 @@ ins.adsbygoogle[data-ad-status="unfilled"]{display:none}
 .rail-group-title a:hover{text-decoration:underline}
 .sports-line{font-family:var(--font-ui);font-size:.9rem;padding:.38rem 0;border-bottom:1px solid var(--color-border)}
 .sports-line:last-child{border-bottom:0;padding-bottom:0}
+.sports-icon{display:inline-block;width:15px;height:15px;margin-right:.45rem;color:var(--color-navy);vertical-align:-2px}
+.sports-icon svg{display:block;width:100%;height:100%}
+.sports-tag{font-size:.7rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--color-muted);margin-right:.45rem}
 .listing-pager{display:flex;justify-content:center;align-items:center;gap:1.1rem;margin:1.7rem 0 .3rem;font-family:var(--font-ui)}
 .pager-link{font-weight:700;font-size:.9rem;color:var(--color-navy);text-decoration:none;border:1px solid var(--color-border);padding:.45rem .95rem;background:#fff}
 a.pager-link:hover{border-color:var(--color-gold)}

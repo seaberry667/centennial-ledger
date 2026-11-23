@@ -53,6 +53,17 @@ const TEAMS = [
   { league: 'mbb', abbr: 'UNCO', label: 'N. Colorado' },
 ];
 
+// The sport each league's lines belong to, for the rail icons.
+const SPORT_BY_LEAGUE = {
+  nfl: 'football',
+  cfb: 'football',
+  nba: 'basketball',
+  mbb: 'basketball',
+  nhl: 'hockey',
+  mlb: 'baseball',
+  mls: 'soccer',
+};
+
 const dayFmt = new Intl.DateTimeFormat('en-US', {
   timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit',
 });
@@ -176,7 +187,7 @@ async function refresh() {
   const lines = [];
   for (const team of TEAMS) {
     const line = pickLine(team, byLeague[team.league] || [], now);
-    if (line) lines.push(line);
+    if (line) lines.push({ sport: SPORT_BY_LEAGUE[team.league] || '', text: line });
   }
   return lines;
 }
@@ -197,8 +208,10 @@ function refreshInBackground() {
 }
 
 /**
- * The current score lines (array of plain-text strings, possibly
- * empty). Serves the cache when fresh; serves a stale cache while
+ * The current score lines: an array of { sport, text } objects
+ * (possibly empty), where sport names the game's sport so the
+ * rail can mark each line with its icon (owner order, 2026-11-23).
+ * Serves the cache when fresh; serves a stale cache while
  * refreshing behind the scenes; only the very first call waits
  * for the network.
  */
