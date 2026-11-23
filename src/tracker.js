@@ -641,9 +641,10 @@ function caseCard(c, esc, withVote) {
       const grouped = groupParas(s[1]);
       const rendered = grouped
         .map((p, i) => {
-          // Owner order, 2026-11-23: the first sentence of every
-          // "What the Supreme Court decided" section runs bold.
-          if (i === 0 && s[0] === 'What the Supreme Court decided') {
+          // Owner orders, 2026-11-23: the first sentence of every
+          // court-decided section ("What the Supreme Court decided"
+          // and the federal cases' "What the court decided") runs bold.
+          if (i === 0 && /^What the .* decided$/.test(s[0])) {
             const parts = splitFirstSentence(p);
             return '<p><strong>' + esc(parts[0]) + '</strong>' + esc(parts[1]) + '</p>';
           }
