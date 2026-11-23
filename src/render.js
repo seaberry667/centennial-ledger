@@ -486,6 +486,69 @@ function cardGridWithAd(articles, opts = {}) {
 }
 
 /**
+ * Listing pagination (owner directive, 2026-11-23): page 1 of a
+ * section, Local hub or region listing carries the featured top
+ * story plus FORTY grid cards (41 total); every later page is the
+ * grid alone, forty at a time, with no top story. Returns the
+ * clamped page, the featured story (page 1 only) and the grid
+ * slice for the page.
+ */
+const LISTING_PAGE_SIZE = 40;
+function paginateListing(items, rawPage) {
+  const total = items.length;
+  const totalPages =
+    total <= LISTING_PAGE_SIZE + 1
+      ? 1
+      : 1 + Math.ceil((total - LISTING_PAGE_SIZE - 1) / LISTING_PAGE_SIZE);
+  let page = parseInt(rawPage, 10);
+  if (!Number.isFinite(page) || page < 1) page = 1;
+  if (page > totalPages) page = totalPages;
+  const featured = page === 1 && total ? items[0] : null;
+  const start =
+    page === 1 ? 1 : LISTING_PAGE_SIZE + 1 + (page - 2) * LISTING_PAGE_SIZE;
+  const grid = items.slice(start, start + LISTING_PAGE_SIZE);
+  return { page, totalPages, featured, grid };
+}
+
+/**
+ * One page of listing cards (owner directive, 2026-11-23): a
+ * leaderboard sits after row 2 (eight cards) and after row 6
+ * (twenty-four cards) of the four-column grid; the page's bottom
+ * leaderboard is the caller's .final-ad. Shorter grids simply
+ * omit the breaks they never reach.
+ */
+function paginatedCardGrid(cards) {
+  if (!cards.length) return '';
+  const chunks = [cards.slice(0, 8)];
+  if (cards.length > 8) chunks.push(cards.slice(8, 24));
+  if (cards.length > 24) chunks.push(cards.slice(24, 40));
+  return chunks
+    .map(
+      (chunk, idx) =>
+        (idx ? '<div class="grid-ad">' + leaderboardAdSlot() + '</div>' : '') +
+        '<div class="grid grid-4col">' +
+        chunk.map((a) => articleCard(a, { kicker: false })).join('') +
+        '</div>'
+    )
+    .join('');
+}
+
+/** Newer/Older pager under a paginated listing; absent on one page. */
+function listingPager(basePath, page, totalPages) {
+  if (totalPages <= 1) return '';
+  const link = (p, label) =>
+    '<a class="pager-link" href="' + basePath + '?page=' + p + '">' + label + '</a>';
+  const off = (label) => '<span class="pager-link pager-off">' + label + '</span>';
+  return (
+    '<nav class="listing-pager" aria-label="Listing pages">' +
+    (page > 1 ? link(page - 1, '&larr; Newer') : off('&larr; Newer')) +
+    '<span class="pager-status">Page ' + page + ' of ' + totalPages + '</span>' +
+    (page < totalPages ? link(page + 1, 'Older &rarr;') : off('Older &rarr;')) +
+    '</nav>'
+  );
+}
+
+/**
  * Breaking news ticker (owner request, 2026-11-08): a red bar
  * directly under the top (weather) bar on every page, scrolling
  * the six most recent story headlines, newest first — the server
@@ -1128,6 +1191,11 @@ ins.adsbygoogle[data-ad-status="unfilled"]{display:none}
 .rail-group-title a:hover{text-decoration:underline}
 .sports-line{font-family:var(--font-ui);font-size:.9rem;padding:.38rem 0;border-bottom:1px solid var(--color-border)}
 .sports-line:last-child{border-bottom:0;padding-bottom:0}
+.listing-pager{display:flex;justify-content:center;align-items:center;gap:1.1rem;margin:1.7rem 0 .3rem;font-family:var(--font-ui)}
+.pager-link{font-weight:700;font-size:.9rem;color:var(--color-navy);text-decoration:none;border:1px solid var(--color-border);padding:.45rem .95rem;background:#fff}
+a.pager-link:hover{border-color:var(--color-gold)}
+.pager-off{color:var(--color-muted)}
+.pager-status{font-size:.82rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--color-muted)}
 .rail-row-text h4{font-family:var(--font-headline);font-size:1.03rem;line-height:1.28;margin:.15rem 0 .3rem}
 .rail-row-text h4 a{text-decoration:none}
 .rail-row-text h4 a:hover{text-decoration:underline}
@@ -2989,7 +3057,7 @@ function homePage({ lead, second, third, gridFeatures, latest, railGroups, lates
   });
 }
 
-function sectionPage({ section, articles }) {
+function sectionPage({ section, articles, page: rawPage }) {
   const name = sectionName(section);
   const jsonLd = [
     {
@@ -3024,21 +3092,24 @@ function sectionPage({ section, articles }) {
   const satireItems = section === 'opinion' ? articles.filter(isSatire) : [];
   const cardItems =
     section === 'opinion' ? articles.filter((a) => !isSatire(a)) : articles;
-  // The most recent story leads the page as a featured article
-  // below the H1 and the opening paragraph, and the grids carry
-  // the rest (owner directive, 2026-11-21).
+  // Paginated listing (owner directive, 2026-11-23): page 1 leads
+  // with the most recent story as a featured article below the H1
+  // and the opening paragraph, plus forty grid cards; later pages
+  // are the grid alone. The Opinion satire block rides page 1 only.
+  const pg = paginateListing(cardItems, rawPage);
   const listing =
-    (cardItems.length
-      ? featureDivider() + featureStory(cardItems[0], { heading: 'h2' }) + featureDivider()
+    (pg.featured
+      ? featureDivider() + featureStory(pg.featured, { heading: 'h2' }) + featureDivider()
       : '') +
-    cardGridWithAd(cardItems.slice(1), { kicker: false }) +
-    (satireItems.length
+    paginatedCardGrid(pg.grid) +
+    (pg.page === 1 && satireItems.length
       ? featureDivider() +
         '<h2 class="section-subhead">Satire &amp; Editorial Cartoons</h2>' +
         '<div class="satire-list">' +
         satireItems.map(satireListItem).join('') +
         '</div>'
-      : '');
+      : '') +
+    listingPager('/section/' + section, pg.page, pg.totalPages);
   // No small red section-name label above the title (owner
   // instruction, 2026-11-03): the H1 alone heads the page.
   // Section H1s carry the full masthead form (owner directive,
@@ -3064,8 +3135,8 @@ function sectionPage({ section, articles }) {
     sectionIntro(section) +
     // Politics carries the perennial Federal Lawsuit Tracker guide
     // as a pinned promo above the story listing (owner order,
-    // 2026-11-23).
-    (section === 'politics'
+    // 2026-11-23) — page 1 of the listing only.
+    (section === 'politics' && pg.page === 1
       ? '<a class="trk-promo" href="/politics/federal-lawsuit-tracker">' +
         '<span class="trk-promo-kicker">Perennial Guide</span>' +
         '<span class="trk-promo-title" style="display:block">Colorado vs. the Constitution: Federal Lawsuit Tracker</span>' +
@@ -3083,7 +3154,7 @@ function sectionPage({ section, articles }) {
     // directive, same day).
     '<div class="final-ad">' + leaderboardAdSlot() + '</div>';
   return layout({
-    title: fitTitle(meta.title, 70),
+    title: fitTitle(meta.title + (pg.page > 1 ? ' — Page ' + pg.page : ''), 70),
     description: fitDescription(meta.description),
     path: '/section/' + section,
     jsonLd,
@@ -3128,7 +3199,8 @@ function collectionJsonLd(name, path, articles) {
 }
 
 /** The Local section hub: all Local stories plus the parts-of-the-state list. */
-function localHubPage({ articles }) {
+function localHubPage({ articles, page: rawPage }) {
+  const pg = paginateListing(articles, rawPage);
   // Same no-kicker rule as the section pages (owner, 2026-11-03).
   const body =
     leaderboardAdSlot() +
@@ -3136,18 +3208,19 @@ function localHubPage({ articles }) {
     sectionIntro('local') +
     regionNavList('') +
     (articles.length
-      ? // Featured article at the top: the most recent story,
-        // below the H1 and the opening paragraph (owner
-        // directive, 2026-11-21); the grids carry the rest.
-        featureDivider() +
-        featureStory(articles[0], { heading: 'h2' }) +
-        featureDivider() +
-        cardGridWithAd(articles.slice(1), { kicker: false })
+      ? // Paginated listing (owner directive, 2026-11-23): page 1
+        // leads with the most recent story as a featured article
+        // plus forty grid cards; later pages are the grid alone.
+        (pg.featured
+          ? featureDivider() + featureStory(pg.featured, { heading: 'h2' }) + featureDivider()
+          : '') +
+        paginatedCardGrid(pg.grid) +
+        listingPager('/section/local', pg.page, pg.totalPages)
       : '<p>No local stories yet. Check back after the next edition.</p>') +
     '<div class="final-ad">' + leaderboardAdSlot() + '</div>';
 
   return layout({
-    title: fitTitle(SECTION_META.local.title, 70),
+    title: fitTitle(SECTION_META.local.title + (pg.page > 1 ? ' — Page ' + pg.page : ''), 70),
     description: fitDescription(SECTION_META.local.description),
     path: '/section/local',
     jsonLd: collectionJsonLd('Local News | ' + SITE_NAME, '/section/local', articles),
@@ -3215,7 +3288,8 @@ const REGION_H1 = {
   'san-luis-valley': 'San Luis Valley News',
 };
 
-function localRegionPage({ region, articles }) {
+function localRegionPage({ region, articles, page: rawPage }) {
+  const pg = paginateListing(articles, rawPage);
   const path = '/local/' + region.slug;
   const body =
     leaderboardAdSlot() +
@@ -3227,13 +3301,14 @@ function localRegionPage({ region, articles }) {
     '<h1 class="headline" style="font-size:2.4rem">' + esc(REGION_H1[region.slug] || region.name) + '</h1>' +
     regionIntro(region) +
     (articles.length
-      ? // Featured article at the top: the region's most recent
-        // story, below the H1 and the opening paragraph (owner
-        // directive, 2026-11-21); the grids carry the rest.
-        featureDivider() +
-        featureStory(articles[0], { heading: 'h2' }) +
-        featureDivider() +
-        cardGridWithAd(articles.slice(1), { kicker: false })
+      ? // Paginated listing (owner directive, 2026-11-23): page 1
+        // leads with the region's most recent story as a featured
+        // article plus forty grid cards; later pages are grid only.
+        (pg.featured
+          ? featureDivider() + featureStory(pg.featured, { heading: 'h2' }) + featureDivider()
+          : '') +
+        paginatedCardGrid(pg.grid) +
+        listingPager(path, pg.page, pg.totalPages)
       : '<p>No local stories from ' + esc(region.name) + ' yet. Check back after the next edition.</p>') +
     // The page's last element now that the hub box moved to the
     // top: the .final-ad wrapper, so its spacing matches every
@@ -3243,7 +3318,8 @@ function localRegionPage({ region, articles }) {
   const seo = REGION_SEO[region.slug] || {};
   return layout({
     title: fitTitle(
-      seo.title || region.name + ' local news: counties, cities and school boards',
+      (seo.title || region.name + ' local news: counties, cities and school boards') +
+        (pg.page > 1 ? ' — Page ' + pg.page : ''),
       70
     ),
     description: fitDescription(

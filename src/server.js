@@ -446,14 +446,14 @@ app.get('/section/:slug', async (req, res) => {
   const section = SECTIONS.find((s) => s.slug === req.params.slug);
   if (!section) return res.status(404).type('html').send(notFound());
   if (section.slug === 'opinion') {
-    const articles = await store.listOpinionArticles(120);
-    return res.type('html').send(render.sectionPage({ section: 'opinion', articles }));
+    const articles = await store.listOpinionArticles(500);
+    return res.type('html').send(render.sectionPage({ section: 'opinion', articles, page: req.query.page }));
   }
-  const articles = await store.listArticles({ section: section.slug, limit: 120 });
+  const articles = await store.listArticles({ section: section.slug, limit: 500 });
   if (section.slug === 'local') {
-    return res.type('html').send(render.localHubPage({ articles }));
+    return res.type('html').send(render.localHubPage({ articles, page: req.query.page }));
   }
-  res.type('html').send(render.sectionPage({ section: section.slug, articles }));
+  res.type('html').send(render.sectionPage({ section: section.slug, articles, page: req.query.page }));
 });
 
 app.get('/local/:region', async (req, res) => {
@@ -463,8 +463,8 @@ app.get('/local/:region', async (req, res) => {
   // primary category (owner restructure, 2026-11-08): a statewide
   // subject story keeps its regional association, and the region
   // page is where that association shows.
-  const articles = await store.listArticles({ region: region.slug, limit: 120 });
-  res.type('html').send(render.localRegionPage({ region, articles }));
+  const articles = await store.listArticles({ region: region.slug, limit: 500 });
+  res.type('html').send(render.localRegionPage({ region, articles, page: req.query.page }));
 });
 
 /* Article plate images at a real URL, so social platforms can fetch
