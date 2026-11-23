@@ -545,8 +545,12 @@ function chip(kind, text, esc) {
 
 function voteBar(c, esc) {
   if (!c.vote) {
+    // Pending: nine dashed segments mirroring the decided cards'
+    // vote bars, so the empty row reads as "not yet voted."
+    let segs = '';
+    for (let i = 0; i < 9; i++) segs += '<span class="trk-seg trk-seg-pending"></span>';
     return (
-      '<div class="trk-vote trk-vote-pending"><span class="trk-vote-track"></span>' +
+      '<div class="trk-vote trk-vote-pending"><span class="trk-vote-bar">' + segs + '</span>' +
       '<span class="trk-vote-note">' + esc(c.voteNote) + '</span></div>'
     );
   }
@@ -659,6 +663,8 @@ function renderTrackerPage(h) {
     '<h1 class="headline trk-h1">Colorado vs. the Constitution: Federal Lawsuit Tracker</h1>' +
     '<p class="dek trk-dek">Colorado keeps testing the limits of constitutional rights. Federal judges keep reminding the state where those limits are.</p>' +
     '<p class="trk-updated">Last updated: ' + UPDATED + ' · The Centennial Ledger</p>' +
+    '<figure class="trk-hero"><img src="/images/federal-lawsuit-tracker-plate.webp" alt="Engraving of the U.S. Supreme Court building with the Colorado flag and the scales of justice">' +
+    '<figcaption>The U.S. Supreme Court in Washington, where Colorado keeps ending up. AI illustration.</figcaption></figure>' +
     '<div class="trk-prose">' + paras(INTRO) + '</div>' +
     scoreboard +
     sectionHead('The Scorecard', "Colorado's Constitutional Litigation: Current Status", esc) +
