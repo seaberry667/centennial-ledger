@@ -975,7 +975,7 @@ ins.adsbygoogle[data-ad-status="unfilled"]{display:none}
    for 24 hours only. The render gate in homePage stops emitting it
    after 2026-11-24T01:15:00Z (24h from placement), so it removes
    itself with no second deploy. */
-.win-banner{margin:0 0 1.1rem}
+.win-banner{margin:0}
 .win-banner img{display:block;width:100%;height:auto}
 /* Homepage feature grid (owner directive, 2026-11-21): eight more
    feature stories as compact cards, two wide and four long, inside
@@ -1869,7 +1869,7 @@ function broncosWinBanner() {
   return '<div class="win-banner"><picture>' +
     '<source srcset="/broncos-win.webp" type="image/webp">' +
     '<img src="/broncos-win.png" alt="Broncos Win! Cartoon of a Bronco running with the football past a flattened Raider" width="2172" height="724">' +
-    '</picture></div>';
+    '</picture></div>' + featureDivider();
 }
 
 /**
