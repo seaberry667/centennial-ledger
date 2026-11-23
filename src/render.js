@@ -9,6 +9,7 @@
 
 const { SECTIONS, REGIONS, sectionName, isSatire, regionSlug } = require('./store');
 const { topbarSegment } = require('./weather');
+const tracker = require('./tracker');
 
 const SITE_NAME = 'The Centennial Ledger';
 const TAGLINE = 'A Clear View of Colorado';
@@ -977,6 +978,106 @@ ins.adsbygoogle[data-ad-status="unfilled"]{display:none}
    itself with no second deploy. */
 .win-banner{margin:0}
 .win-banner img{display:block;width:100%;height:auto}
+/* Federal Lawsuit Tracker (perennial Politics guide, 2026-11-23):
+   scoreboard band, status table, case cards with vote-split bars
+   and a taxpayer-cost chart, all in the site palette. */
+.trk-kicker{font-family:var(--font-ui);font-size:.78rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--color-red);margin-top:1rem}
+.trk-h1{font-size:2.6rem;margin:.35rem 0 .5rem}
+.trk-dek{font-size:1.25rem}
+.trk-updated{font-family:var(--font-ui);font-size:.82rem;color:var(--color-muted);border-bottom:1px solid var(--color-border);padding-bottom:.9rem;margin-bottom:1.1rem}
+.trk-prose p{font-size:1.05rem;line-height:1.65;margin:.7rem 0}
+.trk-board{background:var(--color-navy);color:var(--color-ivory);padding:1.3rem 1.5rem 1.2rem;margin:1.6rem 0 .4rem}
+.trk-board-title{font-family:var(--font-ui);font-size:.8rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--color-gold);border-bottom:1px solid rgba(248,244,235,.25);padding-bottom:.55rem}
+.trk-stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:1rem;margin-top:1rem}
+.trk-stat{display:flex;flex-direction:column;gap:.15rem}
+.trk-stat-num{font-family:var(--font-headline);font-size:2rem;font-weight:800;line-height:1;color:#fff}
+.trk-num-loss{color:#EBA9AC}
+.trk-num-pending{color:var(--color-gold)}
+.trk-num-cost{color:var(--color-gold)}
+.trk-stat-label{font-family:var(--font-ui);font-size:.74rem;line-height:1.35;color:rgba(248,244,235,.85)}
+.trk-record{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:1.1rem}
+.trk-pill{font-family:var(--font-ui);font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:.28rem .55rem;border:1px solid rgba(248,244,235,.4);color:var(--color-ivory)}
+.trk-pill-loss{border-color:#EBA9AC;color:#EBA9AC}
+.trk-pill-win{border-color:#fff;color:#fff}
+.trk-pill-pending{border-color:var(--color-gold);color:var(--color-gold)}
+.trk-section-head{margin:2.6rem 0 1rem}
+.trk-section-head .trk-kicker{margin-top:0}
+.trk-h2{font-family:var(--font-headline);font-size:1.9rem;font-weight:800;line-height:1.15;margin:.3rem 0 0}
+.trk-rule{width:64px;height:3px;background:var(--color-gold);margin-top:.55rem}
+.trk-table-wrap{overflow-x:auto;border:1px solid var(--color-border)}
+.trk-table{width:100%;border-collapse:collapse;font-size:.95rem}
+.trk-table th{font-family:var(--font-ui);font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;text-align:left;background:var(--color-navy);color:var(--color-ivory);padding:.6rem .8rem}
+.trk-table td{padding:.6rem .8rem;border-top:1px solid var(--color-border);vertical-align:top}
+.trk-table tbody tr:nth-child(even){background:var(--color-ivory)}
+.trk-table td:first-child{font-family:var(--font-headline);font-weight:700}
+.trk-table td a{color:var(--color-navy);text-decoration:none}
+.trk-table td a:hover{text-decoration:underline}
+.trk-chip{display:inline-block;font-family:var(--font-ui);font-size:.76rem;font-weight:600;line-height:1.3;padding:.22rem .5rem;border:1px solid;border-radius:2px}
+.trk-chip-loss{background:#F9E8E9;color:#7E161C;border-color:#E3B7BA}
+.trk-chip-win{background:#E8EDF3;color:var(--color-navy);border-color:#B9C6D4}
+.trk-chip-pending{background:#F5EDD9;color:#7A5E22;border-color:#DCC794}
+.trk-chip-mixed{background:#F1EFE9;color:#555555;border-color:var(--color-border)}
+.trk-note{background:var(--color-ivory);border-left:3px solid var(--color-gold);padding:.9rem 1.1rem;margin:1.2rem 0;font-size:.95rem;line-height:1.55}
+.trk-promo{display:block;background:var(--color-navy);color:var(--color-ivory);padding:1.1rem 1.3rem;margin:1.2rem 0 .4rem;text-decoration:none;border-left:4px solid var(--color-gold)}
+.trk-promo:hover{text-decoration:none}
+.trk-promo-kicker{font-family:var(--font-ui);font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--color-gold)}
+.trk-promo-title{font-family:var(--font-headline);font-size:1.35rem;font-weight:800;line-height:1.2;margin:.3rem 0}
+.trk-promo-line{font-size:.95rem;line-height:1.5;color:rgba(248,244,235,.88)}
+.trk-promo-cta{font-family:var(--font-ui);font-size:.82rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#fff;margin-top:.5rem;display:inline-block}
+.trk-lede{font-size:1.02rem;line-height:1.6;color:#333;margin:.4rem 0 1rem}
+.trk-card{border:1px solid var(--color-border);border-top:2px solid var(--color-gold);background:#fff;padding:1.3rem 1.5rem 1.1rem;margin:1.3rem 0}
+.trk-card-head{display:flex;align-items:flex-start;gap:.8rem}
+.trk-card-num{flex:none;width:2rem;height:2rem;background:var(--color-navy);color:var(--color-ivory);font-family:var(--font-headline);font-weight:800;font-size:1.05rem;display:flex;align-items:center;justify-content:center}
+.trk-card-title{font-family:var(--font-headline);font-size:1.4rem;font-weight:800;line-height:1.2;margin:.15rem 0 0}
+.trk-card-year{color:var(--color-muted);font-weight:400}
+.trk-outcome{margin:.8rem 0 .2rem}
+.trk-vote{display:flex;align-items:center;gap:.8rem;margin:.7rem 0 .3rem;flex-wrap:wrap}
+.trk-vote-bar{display:flex;gap:3px}
+.trk-seg{width:26px;height:12px;background:#EDEAE0;border:1px solid var(--color-border)}
+.trk-seg-majority.trk-seg-loss{background:var(--color-red);border-color:var(--color-red)}
+.trk-seg-majority.trk-seg-win{background:var(--color-navy);border-color:var(--color-navy)}
+.trk-vote-pending .trk-vote-track{width:238px;height:12px;border:1px dashed var(--color-gold);background:#FBF6E9}
+.trk-vote-note{font-family:var(--font-ui);font-size:.8rem;font-weight:600;color:var(--color-muted)}
+.trk-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.6rem 1.4rem;background:var(--color-ivory);padding:.8rem 1rem;margin:.9rem 0}
+.trk-meta dt{font-family:var(--font-ui);font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--color-muted)}
+.trk-meta dd{margin:.15rem 0 0;font-weight:600;font-size:.95rem}
+.trk-subhead{font-family:var(--font-ui);font-size:.8rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--color-navy);margin:1.15rem 0 .35rem}
+.trk-card p{font-size:1rem;line-height:1.62;margin:.45rem 0}
+.trk-source{font-family:var(--font-ui);font-size:.8rem;color:var(--color-muted);border-top:1px dashed var(--color-border);padding-top:.6rem;margin-top:1rem}
+.trk-chart{border:1px solid var(--color-border);padding:1.1rem 1.2rem .9rem;margin:1.2rem 0}
+.trk-chart-row{display:grid;grid-template-columns:minmax(180px,1fr) 2fr auto;gap:1rem;align-items:center;margin:.55rem 0}
+.trk-chart-name{font-family:var(--font-headline);font-weight:700;font-size:.95rem}
+.trk-chart-track{background:#EDEAE0;height:18px}
+.trk-chart-bar{display:block;height:100%;background:var(--color-navy)}
+.trk-chart-row:first-child .trk-chart-bar{background:var(--color-red)}
+.trk-chart-amt{font-family:var(--font-ui);font-weight:700;font-size:.9rem;white-space:nowrap}
+.trk-chart-total{display:flex;justify-content:space-between;align-items:center;gap:1rem;background:var(--color-navy);color:var(--color-ivory);padding:.7rem .9rem;margin-top:.9rem;font-family:var(--font-ui);font-size:.85rem;letter-spacing:.04em;text-transform:uppercase}
+.trk-chart-total strong{font-family:var(--font-headline);font-size:1.25rem;color:var(--color-gold);text-transform:none;letter-spacing:0;white-space:nowrap}
+.trk-themes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.2rem;margin:1rem 0}
+.trk-theme{background:var(--color-ivory);border-top:2px solid var(--color-gold);padding:1rem 1.1rem}
+.trk-theme h3{font-family:var(--font-headline);font-size:1.12rem;font-weight:800;line-height:1.25;margin:0 0 .4rem}
+.trk-theme-cases{font-family:var(--font-ui);font-size:.74rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--color-red)}
+.trk-theme p{font-size:.95rem;line-height:1.55}
+.trk-quote{font-family:var(--font-headline);font-style:italic;font-size:1.45rem;line-height:1.4;color:var(--color-navy);text-align:center;border-top:2px solid var(--color-gold);border-bottom:2px solid var(--color-gold);padding:1.3rem 2rem;margin:2rem 0}
+.trk-method p{font-size:1rem;line-height:1.6}
+.trk-monitor{line-height:1.6}
+.trk-src-group{font-family:var(--font-headline);font-size:1.15rem;font-weight:800;margin:1.3rem 0 .4rem}
+.trk-sources{font-size:.92rem;line-height:1.5;padding-left:1.4rem}
+.trk-sources li{margin:.3rem 0}
+.trk-sources a{color:var(--color-navy)}
+@media (max-width:900px){
+  .trk-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .trk-themes{grid-template-columns:minmax(0,1fr)}
+  .trk-chart-row{grid-template-columns:minmax(0,1fr);gap:.3rem}
+  .trk-chart-amt{white-space:normal}
+}
+@media (max-width:767px){
+  .trk-h1{font-size:2rem}
+  .trk-seg{width:19px}
+  .trk-vote-pending .trk-vote-track{width:174px}
+  .trk-card{padding:1.1rem 1rem .9rem}
+  .trk-quote{font-size:1.2rem;padding:1.1rem .8rem}
+}
 /* Homepage feature grid (owner directive, 2026-11-21): eight more
    feature stories as compact cards, two wide and four long, inside
    the main column under the two full features. Cards reuse the
@@ -2930,6 +3031,16 @@ function sectionPage({ section, articles }) {
     leaderboardAdSlot() +
     '<h1 class="headline" style="font-size:2.4rem">' + esc(h1) + '</h1>' +
     sectionIntro(section) +
+    // Politics carries the perennial Federal Lawsuit Tracker guide
+    // as a pinned promo above the story listing (owner order,
+    // 2026-11-23).
+    (section === 'politics'
+      ? '<a class="trk-promo" href="/politics/federal-lawsuit-tracker">' +
+        '<span class="trk-promo-kicker">Perennial Guide</span>' +
+        '<span class="trk-promo-title" style="display:block">Colorado vs. the Constitution: Federal Lawsuit Tracker</span>' +
+        '<span class="trk-promo-line" style="display:block">Every major federal case against Colorado\'s laws in one place: what the state tried to do, what the courts decided, and the $7.82 million taxpayers have paid in fee settlements.</span>' +
+        '<span class="trk-promo-cta">Read the tracker &rarr;</span></a>'
+      : '') +
     (articles.length
       ? listing
       : '<p>No stories in this section yet. Check back after the next edition.</p>') +
@@ -4106,6 +4217,20 @@ function simplePage(title, heading, text, path, description) {
   });
 }
 
+/** The Federal Lawsuit Tracker guide page (see src/tracker.js). */
+function lawsuitTrackerPage() {
+  return tracker.renderTrackerPage({
+    layout,
+    esc,
+    leaderboardAdSlot,
+    featureDivider,
+    absUrl,
+    fitTitle,
+    fitDescription,
+    siteName: SITE_NAME,
+  });
+}
+
 module.exports = {
   SITE_NAME,
   TAGLINE,
@@ -4117,6 +4242,7 @@ module.exports = {
   fmtDate,
   homePage,
   sectionPage,
+  lawsuitTrackerPage,
   localHubPage,
   localRegionPage,
   articlePage,

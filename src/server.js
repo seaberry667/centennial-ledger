@@ -672,6 +672,13 @@ app.get('/editorial-standards', (req, res) => {
   res.type('html').send(render.staticPage('editorial-standards'));
 });
 
+// Perennial guide filed under Politics (owner order, 2026-11-23):
+// the Federal Lawsuit Tracker, a designed page rather than a
+// standard article (see src/tracker.js).
+app.get('/politics/federal-lawsuit-tracker', (req, res) => {
+  res.type('html').send(render.lawsuitTrackerPage());
+});
+
 app.get('/signin', (req, res) => {
   res.type('html').send(
     render.simplePage(
@@ -1195,6 +1202,7 @@ app.get('/sitemap.xml', async (req, res) => {
       priority: '0.7',
     })),
     { loc: base + '/explained', changefreq: 'weekly', priority: '0.8' },
+    { loc: base + '/politics/federal-lawsuit-tracker', changefreq: 'weekly', priority: '0.8' },
     { loc: base + '/podcast', changefreq: 'daily', priority: '0.6' },
     ...briefPages.map((p) => ({
       loc: base + '/podcast/' + p.date,
