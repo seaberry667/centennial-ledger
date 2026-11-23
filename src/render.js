@@ -375,7 +375,7 @@ function articleFigure(a, extraClass, opts) {
  * whatever opening it has. Returns '' when the story has no body
  * text (the caller then falls back to headline/dek/figure).
  */
-function leadExcerpt(a, targetWords) {
+function leadExcerpt(a, targetWords, dropLast) {
   const first = a && Array.isArray(a.sections) ? a.sections[0] : null;
   if (!first) return '';
   const texts = [];
@@ -394,6 +394,9 @@ function leadExcerpt(a, targetWords) {
     kept.push(b);
     used += wordCount(b.text);
   }
+  // Homepage lead feature only (owner instruction, 2026-11-23): one
+  // paragraph shorter than the standard excerpt.
+  if (dropLast && kept.length > 1) kept.pop();
   return kept
     .map((b, i) => {
       // The excerpt's first paragraph carries the red drop cap,
@@ -2114,7 +2117,7 @@ function featureStory(a, opts = {}) {
   // featured article's headline renders as an H2 with the same
   // .feature-headline dress (owner directive, 2026-11-21).
   const tag = opts.heading === 'h2' ? 'h2' : 'h1';
-  const excerpt = leadExcerpt(a);
+  const excerpt = leadExcerpt(a, undefined, !!opts.trimExcerpt);
   let s =
     '<section class="lead-story"><' + tag + ' class="headline feature-headline"><a style="text-decoration:none" href="/article/' +
     esc(a.slug) + '">' + esc(a.headline) + '</a></' + tag + '>' +
@@ -2983,7 +2986,7 @@ function homePage({ lead, second, third, gridFeatures, latest, railGroups, lates
     // an Opinion piece exists) and the three-card "Latest from
     // Colorado" grid. The lead
     // and third feature were pulled out of `latest` by the route.
-    let features = broncosWinBanner() + featureStory(lead);
+    let features = broncosWinBanner() + featureStory(lead, { trimExcerpt: true });
     // Second feature, directly under the lead in the
     // same format (the most recent news story after the lead,
     // selected by the home route), with the gold filigree divider
