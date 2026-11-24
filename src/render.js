@@ -3930,8 +3930,12 @@ function articlePage(a, related, localStories, explainedRelated, podcast, briefD
   }
 
   if (related && related.length) {
+    // "More in <Section>" grid (owner order, 2026-11-24): the
+    // section pages' four-across card grid, two rows deep (the
+    // route passes up to eight related stories), spanning the
+    // full page width below the article columns.
     body += '<h2 style="font-family:\'Playfair Display\',Georgia,serif">More in ' + esc(sectionName(a.section)) +
-      '</h2><div class="grid">' + related.map(articleCard).join('') + '</div>';
+      '</h2><div class="grid grid-4col">' + related.map(articleCard).join('') + '</div>';
   }
   // The section's end-of-page SEO blurb (hubBox) belongs ONLY on
   // the section's main page, never on articles in that section

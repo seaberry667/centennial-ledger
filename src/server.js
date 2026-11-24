@@ -572,7 +572,7 @@ app.get('/article/:slug', async (req, res) => {
     const older = idx >= 0 && idx < comics.length - 1 ? comics[idx + 1] : null;
     return res.type('html').send(render.satirePage(article, older, newer));
   }
-  const related = (await store.listArticles({ section: article.section, limit: 4 })).filter(
+  const related = (await store.listArticles({ section: article.section, limit: 9 })).filter(
     (a) => a.slug !== article.slug
   );
   // Local & Statewide (design addendum): the eight most recently
@@ -616,7 +616,7 @@ app.get('/article/:slug', async (req, res) => {
   res.type('html').send(
     render.articlePage(
       article,
-      related.slice(0, 3),
+      related.slice(0, 8),
       localStories,
       explainedRelated,
       podcastFeed.latestEpisode(),
