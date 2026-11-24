@@ -2101,6 +2101,33 @@ function broncosWinBanner() {
     '</picture></div>' + featureDivider();
 }
 
+/** Seasonal hero banners (owner order, 2026-11-24): owner-supplied Bronco
+ * engravings shown above the top headline on set Denver dates, each
+ * removing itself when its window ends — Thanksgiving Day (Nov 26),
+ * skiing Fri–Sun Nov 27–29, Christmas Dec 21–25. */
+function seasonalHeroBanner() {
+  const parts = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Denver', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date());
+  const pv = {};
+  for (const p of parts) pv[p.type] = p.value;
+  const day = pv.year + '-' + pv.month + '-' + pv.day;
+  let file = null, alt = '', w = 0, h = 0;
+  if (day === '2026-11-26') {
+    file = 'hero-thanksgiving-2026'; w = 1854; h = 712;
+    alt = 'A Bronco napping on the couch after Thanksgiving dinner, engraving';
+  } else if (day >= '2026-11-27' && day <= '2026-11-29') {
+    file = 'hero-skiing-2026'; w = 1929; h = 764;
+    alt = 'A Bronco skiing down a Colorado mountain slope, engraving';
+  } else if (day >= '2026-12-21' && day <= '2026-12-25') {
+    file = 'hero-christmas-2026'; w = 1568; h = 724;
+    alt = 'A Bronco opening a Christmas gift — a Broncos jersey — on the couch, engraving';
+  }
+  if (!file) return '';
+  return '<div class="win-banner"><picture>' +
+    '<source srcset="/' + file + '.webp" type="image/webp">' +
+    '<img src="/' + file + '.png" alt="' + alt + '" width="' + w + '" height="' + h + '">' +
+    '</picture></div>' + featureDivider();
+}
+
 /**
  * One homepage feature block (redesign spec 3.3), in order: headline
  * (no category label above it — owner instruction, 2026-11-02),
@@ -2986,7 +3013,7 @@ function homePage({ lead, second, third, gridFeatures, latest, railGroups, lates
     // an Opinion piece exists) and the three-card "Latest from
     // Colorado" grid. The lead
     // and third feature were pulled out of `latest` by the route.
-    let features = broncosWinBanner() + featureStory(lead, { trimExcerpt: true });
+    let features = seasonalHeroBanner() + broncosWinBanner() + featureStory(lead, { trimExcerpt: true });
     // Second feature, directly under the lead in the
     // same format (the most recent news story after the lead,
     // selected by the home route), with the gold filigree divider
