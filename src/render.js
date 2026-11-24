@@ -3892,10 +3892,10 @@ function articlePage(a, related, localStories, explainedRelated, podcast, briefD
   }
   body += '</div></article>';
   // Article sidebar: the same right column as the homepage rail,
-  // minus the Sports score strip (owner order, 2026-11-24) — the
-  // podcast box, the per-section story groups, the newsletter
-  // (Briefing) signup, Local & Statewide, then a single rectangle
-  // advertisement.
+  // minus the Sports score strip and minus Local & Statewide
+  // (owner orders, 2026-11-24) — the podcast box, the per-section
+  // story groups, the newsletter (Briefing) signup, then a single
+  // rectangle advertisement.
   const aGroups = (Array.isArray(railGroups) ? railGroups : [])
     .filter((g) => g && Array.isArray(g.articles) && g.articles.length);
   body +=
@@ -3906,7 +3906,6 @@ function articlePage(a, related, localStories, explainedRelated, podcast, briefD
         aGroups.map(railSectionGroup).join('') + '</section>'
       : '') +
     briefingBox(false, 'article') +
-    localStatewideBox(localStories) +
     rectangleAdSlot() +
     '</aside></div>';
 
