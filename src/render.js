@@ -2156,11 +2156,11 @@ function seasonalHeroBanner() {
 /** Colorado event hero banners (owner order, 2026-11-24): twelve
  * owner-supplied event banners, each shown in the hero position from
  * 7 days before its event starts through the event's last day
- * (Denver dates). The January–April calendar overlaps, so when more
- * than one window is open the banner of an event that is actually
- * running wins (earliest end first; ties go to the later start), and
- * lead-in weeks only fill days when nothing is running (next event
- * to start first). Dates below are the ones printed on each banner. */
+ * (Denver dates). When one event's lead-in week overlaps another
+ * event, the overlapping banners alternate days (owner order,
+ * 2026-11-24): the banners whose windows are open rotate one per
+ * day in event-start order. A one-day event always takes its own
+ * day. Dates below are the ones printed on each banner. */
 const EVENT_HEROES = [
   { file: 'event-stock-show-2027', start: '2027-01-09', end: '2027-01-24', w: 2804, h: 561, alt: 'National Western Stock Show, Denver, January 9–24, 2027 — engraving of the Bronco leading a prize steer' },
   { file: 'event-sundance-2027', start: '2027-01-21', end: '2027-01-31', w: 2804, h: 561, alt: 'Sundance Film Festival, Boulder, January 21–31, 2027 — engraving of the Bronco with a film camera' },
@@ -2187,14 +2187,13 @@ function eventHeroBanner() {
   const day = pv.year + '-' + pv.month + '-' + pv.day;
   const open = EVENT_HEROES.filter((e) => day >= heroWindowStart(e.start) && day <= e.end);
   if (!open.length) return '';
-  const running = open.filter((e) => day >= e.start);
-  let pick;
-  if (running.length) {
-    running.sort((a, b) => (a.end === b.end ? b.start.localeCompare(a.start) : a.end.localeCompare(b.end)));
-    pick = running[0];
-  } else {
-    open.sort((a, b) => a.start.localeCompare(b.start));
-    pick = open[0];
+  open.sort((a, b) => a.start.localeCompare(b.start));
+  let pick = open.find((e) => e.start === e.end && e.start === day);
+  if (!pick) {
+    const dayStart = new Date(day + 'T12:00:00Z');
+    const yearStart = new Date(pv.year + '-01-01T12:00:00Z');
+    const dayOfYear = Math.round((dayStart - yearStart) / 86400000) + 1;
+    pick = open[dayOfYear % open.length];
   }
   return '<div class="win-banner"><picture>' +
     '<source srcset="/' + pick.file + '.webp" type="image/webp">' +
