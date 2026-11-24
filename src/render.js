@@ -2161,22 +2161,27 @@ function seasonalHeroBanner() {
  * event, the overlapping banners alternate days (owner order,
  * 2026-11-24): the banners whose windows are open rotate one per
  * day in event-start order. A one-day event always takes its own
- * day. Dates below are the ones printed on each banner. Entries with
- * a url link the banner through to the event's official website
- * (owner order, 2026-11-24, for the four April–May additions). */
+ * day. Dates below are the ones printed on each banner. Every
+ * banner links through to its event's official website (owner
+ * order, 2026-11-24: "Link all banners"). Two official sites would
+ * not load from this server and were pointed at the organizer's
+ * working official page instead: Steamboat Winter Carnival →
+ * sswsc.org (the host club; wintercarnivalsteamboat.com unreachable
+ * here) and the March Powwow → denvermarchpowwow.com (the .org
+ * would not load; the org runs both). */
 const EVENT_HEROES = [
-  { file: 'event-stock-show-2027', start: '2027-01-09', end: '2027-01-24', w: 2804, h: 561, alt: 'National Western Stock Show, Denver, January 9–24, 2027 — engraving of the Bronco leading a prize steer' },
-  { file: 'event-sundance-2027', start: '2027-01-21', end: '2027-01-31', w: 2804, h: 561, alt: 'Sundance Film Festival, Boulder, January 21–31, 2027 — engraving of the Bronco with a film camera' },
-  { file: 'event-ouray-ice-2027', start: '2027-01-28', end: '2027-01-31', w: 2804, h: 561, alt: 'Ouray Ice Festival, January 28–31, 2027 — engraving of the Bronco ice climbing' },
-  { file: 'event-snowdown-2027', start: '2027-01-29', end: '2027-02-07', w: 2137, h: 451, alt: 'Snowdown, Durango, January 29–February 7 — engraving of the Bronco with a snowflake flag' },
-  { file: 'event-steamboat-carnival-2027', start: '2027-02-02', end: '2027-02-07', w: 2804, h: 561, alt: 'Steamboat Winter Carnival, Steamboat Springs, February 2–7 — engraving of the Bronco skiing' },
-  { file: 'event-bluegrass-2027', start: '2027-02-12', end: '2027-02-13', w: 2132, h: 458, alt: 'Midwinter Bluegrass Festival, February 12–13 — engraving of the Bronco playing the banjo' },
-  { file: 'event-palm-tree-2027', start: '2027-02-19', end: '2027-02-20', w: 2804, h: 561, alt: 'Palm Tree Festival, Aspen, February 19–20 — engraving of the Bronco playing guitar' },
-  { file: 'event-mardi-gras-2027', start: '2027-02-27', end: '2027-02-27', w: 2146, h: 453, alt: 'Denver Mardi Gras, Greenwood Village, February 27 — engraving of the Bronco with beads and a mask' },
-  { file: 'event-restaurant-week-2027', start: '2027-03-05', end: '2027-03-14', w: 2172, h: 724, alt: 'Denver Restaurant Week, March 5–14 — engraving of the Bronco as a chef' },
-  { file: 'event-st-patricks-2027', start: '2027-03-13', end: '2027-03-13', w: 2172, h: 724, alt: "Denver St. Patrick's Day Parade, March 13 — engraving of the Bronco marching in the parade" },
-  { file: 'event-march-powwow-2027', start: '2027-03-19', end: '2027-03-21', w: 2172, h: 724, alt: 'Denver March Powwow, March 19–21 — engraving of powwow dancers' },
-  { file: 'event-frozen-dead-guy-2027', start: '2027-04-09', end: '2027-04-11', w: 2077, h: 676, alt: 'Frozen Dead Guy Days, Estes Park, April 9–11, 2027 — engraving of the Bronco beside the frozen dead guy' },
+  { file: 'event-stock-show-2027', start: '2027-01-09', end: '2027-01-24', w: 2804, h: 561, url: 'https://nationalwestern.com/', alt: 'National Western Stock Show, Denver, January 9–24, 2027 — engraving of the Bronco leading a prize steer' },
+  { file: 'event-sundance-2027', start: '2027-01-21', end: '2027-01-31', w: 2804, h: 561, url: 'https://festival.sundance.org/', alt: 'Sundance Film Festival, Boulder, January 21–31, 2027 — engraving of the Bronco with a film camera' },
+  { file: 'event-ouray-ice-2027', start: '2027-01-28', end: '2027-01-31', w: 2804, h: 561, url: 'https://ourayicepark.com/', alt: 'Ouray Ice Festival, January 28–31, 2027 — engraving of the Bronco ice climbing' },
+  { file: 'event-snowdown-2027', start: '2027-01-29', end: '2027-02-07', w: 2137, h: 451, url: 'https://snowdown.org/', alt: 'Snowdown, Durango, January 29–February 7 — engraving of the Bronco with a snowflake flag' },
+  { file: 'event-steamboat-carnival-2027', start: '2027-02-02', end: '2027-02-07', w: 2804, h: 561, url: 'https://www.sswsc.org/', alt: 'Steamboat Winter Carnival, Steamboat Springs, February 2–7 — engraving of the Bronco skiing' },
+  { file: 'event-bluegrass-2027', start: '2027-02-12', end: '2027-02-13', w: 2132, h: 458, url: 'https://midwinterbluegrass.com/', alt: 'Midwinter Bluegrass Festival, February 12–13 — engraving of the Bronco playing the banjo' },
+  { file: 'event-palm-tree-2027', start: '2027-02-19', end: '2027-02-20', w: 2804, h: 561, url: 'https://palmtreemusicfestival.com/aspen/', alt: 'Palm Tree Festival, Aspen, February 19–20 — engraving of the Bronco playing guitar' },
+  { file: 'event-mardi-gras-2027', start: '2027-02-27', end: '2027-02-27', w: 2146, h: 453, url: 'https://denvermardigras.com/', alt: 'Denver Mardi Gras, Greenwood Village, February 27 — engraving of the Bronco with beads and a mask' },
+  { file: 'event-restaurant-week-2027', start: '2027-03-05', end: '2027-03-14', w: 2172, h: 724, url: 'https://denverrestaurantweek.com/', alt: 'Denver Restaurant Week, March 5–14 — engraving of the Bronco as a chef' },
+  { file: 'event-st-patricks-2027', start: '2027-03-13', end: '2027-03-13', w: 2172, h: 724, url: 'https://denverstpatricksdayparade.com/', alt: "Denver St. Patrick's Day Parade, March 13 — engraving of the Bronco marching in the parade" },
+  { file: 'event-march-powwow-2027', start: '2027-03-19', end: '2027-03-21', w: 2172, h: 724, url: 'https://denvermarchpowwow.com/', alt: 'Denver March Powwow, March 19–21 — engraving of powwow dancers' },
+  { file: 'event-frozen-dead-guy-2027', start: '2027-04-09', end: '2027-04-11', w: 2077, h: 676, url: 'https://frozendeadguydays.com/', alt: 'Frozen Dead Guy Days, Estes Park, April 9–11, 2027 — engraving of the Bronco beside the frozen dead guy' },
   { file: 'event-biff-2027', start: '2027-04-08', end: '2027-04-11', w: 2761, h: 547, url: 'https://biff1.com/', alt: 'Boulder International Film Festival, April 8–11, 2027 — engraving of the Bronco with a film reel' },
   { file: 'event-durango-meltdown-2027', start: '2027-04-16', end: '2027-04-18', w: 2670, h: 545, url: 'https://durangomeltdown.com/', alt: 'Durango Bluegrass Meltdown, April 16–18, 2027 — engraving of the Bronco playing the fiddle' },
   { file: 'event-bigfoot-days-2027', start: '2027-04-23', end: '2027-04-24', w: 2644, h: 550, url: 'https://eventsinestes.com/bigfoot-days/', alt: 'Bigfoot Days Festival, Bond Park in Estes Park, April 23–24, 2027 — engraving of the Bronco meeting Bigfoot' },
@@ -2220,11 +2225,12 @@ function eventHeroBanner() {
  * in precedence, so Thanksgiving, the ski weekend, and Christmas
  * keep their days. Ends: Denver Christkindlmarket Dec 23, Cherry
  * Creek Dec 24, Colorado Springs Dec 23 (its printed dates are
- * Dec 4–6, 9–13 and 16–23). */
+ * Dec 4–6, 9–13 and 16–23). Every market banner links through to
+ * the market's official website (owner order, 2026-11-24). */
 const MARKET_HEROES = [
-  { file: 'market-cherry-creek-2026', start: '2026-11-24', end: '2026-12-24', w: 2159, h: 710, alt: 'Cherry Creek Holiday Market, November 19–December 24, 2026 — engraving of the Bronco shopping at the market' },
-  { file: 'market-denver-christkindl-2026', start: '2026-11-24', end: '2026-12-23', w: 2158, h: 707, alt: 'Denver Christkindlmarket, November 20–December 23, 2026 — engraving of the Bronco at the market' },
-  { file: 'market-cos-christkindl-2026', start: '2026-11-24', end: '2026-12-23', w: 2172, h: 712, alt: 'Colorado Springs Christkindlmarket, Bancroft Park, Old Colorado City, December 2026 — engraving of the Bronco at the market' },
+  { file: 'market-cherry-creek-2026', start: '2026-11-24', end: '2026-12-24', w: 2159, h: 710, url: 'https://www.cherrycreekholidaymarket.com/', alt: 'Cherry Creek Holiday Market, November 19–December 24, 2026 — engraving of the Bronco shopping at the market' },
+  { file: 'market-denver-christkindl-2026', start: '2026-11-24', end: '2026-12-23', w: 2158, h: 707, url: 'https://www.christkindlmarketdenver.com/', alt: 'Denver Christkindlmarket, November 20–December 23, 2026 — engraving of the Bronco at the market' },
+  { file: 'market-cos-christkindl-2026', start: '2026-11-24', end: '2026-12-23', w: 2172, h: 712, url: 'https://www.occchristkindlmarket.com/', alt: 'Colorado Springs Christkindlmarket, Bancroft Park, Old Colorado City, December 2026 — engraving of the Bronco at the market' },
 ];
 function marketHeroBanner() {
   const parts = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Denver', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date());
@@ -2237,10 +2243,14 @@ function marketHeroBanner() {
   const yearStart = new Date(pv.year + '-01-01T12:00:00Z');
   const dayOfYear = Math.round((dayStart - yearStart) / 86400000) + 1;
   const pick = open[dayOfYear % open.length];
-  return '<div class="win-banner"><picture>' +
+  const pic = '<picture>' +
     '<source srcset="/' + pick.file + '.webp" type="image/webp">' +
     '<img src="/' + pick.file + '.png" alt="' + esc(pick.alt) + '" width="' + pick.w + '" height="' + pick.h + '">' +
-    '</picture></div>' + featureDivider();
+    '</picture>';
+  const inner = pick.url
+    ? '<a href="' + pick.url + '" target="_blank" rel="noopener">' + pic + '</a>'
+    : pic;
+  return '<div class="win-banner">' + inner + '</div>' + featureDivider();
 }
 
 /**
