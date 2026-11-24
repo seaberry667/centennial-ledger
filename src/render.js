@@ -2153,6 +2153,55 @@ function seasonalHeroBanner() {
     '</picture></div>' + featureDivider();
 }
 
+/** Colorado event hero banners (owner order, 2026-11-24): twelve
+ * owner-supplied event banners, each shown in the hero position from
+ * 7 days before its event starts through the event's last day
+ * (Denver dates). The January–April calendar overlaps, so when more
+ * than one window is open the banner of an event that is actually
+ * running wins (earliest end first; ties go to the later start), and
+ * lead-in weeks only fill days when nothing is running (next event
+ * to start first). Dates below are the ones printed on each banner. */
+const EVENT_HEROES = [
+  { file: 'event-stock-show-2027', start: '2027-01-09', end: '2027-01-24', w: 2804, h: 561, alt: 'National Western Stock Show, Denver, January 9–24, 2027 — engraving of the Bronco leading a prize steer' },
+  { file: 'event-sundance-2027', start: '2027-01-21', end: '2027-01-31', w: 2804, h: 561, alt: 'Sundance Film Festival, Boulder, January 21–31, 2027 — engraving of the Bronco with a film camera' },
+  { file: 'event-ouray-ice-2027', start: '2027-01-28', end: '2027-01-31', w: 2804, h: 561, alt: 'Ouray Ice Festival, January 28–31, 2027 — engraving of the Bronco ice climbing' },
+  { file: 'event-snowdown-2027', start: '2027-01-29', end: '2027-02-07', w: 2137, h: 451, alt: 'Snowdown, Durango, January 29–February 7 — engraving of the Bronco with a snowflake flag' },
+  { file: 'event-steamboat-carnival-2027', start: '2027-02-02', end: '2027-02-07', w: 2804, h: 561, alt: 'Steamboat Winter Carnival, Steamboat Springs, February 2–7 — engraving of the Bronco skiing' },
+  { file: 'event-bluegrass-2027', start: '2027-02-12', end: '2027-02-13', w: 2132, h: 458, alt: 'Midwinter Bluegrass Festival, February 12–13 — engraving of the Bronco playing the banjo' },
+  { file: 'event-palm-tree-2027', start: '2027-02-19', end: '2027-02-20', w: 2804, h: 561, alt: 'Palm Tree Festival, Aspen, February 19–20 — engraving of the Bronco playing guitar' },
+  { file: 'event-mardi-gras-2027', start: '2027-02-27', end: '2027-02-27', w: 2146, h: 453, alt: 'Denver Mardi Gras, Greenwood Village, February 27 — engraving of the Bronco with beads and a mask' },
+  { file: 'event-restaurant-week-2027', start: '2027-03-05', end: '2027-03-14', w: 2172, h: 724, alt: 'Denver Restaurant Week, March 5–14 — engraving of the Bronco as a chef' },
+  { file: 'event-st-patricks-2027', start: '2027-03-13', end: '2027-03-13', w: 2172, h: 724, alt: "Denver St. Patrick's Day Parade, March 13 — engraving of the Bronco marching in the parade" },
+  { file: 'event-march-powwow-2027', start: '2027-03-19', end: '2027-03-21', w: 2172, h: 724, alt: 'Denver March Powwow, March 19–21 — engraving of powwow dancers' },
+  { file: 'event-frozen-dead-guy-2027', start: '2027-04-09', end: '2027-04-11', w: 2077, h: 676, alt: 'Frozen Dead Guy Days, Estes Park, April 9–11, 2027 — engraving of the Bronco beside the frozen dead guy' },
+];
+function heroWindowStart(startIso) {
+  const d = new Date(startIso + 'T12:00:00Z');
+  d.setUTCDate(d.getUTCDate() - 7);
+  return d.toISOString().slice(0, 10);
+}
+function eventHeroBanner() {
+  const parts = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Denver', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date());
+  const pv = {};
+  for (const p of parts) pv[p.type] = p.value;
+  const day = pv.year + '-' + pv.month + '-' + pv.day;
+  const open = EVENT_HEROES.filter((e) => day >= heroWindowStart(e.start) && day <= e.end);
+  if (!open.length) return '';
+  const running = open.filter((e) => day >= e.start);
+  let pick;
+  if (running.length) {
+    running.sort((a, b) => (a.end === b.end ? b.start.localeCompare(a.start) : a.end.localeCompare(b.end)));
+    pick = running[0];
+  } else {
+    open.sort((a, b) => a.start.localeCompare(b.start));
+    pick = open[0];
+  }
+  return '<div class="win-banner"><picture>' +
+    '<source srcset="/' + pick.file + '.webp" type="image/webp">' +
+    '<img src="/' + pick.file + '.png" alt="' + esc(pick.alt) + '" width="' + pick.w + '" height="' + pick.h + '">' +
+    '</picture></div>' + featureDivider();
+}
+
 /**
  * One homepage feature block (redesign spec 3.3), in order: headline
  * (no category label above it — owner instruction, 2026-11-02),
@@ -3038,7 +3087,7 @@ function homePage({ lead, second, third, gridFeatures, latest, railGroups, lates
     // an Opinion piece exists) and the three-card "Latest from
     // Colorado" grid. The lead
     // and third feature were pulled out of `latest` by the route.
-    let features = (broncosSteelersWinBanner() || seasonalHeroBanner() + broncosWinBanner()) + featureStory(lead, { trimExcerpt: true });
+    let features = (broncosSteelersWinBanner() || eventHeroBanner() || seasonalHeroBanner() + broncosWinBanner()) + featureStory(lead, { trimExcerpt: true });
     // Second feature, directly under the lead in the
     // same format (the most recent news story after the lead,
     // selected by the home route), with the gold filigree divider
