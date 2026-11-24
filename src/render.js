@@ -2102,6 +2102,27 @@ function broncosWinBanner() {
     '</picture></div>' + featureDivider();
 }
 
+/** Broncos win at Pittsburgh, Fri 2026-11-27 (owner order, 2026-11-24):
+ * the "Broncos Win!" Steelers woodcut runs in the hero position from
+ * the win through all of Saturday Nov 28 — but only if Denver actually
+ * won. BRONCOS_STEELERS_WIN stays false until the post-game check
+ * confirms the final score and flips it; the Denver-date gate then
+ * keeps it up through Saturday and takes it down on Sunday. While it
+ * runs it replaces the seasonal banner in the hero slot. */
+const BRONCOS_STEELERS_WIN = false;
+function broncosSteelersWinBanner() {
+  if (!BRONCOS_STEELERS_WIN) return '';
+  const parts = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Denver', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date());
+  const pv = {};
+  for (const p of parts) pv[p.type] = p.value;
+  const day = pv.year + '-' + pv.month + '-' + pv.day;
+  if (day !== '2026-11-27' && day !== '2026-11-28') return '';
+  return '<div class="win-banner"><picture>' +
+    '<source srcset="/broncos-win-steelers-2026.webp" type="image/webp">' +
+    '<img src="/broncos-win-steelers-2026.png" alt="Broncos Win! Engraving of the Bronco celebrating over a fallen Pittsburgh Steeler" width="1760" height="598">' +
+    '</picture></div>' + featureDivider();
+}
+
 /** Seasonal hero banners (owner order, 2026-11-24): owner-supplied Bronco
  * engravings shown above the top headline on set Denver dates, each
  * removing itself when its window ends — Thanksgiving Day (Nov 26),
@@ -3017,7 +3038,7 @@ function homePage({ lead, second, third, gridFeatures, latest, railGroups, lates
     // an Opinion piece exists) and the three-card "Latest from
     // Colorado" grid. The lead
     // and third feature were pulled out of `latest` by the route.
-    let features = seasonalHeroBanner() + broncosWinBanner() + featureStory(lead, { trimExcerpt: true });
+    let features = (broncosSteelersWinBanner() || seasonalHeroBanner() + broncosWinBanner()) + featureStory(lead, { trimExcerpt: true });
     // Second feature, directly under the lead in the
     // same format (the most recent news story after the lead,
     // selected by the home route), with the gold filigree divider
