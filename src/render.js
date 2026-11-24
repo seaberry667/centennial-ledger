@@ -2212,6 +2212,37 @@ function eventHeroBanner() {
   return '<div class="win-banner">' + inner + '</div>' + featureDivider();
 }
 
+/** Christmas market hero banners (owner order, 2026-11-24): three
+ * owner-supplied market banners start immediately (2026-11-24, at
+ * the owner's direction — ahead of the usual lead-in) and alternate
+ * days in the hero position through each market's last day. They
+ * sit below the seasonal holiday banners and the Broncos win banner
+ * in precedence, so Thanksgiving, the ski weekend, and Christmas
+ * keep their days. Ends: Denver Christkindlmarket Dec 23, Cherry
+ * Creek Dec 24, Colorado Springs Dec 23 (its printed dates are
+ * Dec 4–6, 9–13 and 16–23). */
+const MARKET_HEROES = [
+  { file: 'market-cherry-creek-2026', start: '2026-11-24', end: '2026-12-24', w: 2159, h: 710, alt: 'Cherry Creek Holiday Market, November 19–December 24, 2026 — engraving of the Bronco shopping at the market' },
+  { file: 'market-denver-christkindl-2026', start: '2026-11-24', end: '2026-12-23', w: 2158, h: 707, alt: 'Denver Christkindlmarket, November 20–December 23, 2026 — engraving of the Bronco at the market' },
+  { file: 'market-cos-christkindl-2026', start: '2026-11-24', end: '2026-12-23', w: 2172, h: 712, alt: 'Colorado Springs Christkindlmarket, Bancroft Park, Old Colorado City, December 2026 — engraving of the Bronco at the market' },
+];
+function marketHeroBanner() {
+  const parts = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Denver', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date());
+  const pv = {};
+  for (const p of parts) pv[p.type] = p.value;
+  const day = pv.year + '-' + pv.month + '-' + pv.day;
+  const open = MARKET_HEROES.filter((e) => day >= e.start && day <= e.end);
+  if (!open.length) return '';
+  const dayStart = new Date(day + 'T12:00:00Z');
+  const yearStart = new Date(pv.year + '-01-01T12:00:00Z');
+  const dayOfYear = Math.round((dayStart - yearStart) / 86400000) + 1;
+  const pick = open[dayOfYear % open.length];
+  return '<div class="win-banner"><picture>' +
+    '<source srcset="/' + pick.file + '.webp" type="image/webp">' +
+    '<img src="/' + pick.file + '.png" alt="' + esc(pick.alt) + '" width="' + pick.w + '" height="' + pick.h + '">' +
+    '</picture></div>' + featureDivider();
+}
+
 /**
  * One homepage feature block (redesign spec 3.3), in order: headline
  * (no category label above it — owner instruction, 2026-11-02),
@@ -3097,7 +3128,7 @@ function homePage({ lead, second, third, gridFeatures, latest, railGroups, lates
     // an Opinion piece exists) and the three-card "Latest from
     // Colorado" grid. The lead
     // and third feature were pulled out of `latest` by the route.
-    let features = (broncosSteelersWinBanner() || eventHeroBanner() || seasonalHeroBanner() + broncosWinBanner()) + featureStory(lead, { trimExcerpt: true });
+    let features = (broncosSteelersWinBanner() || seasonalHeroBanner() + broncosWinBanner() || marketHeroBanner() || eventHeroBanner()) + featureStory(lead, { trimExcerpt: true });
     // Second feature, directly under the lead in the
     // same format (the most recent news story after the lead,
     // selected by the home route), with the gold filigree divider
