@@ -2104,7 +2104,7 @@ function broncosWinBanner() {
 /** Seasonal hero banners (owner order, 2026-11-24): owner-supplied Bronco
  * engravings shown above the top headline on set Denver dates, each
  * removing itself when its window ends — Thanksgiving Day (Nov 26),
- * skiing Fri–Sun Nov 27–29, Christmas Dec 21–25. */
+ * skiing Fri–Sun Nov 27–29, Christmas Dec 21–25, New Year Dec 31–Jan 1. */
 function seasonalHeroBanner() {
   const parts = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Denver', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date());
   const pv = {};
@@ -2120,6 +2120,9 @@ function seasonalHeroBanner() {
   } else if (day >= '2026-12-21' && day <= '2026-12-25') {
     file = 'hero-christmas-2026'; w = 1568; h = 724;
     alt = 'A Bronco opening a Christmas gift — a Broncos jersey — on the couch, engraving';
+  } else if (day === '2026-12-31' || day === '2027-01-01') {
+    file = 'hero-newyear-2026'; w = 1796; h = 704;
+    alt = 'A Bronco in a 2027 top hat toasting the New Year with champagne under fireworks, engraving';
   }
   if (!file) return '';
   return '<div class="win-banner"><picture>' +
