@@ -593,8 +593,22 @@ app.get('/article/:slug', async (req, res) => {
       )
       .slice(0, 3);
   }
+  // Podcast box data for the article sidebar (owner order,
+  // 2026-11-24: podcast box tops the article rail): the newest
+  // episode from the in-memory feed cache, plus the dates that
+  // have a companion page — the same inputs the homepage rail uses.
+  const briefDates = new Set(
+    (await store.listBriefPages()).map((p) => p.date)
+  );
   res.type('html').send(
-    render.articlePage(article, related.slice(0, 3), localStories, explainedRelated)
+    render.articlePage(
+      article,
+      related.slice(0, 3),
+      localStories,
+      explainedRelated,
+      podcastFeed.latestEpisode(),
+      briefDates
+    )
   );
 });
 

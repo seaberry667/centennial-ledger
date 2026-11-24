@@ -3695,7 +3695,7 @@ function seriesBox(a) {
   );
 }
 
-function articlePage(a, related, localStories, explainedRelated) {
+function articlePage(a, related, localStories, explainedRelated, podcast, briefDates) {
   const url = absUrl('/article/' + a.slug);
   const title = fitTitle(a.seoTitle || a.headline, 70);
   const description = articleDescription(a);
@@ -3891,12 +3891,14 @@ function articlePage(a, related, localStories, explainedRelated) {
       ' &middot; Part of the <a href="/explained">How Colorado Works</a> series</p>';
   }
   body += '</div></article>';
-  // Article sidebar (spec 5): the Briefing signup first, then
-  // Local & Statewide, then a single rectangle advertisement.
+  // Article sidebar: the podcast box at the top, then Local &
+  // Statewide, then the newsletter (Briefing) signup, then a
+  // single rectangle advertisement (owner order, 2026-11-24).
   body +=
     '<aside class="article-rail" aria-label="Sidebar">' +
-    briefingBox(false, 'article') +
+    podcastBox(podcast, briefDates) +
     localStatewideBox(localStories) +
+    briefingBox(false, 'article') +
     rectangleAdSlot() +
     '</aside></div>';
 
