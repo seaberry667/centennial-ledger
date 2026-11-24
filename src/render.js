@@ -1060,6 +1060,7 @@ ins.adsbygoogle[data-ad-status="unfilled"]{display:none}
    next buttons under the caption for moving between comics. The
    section page lists the comics the same way: image, then caption. */
 .satire-wrap{max-width:760px;margin:0 auto;padding-top:.6rem}
+.satire-dateline{font-family:var(--font-ui);font-size:.85rem;letter-spacing:.06em;text-transform:uppercase;color:#555;margin:0 0 .8rem}
 .satire-wrap figure.art-figure{margin:0}
 .satire-caption{font-size:.8125rem;font-style:italic;line-height:1.4;color:#444;margin:1rem 0 0}
 .satire-caption p{margin:0 0 .8em}
@@ -3508,6 +3509,12 @@ function satirePage(a, prev, next) {
   const body =
     leaderboardAdSlot() +
     '<div class="satire-wrap">' +
+    // Dateline (owner order, 2026-11-24): the date the cartoon was
+    // first posted, on the cartoon's own page only — never on the
+    // section-page cards.
+    (a.publishedAt
+      ? '<p class="satire-dateline">' + esc(fmtMetaDate(a.publishedAt)) + '</p>'
+      : '') +
     articleFigure(a, 'satire-hero', { noCaption: true, width: 1000 }) +
     satireCaptionHtml(a) +
     nav +
