@@ -600,6 +600,19 @@ app.get('/article/:slug', async (req, res) => {
   const briefDates = new Set(
     (await store.listBriefPages()).map((p) => p.date)
   );
+  // Rail section groups for the article sidebar (owner order,
+  // 2026-11-24: the article right column matches the homepage
+  // rail, minus the Sports strip): the two most recent stories
+  // from each of the four subject sections, excluding this
+  // article itself and the explainers — the homepage's picks.
+  const railGroups = [];
+  for (const slug of ['politics', 'business', 'energy-environment', 'education-health']) {
+    const inSection = await store.listArticles({ section: slug, limit: 6 });
+    const picks = inSection
+      .filter((x) => x.slug !== article.slug && !isExplained(x))
+      .slice(0, 2);
+    if (picks.length) railGroups.push({ section: slug, articles: picks });
+  }
   res.type('html').send(
     render.articlePage(
       article,
@@ -607,7 +620,8 @@ app.get('/article/:slug', async (req, res) => {
       localStories,
       explainedRelated,
       podcastFeed.latestEpisode(),
-      briefDates
+      briefDates,
+      railGroups
     )
   );
 });

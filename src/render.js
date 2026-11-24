@@ -3695,7 +3695,7 @@ function seriesBox(a) {
   );
 }
 
-function articlePage(a, related, localStories, explainedRelated, podcast, briefDates) {
+function articlePage(a, related, localStories, explainedRelated, podcast, briefDates, railGroups) {
   const url = absUrl('/article/' + a.slug);
   const title = fitTitle(a.seoTitle || a.headline, 70);
   const description = articleDescription(a);
@@ -3891,14 +3891,22 @@ function articlePage(a, related, localStories, explainedRelated, podcast, briefD
       ' &middot; Part of the <a href="/explained">How Colorado Works</a> series</p>';
   }
   body += '</div></article>';
-  // Article sidebar: the podcast box at the top, then Local &
-  // Statewide, then the newsletter (Briefing) signup, then a
-  // single rectangle advertisement (owner order, 2026-11-24).
+  // Article sidebar: the same right column as the homepage rail,
+  // minus the Sports score strip (owner order, 2026-11-24) — the
+  // podcast box, the per-section story groups, the newsletter
+  // (Briefing) signup, Local & Statewide, then a single rectangle
+  // advertisement.
+  const aGroups = (Array.isArray(railGroups) ? railGroups : [])
+    .filter((g) => g && Array.isArray(g.articles) && g.articles.length);
   body +=
     '<aside class="article-rail" aria-label="Sidebar">' +
     podcastBox(podcast, briefDates) +
-    localStatewideBox(localStories) +
+    (aGroups.length
+      ? '<section class="rail-latest" aria-label="Latest stories by section">' +
+        aGroups.map(railSectionGroup).join('') + '</section>'
+      : '') +
     briefingBox(false, 'article') +
+    localStatewideBox(localStories) +
     rectangleAdSlot() +
     '</aside></div>';
 
