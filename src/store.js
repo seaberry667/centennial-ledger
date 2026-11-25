@@ -1326,11 +1326,18 @@ class FileStore {
     );
     if (vanguard) {
       const vText = (vanguard.sections || [])
-        .flatMap((s) => [s && s.directAnswer, ...((s && s.paragraphs) || [])])
+        .flatMap((s) => [
+          s && (s.lead || s.directAnswer),
+          ...((s && s.paragraphs) || []),
+        ])
         .join(' ');
       if (vText.includes('KKTV report by Rachel Ramsey')) {
         vanguard.dek = VANGUARD_REWRITE_2026.dek;
-        vanguard.sections = JSON.parse(JSON.stringify(VANGUARD_REWRITE_2026.sections));
+        vanguard.sections = VANGUARD_REWRITE_2026.sections.map((s) => ({
+          heading: (s && s.heading) || '',
+          lead: String((s && (s.directAnswer || s.lead)) || ''),
+          paragraphs: (s && s.paragraphs) || [],
+        }));
         vanguard.whyItMatters = VANGUARD_REWRITE_2026.whyItMatters;
         vanguard.sources = JSON.parse(JSON.stringify(VANGUARD_REWRITE_2026.sources));
         this._save();
@@ -2153,7 +2160,10 @@ class PgStore {
           ? JSON.parse(vRow.rows[0].sections)
           : vRow.rows[0].sections || [];
       const vText = vSecs
-        .flatMap((s) => [s && s.directAnswer, ...((s && s.paragraphs) || [])])
+        .flatMap((s) => [
+          s && (s.lead || s.directAnswer),
+          ...((s && s.paragraphs) || []),
+        ])
         .join(' ');
       if (vText.includes('KKTV report by Rachel Ramsey')) {
         await this.pool.query(
@@ -2161,7 +2171,13 @@ class PgStore {
           [
             VANGUARD_REWRITE_2026.slug,
             VANGUARD_REWRITE_2026.dek,
-            JSON.stringify(VANGUARD_REWRITE_2026.sections),
+            JSON.stringify(
+              VANGUARD_REWRITE_2026.sections.map((s) => ({
+                heading: (s && s.heading) || '',
+                lead: String((s && (s.directAnswer || s.lead)) || ''),
+                paragraphs: (s && s.paragraphs) || [],
+              }))
+            ),
             VANGUARD_REWRITE_2026.whyItMatters,
             JSON.stringify(VANGUARD_REWRITE_2026.sources),
           ]
