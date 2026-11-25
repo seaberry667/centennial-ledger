@@ -263,6 +263,19 @@ const RETITLE_HEADLINES_2026 = {
     'Colorado Loses 5,700 Jobs in October as Unemployment Jumps to 4.4%',
 };
 
+// Accuracy correction (2026-11-25): the Eldora story as uploaded
+// said the resort "opened for the season on November 13." Nov 13
+// was the planned opening date; warm weather delayed the start and
+// Eldora actually opened Nov 24, 2026 (the resort's own snow
+// report, carried in RTD's Nov 24 seasonal-service notice). Both
+// backends rewrite the sentence wherever it appears (flat body
+// and section text), only while the wrong sentence is stored.
+const ELDORA_OPENING_FIX = {
+  slug: 'nederlands-120-million-ski-deal-stalls-bills-near-2-9-million',
+  from: 'Eldora itself opened for the season on November 13, still owned and operated by Utah-based POWDR, exactly as it has been for a decade.',
+  to: 'Eldora itself opened for the season on November 24, eleven days after its planned opening date, when warm weather delayed the start — still owned and operated by Utah-based POWDR, exactly as it has been for a decade.',
+};
+
 // The three inaugural Colorado Explained articles were reviewed on
 // 2026-11-08 (the date the newsroom holds), but the upload pipeline
 // shifted the date one day back in transit, so the live store holds
@@ -1250,6 +1263,30 @@ class FileStore {
         this._save();
       }
     }
+    // Eldora opening-date correction (see ELDORA_OPENING_FIX
+    // above): rewrite the wrong sentence in the flat body and in
+    // section text, only while it is still stored.
+    const eldora = this.data.articles.find(
+      (a) => a.slug === ELDORA_OPENING_FIX.slug
+    );
+    if (eldora) {
+      let eldoraTouched = false;
+      const fixEldoraText = (t) => {
+        if (typeof t === 'string' && t.includes(ELDORA_OPENING_FIX.from)) {
+          eldoraTouched = true;
+          return t.split(ELDORA_OPENING_FIX.from).join(ELDORA_OPENING_FIX.to);
+        }
+        return t;
+      };
+      eldora.body = fixEldoraText(eldora.body);
+      for (const s of eldora.sections || []) {
+        if (!s) continue;
+        s.directAnswer = fixEldoraText(s.directAnswer);
+        s.lead = fixEldoraText(s.lead);
+        s.paragraphs = (s.paragraphs || []).map(fixEldoraText);
+      }
+      if (eldoraTouched) this._save();
+    }
     // Colorado Life retirement (owner order, 2026-11-08): the
     // section's one article, the ski season story, moves to Local
     // News; its Mountains region is already stored and stays.
@@ -2028,6 +2065,39 @@ class PgStore {
         await this.pool.query(
           'UPDATE articles SET sections = $2, sources = $3, last_reviewed = $4 WHERE slug = $1',
           [WATER_SLUG, JSON.stringify(WATER_LITIGATION_SECTIONS), JSON.stringify(merged), '2026-11-08']
+        );
+      }
+    }
+    // Eldora opening-date correction (see ELDORA_OPENING_FIX
+    // above): same guarded rewrite as the file store's.
+    const eRow = await this.pool.query(
+      'SELECT body, sections FROM articles WHERE slug = $1',
+      [ELDORA_OPENING_FIX.slug]
+    );
+    if (eRow.rows.length) {
+      const eSecs =
+        typeof eRow.rows[0].sections === 'string'
+          ? JSON.parse(eRow.rows[0].sections)
+          : eRow.rows[0].sections || [];
+      let eTouched = false;
+      const fixEldoraTextPg = (t) => {
+        if (typeof t === 'string' && t.includes(ELDORA_OPENING_FIX.from)) {
+          eTouched = true;
+          return t.split(ELDORA_OPENING_FIX.from).join(ELDORA_OPENING_FIX.to);
+        }
+        return t;
+      };
+      const eBody = fixEldoraTextPg(eRow.rows[0].body || '');
+      for (const s of eSecs) {
+        if (!s) continue;
+        s.directAnswer = fixEldoraTextPg(s.directAnswer);
+        s.lead = fixEldoraTextPg(s.lead);
+        s.paragraphs = (s.paragraphs || []).map(fixEldoraTextPg);
+      }
+      if (eTouched) {
+        await this.pool.query(
+          'UPDATE articles SET body = $2, sections = $3 WHERE slug = $1',
+          [ELDORA_OPENING_FIX.slug, eBody, JSON.stringify(eSecs)]
         );
       }
     }
