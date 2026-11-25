@@ -2071,7 +2071,7 @@ class PgStore {
     // Eldora opening-date correction (see ELDORA_OPENING_FIX
     // above): same guarded rewrite as the file store's.
     const eRow = await this.pool.query(
-      'SELECT body, sections FROM articles WHERE slug = $1',
+      'SELECT sections FROM articles WHERE slug = $1',
       [ELDORA_OPENING_FIX.slug]
     );
     if (eRow.rows.length) {
@@ -2087,7 +2087,6 @@ class PgStore {
         }
         return t;
       };
-      const eBody = fixEldoraTextPg(eRow.rows[0].body || '');
       for (const s of eSecs) {
         if (!s) continue;
         s.directAnswer = fixEldoraTextPg(s.directAnswer);
@@ -2096,8 +2095,8 @@ class PgStore {
       }
       if (eTouched) {
         await this.pool.query(
-          'UPDATE articles SET body = $2, sections = $3 WHERE slug = $1',
-          [ELDORA_OPENING_FIX.slug, eBody, JSON.stringify(eSecs)]
+          'UPDATE articles SET sections = $2 WHERE slug = $1',
+          [ELDORA_OPENING_FIX.slug, JSON.stringify(eSecs)]
         );
       }
     }
