@@ -276,6 +276,62 @@ const ELDORA_OPENING_FIX = {
   to: 'Eldora itself opened for the season on November 24, eleven days after its planned opening date, when warm weather delayed the start — still owned and operated by Utah-based POWDR, exactly as it has been for a decade.',
 };
 
+// Vanguard School rewrite (owner order, 2026-11-25): the story
+// was rewritten to report the record directly, in the Ledger's
+// own voice, instead of summarizing the source article. Both
+// backends swap in this dek, these sections, the Why It Matters
+// text and the corrected source list only while the stored
+// sections still carry the old source-referral lede.
+const VANGUARD_REWRITE_2026 = {
+  "slug": "colorado-springs-school-reports-almost-2-8-million-missing-4g3su",
+  "dek": "Almost $2.8 million is missing from The Vanguard School's accounts after unauthorized transfers drained the Colorado Springs charter school's funds while it was switching banks. The school's board says the theft came from outside the school, law enforcement stopped further transfers, and classes and programs continue while the reserves that absorbed the loss wait on recovery efforts and insurance claims.",
+  "whyItMatters": "Vanguard answers to its own board, not to a district budget office: as a charter school it controls its own budget, so the accounting for almost $2.8 million in missing public school money rests with the same board that disclosed the loss. The board's assurance that daily operations, operating budgets and student programs are untouched is the good news; the cost landed on the school's financial reserves, the cushion that stands between a school and the next unexpected bill. How much of that cushion comes back now depends on investigations, recovery efforts and insurance claims that are still open, and on safeguards the school says it tightened only after the money was gone. Families are owed the finished accounting: how the transfers got through during a routine bank switch, how much was recovered, and what stands guard over the accounts now.",
+  "sources": [
+    {
+      "title": "Millions of dollars stolen from Colorado Springs school",
+      "url": "https://gray-kktv-prod.cdn.arcpublishing.com/2026/11/21/millions-dollars-stolen-colorado-springs-school/"
+    }
+  ],
+  "sections": [
+    {
+      "directAnswer": "Almost $2.8 million is missing from the accounts of The Vanguard School in Colorado Springs, taken through unauthorized transfers while the school was in the middle of switching banks.",
+      "heading": "",
+      "keywordFocus": "",
+      "paragraphs": [
+        "Board members laid out the loss at the school board's October meeting. The school noticed the money was gone around the beginning of the school year, they said, and the amount missing at first was larger than the figure now on the books: the school recovered part of what was taken, leaving almost $2.8 million still missing.",
+        "Vanguard is a kindergarten-through-12th-grade charter school in Harrison School District 2. As a charter school it keeps its own board and its own budget, separate from the district's, which puts the school and its board at the center of both the loss and the accounting still to come."
+      ]
+    },
+    {
+      "directAnswer": "The money left the school's accounts during a transition between banks, when unauthorized transfers began moving funds out, board members said at the October meeting.",
+      "heading": "Money moved out during a switch between banks",
+      "keywordFocus": "",
+      "paragraphs": [
+        "Once the transfers were spotted, the school brought in local and federal law enforcement, and their involvement stopped more unauthorized transfers from going through. How much was taken before the transfers were caught, beyond the almost $2.8 million still missing and the part the school recovered, has not been itemized.",
+        "The board's working account of the theft points away from the school itself. Board members said they believe the financial fraud came from an outside source and did not involve anyone within the school. \"Several investigations remain ongoing, as do efforts to recover the funds and insurance claims. No one in the school is assumed to be complicit,\" a board member said at the meeting."
+      ]
+    },
+    {
+      "directAnswer": "Classes, programs and the school's day-to-day spending continue as before, board members said; the loss fell on the money the school holds in reserve.",
+      "heading": "Reserves took the loss, not the classroom",
+      "keywordFocus": "",
+      "paragraphs": [
+        "\"The incident does not affect our daily operations, operating budgets or student programs. It does however represent a reduction of our financial reserves,\" a board member said at the October meeting. No program cuts, staff changes or budget reductions tied to the theft have been announced.",
+        "That leaves the open question a balance-sheet one rather than a classroom one: reserves are the cushion a school draws on when costs arrive that the operating budget never planned for, and almost $2.8 million of that cushion is now riding on recovery efforts and insurance claims whose outcome is not yet known."
+      ]
+    },
+    {
+      "directAnswer": "The school says it moved quickly to strengthen its financial controls and operational safeguards after the theft, and that more changes may follow as the reviews now underway conclude.",
+      "heading": "Controls tightened while investigations continue",
+      "keywordFocus": "",
+      "paragraphs": [
+        "\"Additional measures may be implemented based on the outcome of ongoing reviews,\" a board member said. In a statement, the school's legal team said: \"The Vanguard School has been fully cooperating with law enforcement and is pursuing all available avenues to recover the stolen funds. Given the ongoing investigation and recovery efforts, we cannot provide further comment at this time.\"",
+        "Multiple investigations into the theft continue, and several basic facts remain undisclosed: which banks the school was moving between when the transfers went through, how the transfers were authorized, and how much of the original, larger amount the school managed to recover. Until those answers and the finished accounting arrive, almost $2.8 million missing from a Colorado Springs charter school's accounts is the figure the board has to answer for."
+      ]
+    }
+  ]
+};
+
 // The three inaugural Colorado Explained articles were reviewed on
 // 2026-11-08 (the date the newsroom holds), but the upload pipeline
 // shifted the date one day back in transit, so the live store holds
@@ -1263,6 +1319,23 @@ class FileStore {
         this._save();
       }
     }
+    // Vanguard School rewrite (see VANGUARD_REWRITE_2026 above):
+    // swap the stored text only while the old lede remains.
+    const vanguard = this.data.articles.find(
+      (a) => a.slug === VANGUARD_REWRITE_2026.slug
+    );
+    if (vanguard) {
+      const vText = (vanguard.sections || [])
+        .flatMap((s) => [s && s.directAnswer, ...((s && s.paragraphs) || [])])
+        .join(' ');
+      if (vText.includes('KKTV report by Rachel Ramsey')) {
+        vanguard.dek = VANGUARD_REWRITE_2026.dek;
+        vanguard.sections = JSON.parse(JSON.stringify(VANGUARD_REWRITE_2026.sections));
+        vanguard.whyItMatters = VANGUARD_REWRITE_2026.whyItMatters;
+        vanguard.sources = JSON.parse(JSON.stringify(VANGUARD_REWRITE_2026.sources));
+        this._save();
+      }
+    }
     // Eldora opening-date correction (see ELDORA_OPENING_FIX
     // above): rewrite the wrong sentence in the flat body and in
     // section text, only while it is still stored.
@@ -2065,6 +2138,33 @@ class PgStore {
         await this.pool.query(
           'UPDATE articles SET sections = $2, sources = $3, last_reviewed = $4 WHERE slug = $1',
           [WATER_SLUG, JSON.stringify(WATER_LITIGATION_SECTIONS), JSON.stringify(merged), '2026-11-08']
+        );
+      }
+    }
+    // Vanguard School rewrite (see VANGUARD_REWRITE_2026 above):
+    // same guarded swap as the file store's.
+    const vRow = await this.pool.query(
+      'SELECT sections FROM articles WHERE slug = $1',
+      [VANGUARD_REWRITE_2026.slug]
+    );
+    if (vRow.rows.length) {
+      const vSecs =
+        typeof vRow.rows[0].sections === 'string'
+          ? JSON.parse(vRow.rows[0].sections)
+          : vRow.rows[0].sections || [];
+      const vText = vSecs
+        .flatMap((s) => [s && s.directAnswer, ...((s && s.paragraphs) || [])])
+        .join(' ');
+      if (vText.includes('KKTV report by Rachel Ramsey')) {
+        await this.pool.query(
+          'UPDATE articles SET dek = $2, sections = $3, why_it_matters = $4, sources = $5 WHERE slug = $1',
+          [
+            VANGUARD_REWRITE_2026.slug,
+            VANGUARD_REWRITE_2026.dek,
+            JSON.stringify(VANGUARD_REWRITE_2026.sections),
+            VANGUARD_REWRITE_2026.whyItMatters,
+            JSON.stringify(VANGUARD_REWRITE_2026.sources),
+          ]
         );
       }
     }
