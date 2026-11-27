@@ -12,6 +12,16 @@ const { topbarSegment } = require('./weather');
 const tracker = require('./tracker');
 
 const SITE_NAME = 'The Centennial Ledger';
+
+/* The Ledger's public profiles, cited as sameAs in the
+   NewsMediaOrganization schema so search engines tie the site to
+   its social entities (SEO pass, 2026-11-27). X is omitted until
+   its handle is confirmed. */
+const SOCIAL_PROFILES = [
+  'https://www.facebook.com/profile.php?id=61595978079628',
+  'https://www.instagram.com/centennialledger',
+  'https://open.spotify.com/show/5r0ObdqenGKnYskuKRxWrX',
+];
 const TAGLINE = 'A Clear View of Colorado';
 
 /* AdSense client (publisher) ID. It is public by design — it prints
@@ -1677,6 +1687,8 @@ function layout({ title, description, path, ogType = 'website', ogImage = '', ar
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="google-site-verification" content="UqshzzuCgZVhRdVyE8HdU96yZw1hMI8SbgJ8Ii1Tnuw">
+<meta name="robots" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+<link rel="alternate" type="application/rss+xml" title="${esc(SITE_NAME)} — Latest Stories" href="${siteUrl()}/rss.xml">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
 <link rel="canonical" href="${esc(canonical)}">
@@ -2909,6 +2921,19 @@ function briefPage(page, newer, older) {
       url: absUrl('/podcast/' + page.date),
       isPartOf: { '@type': 'WebSite', name: SITE_NAME, url: siteUrl() + '/' },
     },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'PodcastEpisode',
+      name: page.episodeTitle,
+      url: absUrl('/podcast/' + page.date),
+      datePublished: page.date,
+      description: page.intro || undefined,
+      partOfSeries: {
+        '@type': 'PodcastSeries',
+        name: 'Colorado Daily News Brief',
+        url: absUrl('/podcast'),
+      },
+    },
   ];
   let body = leaderboardAdSlot();
   body +=
@@ -3061,6 +3086,14 @@ function briefIndexPage(pages) {
       url: absUrl('/podcast'),
       isPartOf: { '@type': 'WebSite', name: SITE_NAME, url: siteUrl() + '/' },
     },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'PodcastSeries',
+      name: 'Colorado Daily News Brief',
+      url: absUrl('/podcast'),
+      webFeed: 'https://anchor.fm/s/11a0ed790/podcast/rss',
+      author: { '@type': 'NewsMediaOrganization', name: SITE_NAME, url: siteUrl() + '/' },
+    },
   ];
   const dateLine = (iso) =>
     new Date(iso + 'T12:00:00-07:00').toLocaleDateString('en-US', {
@@ -3193,6 +3226,7 @@ function homePage({ lead, second, third, gridFeatures, latest, railGroups, lates
       '@type': 'NewsMediaOrganization',
       name: SITE_NAME,
       url: siteUrl() + '/',
+      sameAs: SOCIAL_PROFILES,
       slogan: TAGLINE,
       address: { '@type': 'PostalAddress', addressLocality: 'Denver', addressRegion: 'CO', addressCountry: 'US' },
     },
@@ -3674,6 +3708,7 @@ function satirePage(a, prev, next) {
         '@type': 'NewsMediaOrganization',
         name: SITE_NAME,
         url: siteUrl() + '/',
+        sameAs: SOCIAL_PROFILES,
       },
       mainEntityOfPage: { '@type': 'WebPage', '@id': url },
       articleSection: 'Opinion',
@@ -3782,6 +3817,7 @@ function articlePage(a, related, localStories, explainedRelated, podcast, briefD
         '@type': 'NewsMediaOrganization',
         name: SITE_NAME,
         url: siteUrl() + '/',
+        sameAs: SOCIAL_PROFILES,
       },
       mainEntityOfPage: { '@type': 'WebPage', '@id': url },
       articleSection: sectionName(a.section),

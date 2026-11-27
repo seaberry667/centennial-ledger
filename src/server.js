@@ -1350,6 +1350,55 @@ app.get('/news-sitemap.xml', async (req, res) => {
 });
 
 /**
+ * Article RSS feed (SEO pass, owner order, 2026-11-27): the latest
+ * 30 news stories (Opinion and Satire excluded, matching the
+ * sitemap), generated from the live store on every request so feed
+ * readers, aggregators and news-discovery tools always see the
+ * current inventory.
+ */
+app.get('/rss.xml', async (req, res) => {
+  const base = render.siteUrl();
+  const articles = await store.listArticles({ limit: 5000 });
+  const xesc = (s) =>
+    String(s == null ? '' : s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  const items = articles
+    .filter((a) => a.section !== 'opinion' && !isSatire(a))
+    .sort((x, y) => new Date(y.publishedAt) - new Date(x.publishedAt))
+    .slice(0, 30);
+  const lastBuild = items.length
+    ? new Date(items[0].publishedAt).toUTCString()
+    : new Date().toUTCString();
+  const xml =
+    '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">\n<channel>\n' +
+    '<title>The Centennial Ledger</title>\n' +
+    '<link>' + base + '/</link>\n' +
+    '<description>Independent Colorado news: politics, business and taxes, energy and environment, education and health, and local news from all 64 counties.</description>\n' +
+    '<language>en-us</language>\n' +
+    '<lastBuildDate>' + lastBuild + '</lastBuildDate>\n' +
+    '<atom:link href="' + base + '/rss.xml" rel="self" type="application/rss+xml"/>\n' +
+    items
+      .map((a) => {
+        const url = base + '/article/' + a.slug;
+        return (
+          '<item><title>' + xesc(a.headline) + '</title>' +
+          '<link>' + url + '</link>' +
+          '<guid isPermaLink="true">' + url + '</guid>' +
+          '<pubDate>' + new Date(a.publishedAt).toUTCString() + '</pubDate>' +
+          (a.dek ? '<description>' + xesc(a.dek) + '</description>' : '') +
+          '<category>' + xesc(sectionName(a.section)) + '</category></item>'
+        );
+      })
+      .join('\n') +
+    '\n</channel>\n</rss>';
+  res.type('application/rss+xml').send(xml);
+});
+
+/**
  * llms.txt: a plain-markdown site guide for AI search and answer
  * engines, generated from the live store on every request so it can
  * never go stale (owner order, 2026-11-27). Follows the llms.txt
@@ -1414,6 +1463,7 @@ app.get('/llms.txt', async (req, res) => {
   lines.push('- [Terms of use](' + base + '/terms)');
   lines.push('- [Sitemap](' + base + '/sitemap.xml)');
   lines.push('- [News sitemap](' + base + '/news-sitemap.xml)');
+  lines.push('- [Latest stories RSS feed](' + base + '/rss.xml)');
   lines.push('');
   res.type('text/plain').send(lines.join('\n'));
 });
