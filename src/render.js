@@ -841,7 +841,7 @@ nav.main li.nav-search{margin-left:auto;display:flex;align-items:center}
    left; the track is clipped by its viewport so the page itself
    never scrolls sideways. Pauses on hover. */
 .ticker{display:flex;align-items:center;gap:.9rem;background:var(--color-red);color:#fff;overflow:hidden;max-width:100%;font-family:var(--font-bar);padding:.35rem .6rem}
-.ticker-chip{background:#fff;color:var(--color-red);font-family:var(--font-bar);font-weight:800;font-size:11px;letter-spacing:.1em;padding:.2rem .55rem;flex:0 0 auto;position:relative;z-index:1}
+.ticker-chip{background:#fff;color:var(--color-red);font-family:var(--font-bar);font-weight:800;font-size:12.5px;letter-spacing:.1em;padding:.24rem .6rem .24rem calc(.6rem + .1em);flex:0 0 auto;position:relative;z-index:1;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.25}
 .ticker-viewport{overflow:hidden;flex:1 1 auto;display:flex;align-items:center}
 .ticker-track{display:inline-flex;white-space:nowrap;animation-name:ticker-scroll;animation-timing-function:linear;animation-iteration-count:infinite;will-change:transform}
 .ticker-group{display:inline-flex;align-items:center;gap:2.5rem;padding-right:2.5rem}
