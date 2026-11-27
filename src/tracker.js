@@ -4,11 +4,15 @@
  * Politics (owner-supplied text, 2026-11-23; source text kept at
  * goals/colorado-conservative-news-site/files/
  * colorado-federal-lawsuit-tracker-source.md). Rendered as a
- * designed page rather than a standard article: a scoreboard strip,
- * a status table with outcome chips, Supreme Court case cards with
- * vote-split bars, and a taxpayer-cost bar chart, all in the site's
- * navy / gold / ivory news palette. Helpers (layout, esc, ad slots)
- * are passed in from render.js so this module stays self-contained.
+ * designed page rather than a standard article. News-graphics
+ * redesign (owner order, 2026-11-27 — the original table-and-cards
+ * layout read as stodgy): a dark scoreboard with a segmented record
+ * bar, count-up stats and per-case tiles; a filterable case
+ * explorer in place of the status table; Supreme Court cards on a
+ * year timeline with justice-dot vote graphics; and an animated
+ * taxpayer-cost bar chart. All copy and data are unchanged from the
+ * owner's text. Helpers (layout, esc, ad slots) are passed in from
+ * render.js so this module stays self-contained.
  */
 
 const TRACKER_PATH = '/politics/federal-lawsuit-tracker';
@@ -547,22 +551,30 @@ function chip(kind, text, esc) {
 
 function voteBar(c, esc) {
   if (!c.vote) {
-    // Pending: nine dashed segments mirroring the decided cards'
-    // vote bars, so the empty row reads as "not yet voted."
-    let segs = '';
-    for (let i = 0; i < 9; i++) segs += '<span class="trk-seg trk-seg-pending"></span>';
+    // Pending: nine hollow gold dots mirroring the decided cards'
+    // justice dots, so the empty row reads as "not yet voted."
+    let dots = '';
+    for (let i = 0; i < 9; i++) {
+      dots += '<span class="trk-dot-vote trk-dot-pending" style="--d:' + i + '"></span>';
+    }
     return (
-      '<div class="trk-vote trk-vote-pending"><span class="trk-vote-bar">' + segs + '</span>' +
+      '<div class="trk-vote trk-vote-pending"><span class="trk-vote-score trk-score-pending">Pending</span>' +
+      '<span class="trk-vote-dots" aria-hidden="true">' + dots + '</span>' +
       '<span class="trk-vote-note">' + esc(c.voteNote) + '</span></div>'
     );
   }
   const total = c.vote[0] + c.vote[1];
-  let segs = '';
+  let dots = '';
   for (let i = 0; i < total; i++) {
-    segs += '<span class="trk-seg' + (i < c.vote[0] ? ' trk-seg-majority trk-seg-' + c.chip : '') + '"></span>';
+    dots +=
+      '<span class="trk-dot-vote' +
+      (i < c.vote[0] ? ' trk-dot-majority trk-dot-' + c.chip : ' trk-dot-minority') +
+      '" style="--d:' + i + '"></span>';
   }
   return (
-    '<div class="trk-vote"><span class="trk-vote-bar">' + segs + '</span>' +
+    '<div class="trk-vote"><span class="trk-vote-score trk-score-' + c.chip + '">' +
+    c.vote[0] + '–' + c.vote[1] + '</span>' +
+    '<span class="trk-vote-dots" aria-hidden="true">' + dots + '</span>' +
     '<span class="trk-vote-note">' + esc(c.voteNote) + '</span></div>'
   );
 }
@@ -657,7 +669,8 @@ function caseCard(c, esc, withVote) {
     })
     .join('');
   return (
-    '<article class="trk-card" id="case-' + c.id + '">' +
+    '<article class="trk-card trk-card-' + c.chip + '" id="case-' + c.id + '">' +
+    (withVote ? '<span class="trk-tl-tag" aria-hidden="true">' + esc(c.year) + '</span>' : '') +
     '<header class="trk-card-head"><span class="trk-card-num">' + c.n + '</span>' +
     '<h3 class="trk-card-title">' + esc(c.name) + ' <span class="trk-card-year">(' + esc(c.year) + ')</span></h3></header>' +
     '<div class="trk-outcome">' + chip(c.chip, c.outcome, esc) + '</div>' +
@@ -679,35 +692,70 @@ function renderTrackerPage(h) {
   const { esc, layout, leaderboardAdSlot, featureDivider, absUrl, fitTitle, fitDescription } = h;
   const paras = (arr) => groupParas(arr).map((p) => '<p>' + esc(p) + '</p>').join('');
 
+  const recordTiles = [
+    ['romer-v-evans', 'Romer', '1996', 'Lost', 'loss'],
+    ['masterpiece-cakeshop', 'Masterpiece', '2018', 'Lost', 'loss'],
+    ['colorado-department-of-state-v-baca', 'Baca', '2020', 'Won', 'win'],
+    ['303-creative-llc-v-elenis', '303 Creative', '2023', 'Lost', 'loss'],
+    ['trump-v-anderson', 'Trump', '2024', 'Reversed', 'loss'],
+    ['chiles-v-salazar', 'Chiles', '2026', 'Lost', 'loss'],
+    ['st-mary-catholic-parish-v-roy', 'St. Mary', '2026', 'Pending', 'pending'],
+  ];
   const scoreboard =
     '<section class="trk-board" aria-label="Colorado at the Supreme Court: the record">' +
-    '<div class="trk-board-title">Colorado at the Supreme Court</div>' +
-    '<div class="trk-stats">' +
-    '<div class="trk-stat"><span class="trk-stat-num">7</span><span class="trk-stat-label">Supreme Court cases tracked</span></div>' +
-    '<div class="trk-stat"><span class="trk-stat-num trk-num-loss">5</span><span class="trk-stat-label">Decided against Colorado</span></div>' +
-    '<div class="trk-stat"><span class="trk-stat-num">1</span><span class="trk-stat-label">Colorado victory (Baca, 2020)</span></div>' +
-    '<div class="trk-stat"><span class="trk-stat-num trk-num-pending">1</span><span class="trk-stat-label">Awaiting a decision (St. Mary)</span></div>' +
-    '<div class="trk-stat trk-stat-cost"><span class="trk-stat-num trk-num-cost">$7.82M+</span><span class="trk-stat-label">Documented taxpayer cost in fee settlements</span></div>' +
+    '<div class="trk-board-head"><div class="trk-board-title">Colorado at the Supreme Court</div>' +
+    '<div class="trk-board-sub">Seven cases tracked · 1996–2026</div></div>' +
+    '<div class="trk-recordbar" role="img" aria-label="The record: 5 decided against Colorado, 1 Colorado victory, 1 awaiting a decision">' +
+    '<span class="trk-rb-seg trk-rb-loss" data-w="71.4" style="width:71.4%"></span>' +
+    '<span class="trk-rb-seg trk-rb-win" data-w="14.3" style="width:14.3%"></span>' +
+    '<span class="trk-rb-seg trk-rb-pending" data-w="14.3" style="width:14.3%"></span></div>' +
+    '<div class="trk-rb-legend">' +
+    '<span><i class="trk-legend-dot trk-legend-loss"></i>5 decided against Colorado</span>' +
+    '<span><i class="trk-legend-dot trk-legend-win"></i>1 Colorado victory</span>' +
+    '<span><i class="trk-legend-dot trk-legend-pending"></i>1 awaiting a decision</span>' +
     '</div>' +
-    '<div class="trk-record">' +
-    '<span class="trk-pill trk-pill-loss">Romer — Lost</span>' +
-    '<span class="trk-pill trk-pill-loss">Masterpiece — Lost</span>' +
-    '<span class="trk-pill trk-pill-win">Baca — Won</span>' +
-    '<span class="trk-pill trk-pill-loss">303 Creative — Lost</span>' +
-    '<span class="trk-pill trk-pill-loss">Trump — Reversed</span>' +
-    '<span class="trk-pill trk-pill-loss">Chiles — Lost</span>' +
-    '<span class="trk-pill trk-pill-pending">St. Mary — Pending</span>' +
+    '<div class="trk-stats">' +
+    '<div class="trk-stat"><span class="trk-stat-num" data-count="7">7</span><span class="trk-stat-label">Supreme Court cases tracked</span></div>' +
+    '<div class="trk-stat"><span class="trk-stat-num trk-num-loss" data-count="5">5</span><span class="trk-stat-label">Decided against Colorado</span></div>' +
+    '<div class="trk-stat"><span class="trk-stat-num" data-count="1">1</span><span class="trk-stat-label">Colorado victory (Baca, 2020)</span></div>' +
+    '<div class="trk-stat"><span class="trk-stat-num trk-num-pending" data-count="1">1</span><span class="trk-stat-label">Awaiting a decision (St. Mary)</span></div>' +
+    '<div class="trk-stat trk-stat-cost"><span class="trk-stat-num trk-num-cost" data-count="7.82" data-decimals="2" data-prefix="$" data-suffix="M+">$7.82M+</span><span class="trk-stat-label">Documented taxpayer cost in fee settlements</span></div>' +
+    '</div>' +
+    '<div class="trk-casestrip">' +
+    recordTiles
+      .map(
+        (t) =>
+          '<a class="trk-tile trk-tile-' + t[4] + '" href="#case-' + t[0] + '">' +
+          '<span class="trk-tile-name">' + t[1] + '</span>' +
+          '<span class="trk-tile-meta">' + t[2] + ' · ' + t[3] + '</span></a>'
+      )
+      .join('') +
     '</div></section>';
 
   const statusTable =
-    '<div class="trk-table-wrap"><table class="trk-table"><thead><tr><th>Case</th><th>Court and year</th><th>Status</th></tr></thead><tbody>' +
+    '<div class="trk-explorer">' +
+    '<div class="trk-filters" role="group" aria-label="Filter the case list">' +
+    '<button type="button" class="trk-filter is-active" data-filter="all" aria-pressed="true">All 12 cases</button>' +
+    '<button type="button" class="trk-filter" data-filter="scotus" aria-pressed="false">Supreme Court · 7</button>' +
+    '<button type="button" class="trk-filter" data-filter="lower" aria-pressed="false">Lower courts · 5</button>' +
+    '<button type="button" class="trk-filter" data-filter="loss" aria-pressed="false">Against Colorado · 9</button>' +
+    '<button type="button" class="trk-filter" data-filter="win" aria-pressed="false">Colorado won · 1</button>' +
+    '<button type="button" class="trk-filter" data-filter="pending" aria-pressed="false">Pending · 2</button>' +
+    '</div>' +
+    '<p class="trk-showing" aria-live="polite">Showing 12 of 12 cases</p>' +
+    '<div class="trk-rows">' +
     STATUS_ROWS.map(
       (r) =>
-        '<tr><td data-th="Case"><a href="#case-' + r[4] + '">' + esc(r[0]) + '</a></td>' +
-        '<td data-th="Court and year">' + esc(r[1]) + '</td>' +
-        '<td data-th="Status">' + chip(r[3], r[2], esc) + '</td></tr>'
+        '<a class="trk-row" href="#case-' + r[4] + '" data-court="' +
+        (r[1].indexOf('Supreme Court') >= 0 ? 'scotus' : 'lower') +
+        '" data-outcome="' + r[3] + '">' +
+        '<span class="trk-row-rail trk-rail-' + r[3] + '"></span>' +
+        '<span class="trk-row-main"><span class="trk-row-name">' + esc(r[0]) + '</span>' +
+        '<span class="trk-row-court">' + esc(r[1]) + '</span></span>' +
+        '<span class="trk-row-status">' + chip(r[3], r[2], esc) + '</span>' +
+        '<span class="trk-row-arrow" aria-hidden="true">&rsaquo;</span></a>'
     ).join('') +
-    '</tbody></table></div>' +
+    '</div></div>' +
     '<aside class="trk-note"><strong>How to read this tracker:</strong> A Supreme Court reversal, a permanent injunction, and a preliminary injunction are different legal outcomes. A preliminary injunction restricts enforcement while litigation proceeds; it is not necessarily a final decision on constitutionality.</aside>';
 
   const costChart =
@@ -735,6 +783,89 @@ function renderTrackerPage(h) {
       '</ol>'
   ).join('');
 
+  /* Page interactions (2026-11-27 redesign): count-up stats, the
+     case-explorer filters, and scroll-triggered reveals and bar
+     animations. Everything degrades to the fully rendered static
+     page when scripts or IntersectionObserver are unavailable, and
+     honors prefers-reduced-motion. */
+  const trackerScript = `<script>
+(function () {
+  var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  document.documentElement.classList.add('trk-js');
+  var counters = document.querySelectorAll('.trk-stat-num[data-count]');
+  function fmt(el, v) {
+    var d = parseInt(el.getAttribute('data-decimals') || '0', 10);
+    return (el.getAttribute('data-prefix') || '') + v.toFixed(d) + (el.getAttribute('data-suffix') || '');
+  }
+  function runCount(el) {
+    var target = parseFloat(el.getAttribute('data-count'));
+    if (reduce || !window.requestAnimationFrame) { el.textContent = fmt(el, target); return; }
+    var t0 = null, dur = 1100;
+    function step(ts) {
+      if (!t0) t0 = ts;
+      var p = Math.min(1, (ts - t0) / dur);
+      var eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = fmt(el, target * eased);
+      if (p < 1) requestAnimationFrame(step); else el.textContent = fmt(el, target);
+    }
+    requestAnimationFrame(step);
+  }
+  var filters = document.querySelectorAll('.trk-filter');
+  var rows = document.querySelectorAll('.trk-row');
+  var showing = document.querySelector('.trk-showing');
+  function applyFilter(f) {
+    var n = 0;
+    rows.forEach(function (row) {
+      var outcome = row.getAttribute('data-outcome');
+      var show = f === 'all' ||
+        (f === 'scotus' && row.getAttribute('data-court') === 'scotus') ||
+        (f === 'lower' && row.getAttribute('data-court') === 'lower') ||
+        (f === 'loss' && (outcome === 'loss' || outcome === 'mixed')) ||
+        (f === 'win' && outcome === 'win') ||
+        (f === 'pending' && outcome === 'pending');
+      row.style.display = show ? '' : 'none';
+      if (show) n++;
+    });
+    if (showing) showing.textContent = 'Showing ' + n + ' of ' + rows.length + ' cases';
+  }
+  filters.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      filters.forEach(function (b) { b.classList.remove('is-active'); b.setAttribute('aria-pressed', 'false'); });
+      btn.classList.add('is-active');
+      btn.setAttribute('aria-pressed', 'true');
+      applyFilter(btn.getAttribute('data-filter'));
+    });
+  });
+  var bars = document.querySelectorAll('.trk-rb-seg, .trk-chart-bar');
+  bars.forEach(function (b) {
+    b.setAttribute('data-finalw', b.style.width);
+    if (!reduce) b.style.width = '0%';
+  });
+  function activate(scope) {
+    scope.querySelectorAll('.trk-rb-seg, .trk-chart-bar').forEach(function (b) {
+      b.style.width = b.getAttribute('data-finalw');
+    });
+  }
+  var targets = document.querySelectorAll('.trk-card, .trk-board, .trk-chart, .trk-theme');
+  if ('IntersectionObserver' in window && !reduce) {
+    targets.forEach(function (el) { el.classList.add('trk-reveal'); });
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (!en.isIntersecting) return;
+        en.target.classList.add('trk-in');
+        if (en.target.classList.contains('trk-board')) { counters.forEach(runCount); activate(en.target); }
+        if (en.target.classList.contains('trk-chart')) activate(en.target);
+        io.unobserve(en.target);
+      });
+    }, { threshold: 0.12 });
+    targets.forEach(function (el) { io.observe(el); });
+  } else {
+    counters.forEach(function (el) { el.textContent = fmt(el, parseFloat(el.getAttribute('data-count'))); });
+    bars.forEach(function (b) { b.style.width = b.getAttribute('data-finalw'); });
+  }
+})();
+</script>`;
+
   const body =
     leaderboardAdSlot() +
     '<div class="breadcrumb"><a href="/">Home</a> &rsaquo; <a href="/section/politics">Politics</a> &rsaquo; Federal Lawsuit Tracker</div>' +
@@ -750,7 +881,9 @@ function renderTrackerPage(h) {
     sectionHead('The Scorecard', "Colorado's Constitutional Litigation: Current Status", esc) +
     statusTable +
     sectionHead('The High Court', 'Major Supreme Court Decisions', esc) +
+    '<div class="trk-timeline">' +
     SCOTUS_CASES.map((c) => caseCard(c, esc, true)).join('') +
+    '</div>' +
     sectionHead('The Lower Courts', 'Federal District and Appellate Court Cases', esc) +
     '<p class="trk-lede">The following cases have not all produced final Supreme Court decisions. Some involve permanent injunctions, some preliminary injunctions, and others ongoing litigation.</p>' +
     FEDERAL_CASES.map((c) => caseCard(c, esc, false)).join('') +
@@ -786,13 +919,14 @@ function renderTrackerPage(h) {
     '<p><strong>Last reviewed:</strong> ' + UPDATED + '</p>' +
     '<p>This tracker covers the most significant constitutional cases involving Colorado state laws, state officials, state agencies, and significant Colorado judicial decisions. It is not a complete inventory of every federal lawsuit involving Colorado.</p>' +
     '<h4 class="trk-subhead">Latest developments to monitor</h4><ul class="trk-monitor">' +
-    MONITOR.map((m) => '<li><strong>' + esc(m[0]) + ':</strong> ' + esc(m[1]) + '</li>').join('') +
+    MONITOR.map((m) => '<li><span class="trk-watch-dot" aria-hidden="true"></span><strong>' + esc(m[0]) + ':</strong> ' + esc(m[1]) + '</li>').join('') +
     '</ul>' +
     '<p><strong>Source standards:</strong> Final judicial opinions and official dockets take precedence over commentary. Published reporting is used for settlements and other developments not fully reflected in opinions. A pending allegation is never classified as a proven constitutional violation, and a preliminary ruling is not treated as a final judgment.</p>' +
     '<p><strong>Taxpayer-cost methodology:</strong> Only documented state payment obligations are included in the settlement total. Amounts are not assigned to pending cases without verifiable financial records.</p>' +
     '<p><strong>Editorial perspective:</strong> This tracker examines government accountability and constitutional limits from a perspective skeptical of expansive state power, while preserving the actual findings, procedural history, and outcomes of the courts.</p>' +
     '</div>' +
     '<section class="trk-sources-wrap"><h2 class="trk-h2">Sources</h2><div class="trk-rule"></div>' + sourcesHtml + '</section>' +
+    trackerScript +
     '<div class="final-ad">' + leaderboardAdSlot() + '</div>';
 
   return layout({
