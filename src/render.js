@@ -972,7 +972,7 @@ figure.art-figure figcaption{font-style:italic;font-size:.8125rem;line-height:1.
 .podcast-box .podcast-blurb a{color:inherit;text-decoration:none}
 .podcast-box .podcast-blurb a:hover{text-decoration:underline}
 .podcast-box .podcast-titles a:hover{text-decoration:underline}
-.podcast-box .podcast-listen-wrap{text-align:center}
+.podcast-box .podcast-listen-wrap{display:flex;flex-direction:column;align-items:center;gap:.45rem}
 .podcast-box .podcast-read{display:block;text-align:center;margin-top:.55rem;font-family:var(--font-body);font-size:.85rem;color:var(--color-red);text-decoration:underline}
 /* ---------- Advertisements ---------- */
 /* An ad unit can never push the page wider than the screen:
@@ -1942,6 +1942,7 @@ function briefingBox(thanks, source) {
 }
 
 const PODCAST_SPOTIFY_URL = 'https://open.spotify.com/show/5r0ObdqenGKnYskuKRxWrX';
+const PODCAST_PANDORA_URL = 'https://www.pandora.com/podcast/colorado-daily-news-brief/PC:1001124564';
 const PODCAST_FALLBACK_LINE =
   "Colorado's top stories, weather and sports — a new episode every weekday morning by 6 a.m.";
 
@@ -2022,7 +2023,9 @@ function podcastBox(episode, briefDates) {
    * features' read buttons, centered in the box. */
   inner +=
     '<div class="podcast-listen-wrap"><a class="btn-read" href="' + PODCAST_SPOTIFY_URL +
-    '" target="_blank" rel="noopener">Listen on Spotify</a></div>';
+    '" target="_blank" rel="noopener">Listen on Spotify</a>' +
+    '<a class="btn-read" href="' + PODCAST_PANDORA_URL +
+    '" target="_blank" rel="noopener">Listen on Pandora</a></div>';
   /* Companion story page link (owner order, 2026-11-20): the box
    * is how site readers reach the episode's page of stories with
    * sources at /podcast/YYYY-MM-DD; under it, a link to the
