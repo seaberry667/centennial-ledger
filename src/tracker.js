@@ -997,10 +997,13 @@ function renderTrackerPage(h) {
     '<div class="final-ad">' + leaderboardAdSlot() + '</div>';
 
   return layout({
-    title: fitTitle('Colorado Federal Lawsuit Tracker: Colorado vs. the Constitution', 70),
-    description: fitDescription(
-      'Track Colorado\'s federal constitutional lawsuits: Supreme Court losses in Masterpiece, 303 Creative and Chiles, the pending St. Mary case, and $7.82M in taxpayer fee settlements.'
-    ),
+    title: fitTitle('Colorado Federal Lawsuit Tracker | Constitutional Cases', 70),
+    /* Owner-supplied meta description (2026-11-27), served verbatim:
+       at 163 characters it runs 3 over the site fitter's 160 cap,
+       which would truncate the final word, so it bypasses
+       fitDescription. */
+    description:
+      'Track federal lawsuits against Colorado, Supreme Court rulings, constitutional challenges, First Amendment cases, pending litigation and documented taxpayer costs.',
     path: TRACKER_PATH,
     jsonLd: [
       {
