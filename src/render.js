@@ -4608,7 +4608,6 @@ function aboutPage() {
   const nameplate =
     '<header class="about-head">' +
     '<h1 class="headline" style="font-size:2.4rem">About The Centennial Ledger</h1>' +
-    "<p class=\"about-tagline\"><em>A Clear View of Colorado.</em></p>" +
     '</header>';
   /* Layout (owner restructure, 2026-11-12): alternating one- and
    * two-column stretches built from explicit blocks, never a CSS
