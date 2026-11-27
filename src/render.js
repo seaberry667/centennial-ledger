@@ -1339,6 +1339,8 @@ ins.adsbygoogle[data-ad-status="unfilled"]{display:none}
 .trk-hero-court img{border:none}
 .trk-hero-court figcaption{font-family:inherit;font-style:italic;font-size:.8125rem;line-height:1.4;color:#444;text-align:center;padding:.45rem .3rem .15rem;margin-top:0}
 button,input[type="submit"],.btn-read,.btn-save,.btn-share,.btn-signup,.btn-subscribe,.trk-filter,.briefing button,.share-menu button,.searchbox button,.footer-signup button,.nav-search-form button{font-family:var(--font-ui);font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+.btn-read,.btn-save,.btn-share,.briefing button,.searchbox button{font-size:.9rem}
+.btn-signup{font-size:.85rem}
 @media (max-width:640px){.trk-cora{padding:1.25rem 1.1rem 1.35rem}.trk-cora-title{font-size:1.42rem}}
 
 /* Homepage feature grid (owner directive, 2026-11-21): eight more
