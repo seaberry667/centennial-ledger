@@ -1278,6 +1278,53 @@ ins.adsbygoogle[data-ad-status="unfilled"]{display:none}
   .trk-row-status{grid-column:2}
   .trk-row-arrow{grid-column:3;grid-row:1}
 }
+/* Special-report redesign (owner mockup, 2026-11-27): hero head with
+   the Supreme Court engraving, the At a Glance band, the horizontal
+   case timeline, status pills, and the cost/takeaways columns. */
+.trk-kicker{color:#a62b25}
+.trk-hero-head{display:flex;gap:30px;align-items:flex-start;margin:.4rem 0 1.2rem}
+.trk-hero-text{flex:1 1 auto;min-width:0}
+.trk-hero-img{flex:0 0 302px;width:302px;max-width:42%;height:auto;margin-top:.4rem}
+.trk-updated{display:inline-block;background:#f6ecd9;border:1px solid #ddd3bd;padding:.34rem .75rem;font:600 .76rem/1.35 'Archivo',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#5c5546}
+@media (max-width:760px){.trk-hero-head{flex-direction:column;gap:14px}.trk-hero-img{max-width:250px;flex-basis:auto}}
+.trk-glance{display:grid;grid-template-columns:1.3fr repeat(5,1fr);align-items:center}
+.trk-glance-label{display:flex;flex-direction:column;gap:.4rem;padding-right:1.1rem}
+.trk-glance-kicker{align-self:flex-start;border-top:3px solid #c05358;padding-top:.5rem;font:700 .7rem 'Archivo',sans-serif;letter-spacing:.24em;text-transform:uppercase;color:#e8c987}
+.trk-glance-title{font-family:'Playfair Display',serif;font-size:1.32rem;font-weight:700;line-height:1.16;color:#f4eedf}
+.trk-glance .trk-stat{border-left:1px solid rgba(244,238,223,.18);padding:.15rem .85rem}
+.trk-rb-label{font:600 .72rem 'Archivo',sans-serif;letter-spacing:.15em;text-transform:uppercase;color:rgba(244,238,223,.72);margin:1.05rem 0 .45rem}
+@media (max-width:900px){.trk-glance{grid-template-columns:1fr 1fr;row-gap:.9rem}.trk-glance-label{grid-column:1/-1}.trk-glance .trk-stat{border-left:none;padding:.1rem .5rem .1rem 0}}
+.trk-tl-scroll{overflow-x:auto;padding:.2rem .1rem .9rem;scrollbar-width:thin}
+.trk-tl-h{display:grid;grid-template-columns:repeat(12,1fr);min-width:940px;position:relative}
+.trk-tl-h::before{content:'';position:absolute;left:4.2%;right:4.2%;top:34px;height:2px;background:#c9bfa5}
+.trk-node{display:flex;flex-direction:column;align-items:center;text-align:center;text-decoration:none;padding:0 .22rem;position:relative}
+.trk-node-year{font:700 .93rem 'Playfair Display',serif;color:#16283f;height:22px;line-height:22px}
+.trk-node-dotwrap{height:24px;display:flex;align-items:center;justify-content:center}
+.trk-node-dot{width:13px;height:13px;border-radius:50%;background:#a62b25;border:2px solid #fffdf6;box-shadow:0 0 0 1.5px #c9bfa5;position:relative;z-index:1}
+.trk-node-win .trk-node-dot{background:#16283f}
+.trk-node-mixed .trk-node-dot{background:linear-gradient(90deg,#a62b25 50%,#fffdf6 50%)}
+.trk-node-pending .trk-node-dot{background:#fffdf6;border-color:#b98a1c;box-shadow:0 0 0 1.5px #b98a1c}
+.trk-node-name{font:600 .71rem 'Archivo',sans-serif;color:#2b2620;line-height:1.28;margin-top:.32rem}
+.trk-node-status{font:600 .6rem 'Archivo',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#8a8172;margin-top:.14rem}
+.trk-node-pending .trk-node-status{color:#8a6410}
+.trk-node:hover .trk-node-name{text-decoration:underline}
+.trk-node-off{opacity:.15;filter:grayscale(.7)}
+.trk-range-chip{margin-left:auto;align-self:center;font:600 .76rem 'Archivo',sans-serif;color:#5c5546;border:1px solid #c9bfa5;border-radius:999px;padding:.42rem .8rem;background:#fffdf6;white-space:nowrap}
+.trk-pill{margin-left:auto;flex:0 0 auto;align-self:flex-start;font:700 .66rem 'Archivo',sans-serif;letter-spacing:.1em;text-transform:uppercase;padding:.34rem .62rem;border-radius:3px;color:#fff;background:#a62b25}
+.trk-pill-win{background:#16283f}
+.trk-pill-mixed{background:#fffdf6;color:#a62b25;border:1.5px solid #a62b25;padding:.26rem .62rem}
+.trk-pill-pending{background:#16283f}
+.trk-card-court{font:600 .83rem 'Archivo',sans-serif;color:#5c5546;margin:.05rem 0 .55rem;letter-spacing:.01em}
+.trk-card-court .trk-sep{color:#b98a1c;padding:0 .2rem}
+.trk-bill-grid{display:grid;grid-template-columns:minmax(0,1fr) 322px;gap:2.1rem;align-items:start}
+@media (max-width:900px){.trk-bill-grid{grid-template-columns:1fr}}
+.trk-takeaways{background:#f6ecd9;border:1px solid #ddd3bd;border-top:3px solid #a62b25;padding:1.15rem 1.25rem 1.25rem}
+.trk-takeaways h3{font-family:'Playfair Display',serif;font-size:1.28rem;font-weight:800;margin:0 0 .75rem;color:#16283f}
+.trk-takeaways ul{list-style:none;margin:0;padding:0}
+.trk-takeaways li{position:relative;padding-left:1.05rem;margin-bottom:.68rem;font-size:.94rem;line-height:1.52;color:#2b2620}
+.trk-takeaways li:last-child{margin-bottom:0}
+.trk-takeaways li::before{content:'';position:absolute;left:0;top:.52em;width:7px;height:7px;background:#a62b25}
+
 /* Homepage feature grid (owner directive, 2026-11-21): eight more
    feature stories as compact cards, two wide and four long, inside
    the main column under the two full features. Cards reuse the
@@ -1761,6 +1808,7 @@ ${body}
           <li><a href="https://www.instagram.com/centennialledger" target="_blank" rel="noopener">Instagram</a></li>
           <li><a href="https://open.spotify.com/show/5r0ObdqenGKnYskuKRxWrX" target="_blank" rel="noopener">Spotify</a></li>
           <li><a href="https://www.pandora.com/podcast/colorado-daily-news-brief/PC:1001124564" target="_blank" rel="noopener">Pandora</a></li>
+          <li><a href="/rss.xml">RSS Feed</a></li>
         </ul>
         <p class="footer-stay-text">Sign up for your free daily newsletter.</p>
         <form class="footer-signup" method="post" action="/briefing">
