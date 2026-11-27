@@ -800,7 +800,7 @@ const CSS = `
 body{margin:0;background:var(--color-bg);color:var(--color-text);font-family:var(--font-body);line-height:1.55}
 a{color:inherit}
 /* ---------- Top utility bar: navy, gold accent line at the bottom ---------- */
-.topbar{background:var(--color-navy);color:#e8e4d8;font-family:var(--font-bar);font-size:.78rem;min-height:28px;padding:.15rem 1rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;border-bottom:1px solid var(--color-gold)}
+.topbar{background:var(--color-navy);color:#e8e4d8;font-family:var(--font-bar);font-size:.78rem;min-height:32px;padding:.15rem 1rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;border-bottom:1px solid var(--color-gold)}
 .topbar .center{font-style:italic;font-family:var(--font-body);flex:1;text-align:center}
 .topbar .topbar-left{letter-spacing:.05em;font-weight:bold;white-space:nowrap}
 /* One city's weather segment never splits across lines on a
