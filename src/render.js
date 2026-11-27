@@ -1577,6 +1577,8 @@ article.full figure.article-hero{margin:1.1rem 0}
 .static-page.about-page .about-standards li{border-top:1px solid var(--color-border);padding:.6rem 0;margin:0}
 .static-page.about-page .about-standards li:first-child{border-top:0;padding-top:.1rem}
 .about-pullquote{text-align:center;font-family:var(--font-headline);font-style:italic;font-size:1.75rem;line-height:1.35;color:var(--color-navy);border-top:1px solid var(--color-border);border-bottom:1px solid var(--color-border);padding:1.5rem 2rem;margin:2.2rem 0 0}
+.about-social{margin:.5rem 0 0;padding-left:1.25rem}
+.about-social li{margin:.35rem 0}
 .about-closing{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:2.6rem;margin-top:2.8rem;border-top:1px solid var(--color-text);padding-top:1.7rem}
 .about-closing::before{content:"";position:absolute;left:0;right:0;top:-7px;border-top:3px solid var(--color-text)}
 .about-closing p{margin:0 0 1em}
@@ -4671,7 +4673,14 @@ function aboutPage() {
     "<h2>Stay Informed</h2>" +
     "<p>Colorado never runs out of stories worth telling.</p>" +
     "<p>Subscribe to our free weekday newsletter for a concise roundup of the day's important developments, from the Capitol to communities across the state.</p>" +
-    "<p><a href=\"/subscribe\">Subscribe to the newsletter</a> &middot; <a href=\"https://open.spotify.com/show/5r0ObdqenGKnYskuKRxWrX\" target=\"_blank\" rel=\"noopener\">The daily podcast on Spotify</a></p>" +
+    "<p><a href=\"/subscribe\">Subscribe to the newsletter</a></p>" +
+    "<ul class=\"about-social\">" +
+    "<li><a href=\"https://www.facebook.com/profile.php?id=61595978079628\" target=\"_blank\" rel=\"noopener\">Follow The Centennial Ledger on Facebook</a></li>" +
+    "<li><a href=\"https://www.instagram.com/centennialledger\" target=\"_blank\" rel=\"noopener\">Follow @centennialledger on Instagram</a></li>" +
+    "<li><a href=\"https://open.spotify.com/show/5r0ObdqenGKnYskuKRxWrX\" target=\"_blank\" rel=\"noopener\">Listen to the Colorado Daily News Brief on Spotify</a></li>" +
+    "<li><a href=\"https://www.pandora.com/podcast/colorado-daily-news-brief/PC:1001124564\" target=\"_blank\" rel=\"noopener\">Listen to the Colorado Daily News Brief on Pandora</a></li>" +
+    "<li><a href=\"/rss.xml\">Subscribe to the Ledger's RSS feed of latest stories</a></li>" +
+    "</ul>" +
     "<p><strong>The Centennial Ledger. A Clear View of Colorado.</strong></p>" +
     '</section>' +
     '</div>';
