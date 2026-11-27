@@ -950,6 +950,8 @@ function renderTrackerPage(h) {
     '<figcaption>The U.S. Supreme Court building in Washington, D.C. AI illustration.</figcaption></figure>' +
     paras(INTRO) + '</div>' +
     scoreboard +
+    sectionHead('The Bill', 'What These Cases Are Costing Taxpayers', esc) +
+    billSection +
     sectionHead('The Record', 'Case Timeline', esc) +
     '<p class="trk-lede">Key federal lawsuits involving Colorado, in chronological order. Pick a case on the line to jump to its card, or filter the record.</p>' +
     timeline +
@@ -967,8 +969,6 @@ function renderTrackerPage(h) {
         '</dl>' + paras(c.paras) +
         '<p class="trk-source">' + esc(c.source) + '</p></article>'
     ).join('') +
-    sectionHead('The Bill', 'What These Cases Are Costing Taxpayers', esc) +
-    billSection +
     sectionHead('The Pattern', 'The Recurring Constitutional Questions', esc) +
     '<p class="trk-lede">Colorado\'s major constitutional disputes span different administrations, political parties, and areas of law. Yet several recurring legal questions are apparent.</p>' +
     '<div class="trk-themes">' +
