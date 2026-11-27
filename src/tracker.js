@@ -811,15 +811,23 @@ function renderTrackerPage(h) {
     'The documented settlements alone top $7.82 million, and they count only what Colorado paid the other side\'s lawyers — not the state\'s own legal bills.',
     'Two cases are still live — St. Mary at the Supreme Court and the HB25-1312 challenges — so the record, and the bill, are still growing.',
   ];
+  /* CORA panel (owner order, 2026-11-27: make the Ledger's records
+     request prominent): a full-width navy announcement band directly
+     under the Bill section head, ahead of the cost grid. */
+  const coraPanel =
+    '<section class="trk-cora" aria-label="The Ledger\'s open records request to the state">' +
+    '<div class="trk-cora-kicker">Colorado Open Records Act · Filed November 23, 2026</div>' +
+    '<h3 class="trk-cora-title">The Ledger has asked the state for its own bill.</h3>' +
+    '<p class="trk-cora-body">The figures in this tracker count only what Colorado has paid the other side\'s lawyers. They do not count what the state spent defending these cases itself — its own attorneys\' time, outside counsel, travel and administration. The Centennial Ledger has filed requests under the Colorado Open Records Act with the Attorney General\'s office for exactly those records in the lost cases in this tracker: the attorney hours recorded, outside-counsel invoices, travel reimbursements, and settlement and court-ordered fee payments.</p>' +
+    '<p class="trk-cora-status"><span class="trk-watch-dot" aria-hidden="true"></span><span>Status: awaiting the Department of Law\'s response. When the state answers, this tracker will be updated with what this litigation actually cost. If the state will not produce the numbers, this page will say that too.</span></p>' +
+    '</section>';
+
   const billSection =
+    coraPanel +
     '<div class="trk-bill-grid"><div class="trk-bill-main">' +
     '<div class="trk-prose">' + paras(COST_INTRO) + '</div>' +
     costChart +
     '<div class="trk-prose">' + paras(COST_OUTRO) + '</div>' +
-    '<aside class="trk-note"><strong>The Ledger has asked the state for its own bill.</strong> ' +
-    'The figures above count only what Colorado has paid the other side\'s lawyers. They do not count what the state spent defending these cases itself — its own attorneys\' time, outside counsel, travel and administration. ' +
-    'On November 23, 2026, The Centennial Ledger filed requests under the Colorado Open Records Act with the Colorado Attorney General\'s office for exactly those records in the lost cases in this tracker: the attorney hours recorded, outside-counsel invoices, travel reimbursements, and settlement and court-ordered fee payments. ' +
-    'When the state responds, this tracker will be updated with what this litigation actually cost. If the state will not produce the numbers, this page will say that too.</aside>' +
     '</div>' +
     '<aside class="trk-takeaways"><h3>Key Takeaways</h3><ul>' +
     TAKEAWAYS.map((t) => '<li>' + esc(t) + '</li>').join('') +
