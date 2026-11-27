@@ -950,11 +950,11 @@ function renderTrackerPage(h) {
     '<figcaption>The U.S. Supreme Court building in Washington, D.C. AI illustration.</figcaption></figure>' +
     paras(INTRO) + '</div>' +
     scoreboard +
-    sectionHead('The Bill', 'What These Cases Are Costing Taxpayers', esc) +
-    billSection +
     sectionHead('The Record', 'Case Timeline', esc) +
     '<p class="trk-lede">Key federal lawsuits involving Colorado, in chronological order. Pick a case on the line to jump to its card, or filter the record.</p>' +
     timeline +
+    sectionHead('The Bill', 'What These Cases Are Costing Taxpayers', esc) +
+    billSection +
     sectionHead('The Cases', 'The Cases in Chronological Order', esc) +
     '<p class="trk-lede">The following cases have not all produced final Supreme Court decisions. Some involve permanent injunctions, some preliminary injunctions, and others ongoing litigation.</p>' +
     caseStack +
