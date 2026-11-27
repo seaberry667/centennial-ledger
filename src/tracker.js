@@ -944,9 +944,10 @@ function renderTrackerPage(h) {
     '<p class="dek trk-dek">A running record of major federal lawsuits involving Colorado, from landmark Supreme Court cases to active challenges, with case status, key issues and what they are costing taxpayers.</p>' +
     '<p class="trk-updated">Last updated: ' + UPDATED + '</p>' +
     '</div>' +
-    '<img class="trk-hero-img" src="/images/supreme-court-engraving.webp" alt="Engraving of the United States Supreme Court building in Washington, D.C.">' +
     '</div>' +
     '<div class="trk-prose">' +
+    '<figure class="trk-hero trk-hero-court"><img src="/images/supreme-court-engraving.webp" alt="Engraving of the United States Supreme Court building in Washington, D.C.">' +
+    '<figcaption>The U.S. Supreme Court building in Washington, D.C.</figcaption></figure>' +
     paras(INTRO) + '</div>' +
     scoreboard +
     sectionHead('The Record', 'Case Timeline', esc) +

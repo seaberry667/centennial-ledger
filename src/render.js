@@ -1285,6 +1285,8 @@ ins.adsbygoogle[data-ad-status="unfilled"]{display:none}
 .trk-hero-head{display:flex;gap:30px;align-items:flex-start;margin:.4rem 0 1.2rem}
 .trk-hero-text{flex:1 1 auto;min-width:0}
 .trk-hero-img{flex:0 0 302px;width:302px;max-width:42%;height:auto;margin-top:.4rem}
+.trk-hero-court{width:470px}
+@media (max-width:760px){.trk-hero-court{float:none;width:100%;margin:0 0 1rem}}
 .trk-updated{display:inline-block;background:#f6ecd9;border:1px solid #ddd3bd;padding:.34rem .75rem;font:600 .76rem/1.35 'Archivo',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#5c5546}
 @media (max-width:760px){.trk-hero-head{flex-direction:column;gap:14px}.trk-hero-img{max-width:250px;flex-basis:auto}}
 .trk-glance{display:grid;grid-template-columns:1.3fr repeat(5,1fr);align-items:center}
