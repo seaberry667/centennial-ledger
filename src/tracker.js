@@ -939,8 +939,6 @@ function renderTrackerPage(h) {
     '<img class="trk-hero-img" src="/images/supreme-court-engraving.webp" alt="Engraving of the United States Supreme Court building in Washington, D.C.">' +
     '</div>' +
     '<div class="trk-prose">' +
-    '<figure class="trk-hero"><img src="/images/federal-lawsuit-tracker-hero.webp" alt="Political cartoon: Colorado state attorney hands a Supreme Court loyalty card, five defeats punched, to a smug clerk">' +
-    '<figcaption>From the Ledger\'s satire desk: Colorado\'s Supreme Court loyalty card — one more defeat and the next appeal is free.</figcaption></figure>' +
     paras(INTRO) + '</div>' +
     scoreboard +
     sectionHead('The Record', 'Case Timeline', esc) +
