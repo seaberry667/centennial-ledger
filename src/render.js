@@ -4673,8 +4673,8 @@ function aboutPage() {
     "<h2>Stay Informed</h2>" +
     "<p>Colorado never runs out of stories worth telling.</p>" +
     "<p>Subscribe to our free weekday newsletter for a concise roundup of the day's important developments, from the Capitol to communities across the state.</p>" +
-    "<p><a href=\"/subscribe\">Subscribe to the newsletter</a></p>" +
     "<ul class=\"about-social\">" +
+    "<li><a href=\"/subscribe\">Subscribe to the newsletter</a></li>" +
     "<li><a href=\"https://www.facebook.com/profile.php?id=61595978079628\" target=\"_blank\" rel=\"noopener\">Follow The Centennial Ledger on Facebook</a></li>" +
     "<li><a href=\"https://www.instagram.com/centennialledger\" target=\"_blank\" rel=\"noopener\">Follow @centennialledger on Instagram</a></li>" +
     "<li><a href=\"https://open.spotify.com/show/5r0ObdqenGKnYskuKRxWrX\" target=\"_blank\" rel=\"noopener\">Listen to the Colorado Daily News Brief on Spotify</a></li>" +
