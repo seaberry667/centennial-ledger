@@ -1341,6 +1341,7 @@ ins.adsbygoogle[data-ad-status="unfilled"]{display:none}
 button,input[type="submit"],.btn-read,.btn-save,.btn-share,.btn-signup,.btn-subscribe,.trk-filter,.briefing button,.share-menu button,.searchbox button,.footer-signup button,.nav-search-form button{font-family:var(--font-ui);font-weight:700;text-transform:uppercase;letter-spacing:.08em}
 .btn-read,.btn-save,.btn-share,.briefing button,.searchbox button{font-size:.9rem}
 .btn-signup{font-size:.85rem}
+.btn-subscribe,.btn-signup,.briefing button,.footer-signup button,.nl-primary{font-family:var(--font-ui);font-weight:700;font-size:.85rem;padding:.5rem 1rem}
 @media (max-width:640px){.trk-cora{padding:1.25rem 1.1rem 1.35rem}.trk-cora-title{font-size:1.42rem}}
 
 /* Homepage feature grid (owner directive, 2026-11-21): eight more
@@ -1679,6 +1680,12 @@ table.admin-table{border-collapse:collapse;width:100%;margin:.5rem 0 1.4rem}
   .nl-checks{grid-template-columns:1fr}
   .nl-panel{padding:16px}
 }
+/* Subscribe-button unification, placed at the very end of the sheet
+   so it governs over the per-component rules above (owner order,
+   2026-11-27): every subscribe button — topbar, signup outline,
+   briefing box, footer form, newsletter panels — shares the same
+   font treatment and padding. Colors and borders stay as designed. */
+.btn-subscribe,.btn-signup,.briefing button,.footer-signup button,.nl-primary{font-family:var(--font-ui);font-weight:700;font-size:.85rem;padding:.5rem 1rem}
 `;
 
 function layout({ title, description, path, ogType = 'website', ogImage = '', articleMeta = null, jsonLd = [], activeNav = '', body }) {
