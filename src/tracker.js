@@ -16,7 +16,7 @@
  */
 
 const TRACKER_PATH = '/politics/federal-lawsuit-tracker';
-const UPDATED = 'November 23, 2026';
+const UPDATED = 'November 27, 2026';
 
 /* Status table rows: [case, court and year, status, chip kind].
    Chip kinds: loss (red), win (navy), pending (gold), mixed (red —
@@ -510,6 +510,7 @@ const MONITOR = [
   ['Darren Patterson Christian Academy v. Roy', 'Appellate proceedings dependent on developments in St. Mary.'],
   ['NetChoice v. Weiser', 'Tenth Circuit appeal following the November 2025 preliminary injunction.'],
   ['HB25-1312 challenges', 'Awaiting further appellate action following November 16 arguments.'],
+  ["The Ledger's CORA requests to the Attorney General", "Awaiting the Department of Law's response — and any cost estimate — on the November 23, 2026 requests for the state's own litigation-cost records in the nine lost cases."],
 ];
 
 const SOURCE_GROUPS = [
@@ -902,6 +903,10 @@ function renderTrackerPage(h) {
     '<div class="trk-prose">' + paras(COST_INTRO) + '</div>' +
     costChart +
     '<div class="trk-prose">' + paras(COST_OUTRO) + '</div>' +
+    '<aside class="trk-note"><strong>The Ledger has asked the state for its own bill.</strong> ' +
+    'The figures above count only what Colorado has paid the other side\'s lawyers. They do not count what the state spent defending these cases itself — its own attorneys\' time, outside counsel, travel and administration. ' +
+    'On November 23, 2026, The Centennial Ledger filed requests under the Colorado Open Records Act with the Colorado Attorney General\'s office for exactly those records in the lost cases in this tracker: the attorney hours recorded, outside-counsel invoices, travel reimbursements, and settlement and court-ordered fee payments. ' +
+    'When the state responds, this tracker will be updated with what this litigation actually cost. If the state will not produce the numbers, this page will say that too.</aside>' +
     sectionHead('The Pattern', 'The Recurring Constitutional Questions', esc) +
     '<p class="trk-lede">Colorado\'s major constitutional disputes span different administrations, political parties, and areas of law. Yet several recurring legal questions are apparent.</p>' +
     '<div class="trk-themes">' +
@@ -942,7 +947,7 @@ function renderTrackerPage(h) {
         headline: 'Colorado vs. the Constitution: Federal Lawsuit Tracker',
         description:
           "A running tracker of Colorado's federal constitutional litigation: what the state tried to do, what the courts decided, and what it has cost taxpayers.",
-        dateModified: '2026-11-23',
+        dateModified: '2026-11-27',
         author: { '@type': 'Organization', name: h.siteName },
         publisher: { '@type': 'Organization', name: h.siteName },
         mainEntityOfPage: absUrl(TRACKER_PATH),
