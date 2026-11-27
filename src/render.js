@@ -770,7 +770,7 @@ function sportsRailBox(lines) {
         const text = typeof l === 'string' ? l : l.text || '';
         const sport = typeof l === 'object' ? l.sport || '' : '';
         const icon = SPORT_ICONS[sport]
-          ? '<span class="sports-icon">' + SPORT_ICONS[sport] + '</span>'
+          ? '<span class="sports-icon sport-' + sport + '">' + SPORT_ICONS[sport] + '</span>'
           : '';
         return '<div class="sports-line">' + icon + esc(text) + '</div>';
       })
@@ -1365,6 +1365,11 @@ ins.adsbygoogle[data-ad-status="unfilled"]{display:none}
 .sports-line{font-family:var(--font-ui);font-size:.9rem;padding:.38rem 0;border-bottom:1px solid var(--color-border)}
 .sports-line:last-child{border-bottom:0;padding-bottom:0}
 .sports-icon{display:inline-block;width:16px;height:16px;margin-right:.45rem;color:var(--color-navy);vertical-align:-2px}
+.sports-icon.sport-football{color:#7B4B26}
+.sports-icon.sport-basketball{color:#E06F00}
+.sports-icon.sport-hockey{color:#1A1A1A}
+.sports-icon.sport-baseball{color:#BC3F34}
+.sports-icon.sport-soccer{color:#1A1A1A}
 .sports-icon svg{display:block;width:100%;height:100%}
 .listing-pager{display:flex;justify-content:center;align-items:center;gap:1.1rem;margin:1.7rem 0 .3rem;font-family:var(--font-ui)}
 .pager-link{font-weight:700;font-size:.9rem;color:var(--color-navy);text-decoration:none;border:1px solid var(--color-border);padding:.45rem .95rem;background:#fff}
