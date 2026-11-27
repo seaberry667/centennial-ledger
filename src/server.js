@@ -1243,6 +1243,18 @@ app.get('/sitemap.xml', async (req, res) => {
       lastmod: p.date,
       changefreq: 'monthly',
       priority: '0.6',
+      images:
+        p.illustration && p.illustration.src
+          ? [
+              {
+                loc: p.illustration.src.startsWith('http')
+                  ? p.illustration.src
+                  : base + p.illustration.src,
+                title: p.episodeTitle || '',
+                caption: p.illustration.caption || p.illustration.alt || '',
+              },
+            ]
+          : [],
     })),
     { loc: base + '/subscribe', changefreq: 'monthly', priority: '0.5' },
     { loc: base + '/about', changefreq: 'monthly', priority: '0.5' },
@@ -1254,16 +1266,36 @@ app.get('/sitemap.xml', async (req, res) => {
       lastmod: a.publishedAt.slice(0, 10),
       changefreq: 'monthly',
       priority: '0.7',
+      images:
+        a.image && a.image.url
+          ? [
+              {
+                loc: base + '/img/' + a.slug + '.png',
+                title: a.headline || '',
+                caption: a.image.caption || a.image.alt || '',
+              },
+            ]
+          : [],
     })),
   ];
   const xml =
-    '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
+    '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n' +
     urls
       .map(
         (u) =>
           '  <url><loc>' + u.loc + '</loc>' +
           (u.lastmod ? '<lastmod>' + u.lastmod + '</lastmod>' : '') +
-          '<changefreq>' + u.changefreq + '</changefreq><priority>' + u.priority + '</priority></url>'
+          '<changefreq>' + u.changefreq + '</changefreq><priority>' + u.priority + '</priority>' +
+          (u.images || [])
+            .map(
+              (im) =>
+                '<image:image><image:loc>' + xmlEscape(im.loc) + '</image:loc>' +
+                (im.title ? '<image:title>' + xmlEscape(im.title) + '</image:title>' : '') +
+                (im.caption ? '<image:caption>' + xmlEscape(im.caption) + '</image:caption>' : '') +
+                '</image:image>'
+            )
+            .join('') +
+          '</url>'
       )
       .join('\n') +
     '\n</urlset>';
