@@ -800,7 +800,7 @@ const CSS = `
 body{margin:0;background:var(--color-bg);color:var(--color-text);font-family:var(--font-body);line-height:1.55}
 a{color:inherit}
 /* ---------- Top utility bar: navy, gold accent line at the bottom ---------- */
-.topbar{background:var(--color-navy);color:#e8e4d8;font-family:var(--font-bar);font-size:.78rem;min-height:34px;padding:.3rem 1rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;border-bottom:1px solid var(--color-gold)}
+.topbar{background:var(--color-navy);color:#e8e4d8;font-family:var(--font-bar);font-size:.78rem;min-height:28px;padding:.15rem 1rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;border-bottom:1px solid var(--color-gold)}
 .topbar .center{font-style:italic;font-family:var(--font-body);flex:1;text-align:center}
 .topbar .topbar-left{letter-spacing:.05em;font-weight:bold;white-space:nowrap}
 /* One city's weather segment never splits across lines on a
@@ -1687,6 +1687,11 @@ table.admin-table{border-collapse:collapse;width:100%;margin:.5rem 0 1.4rem}
    briefing box, footer form, newsletter panels — shares the same
    font treatment and padding. Colors and borders stay as designed. */
 .btn-subscribe,.btn-signup,.briefing button,.footer-signup button,.nl-primary{font-family:var(--font-ui);font-weight:700;font-size:.85rem;padding:.5rem 1rem}
+/* The topbar Subscribe button takes the BREAKING chip's font and
+   padding treatment exactly (owner order, 2026-11-27), keeping its
+   own red/white colors and its rounded corners (border-radius from
+   its base rule above is untouched). */
+.btn-subscribe{font-family:var(--font-bar);font-weight:800;font-size:12.5px;letter-spacing:.1em;line-height:1.25;padding:.31rem .6rem .17rem calc(.6rem + .1em)}
 `;
 
 function layout({ title, description, path, ogType = 'website', ogImage = '', articleMeta = null, jsonLd = [], activeNav = '', body }) {
