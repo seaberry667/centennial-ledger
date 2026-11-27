@@ -1349,6 +1349,75 @@ app.get('/news-sitemap.xml', async (req, res) => {
   res.type('application/xml').send(xml);
 });
 
+/**
+ * llms.txt: a plain-markdown site guide for AI search and answer
+ * engines, generated from the live store on every request so it can
+ * never go stale (owner order, 2026-11-27). Follows the llms.txt
+ * convention: H1 title, a blockquote summary, then H2 sections of
+ * link lists with one-line descriptions.
+ */
+app.get('/llms.txt', async (req, res) => {
+  const base = render.siteUrl();
+  const articles = await store.listArticles({ limit: 5000 });
+  const briefPages = await store.listBriefPages();
+  const clean = (s) => String(s == null ? '' : s).replace(/[\[\]\r\n]+/g, ' ').trim();
+  const sectionDesc = {
+    politics: 'Colorado state government, the Capitol, elections, courts and litigation involving the state.',
+    business: 'Colorado business, taxes, budgets and the cost of government.',
+    'energy-environment': 'Oil and gas, utilities, water, public lands and environmental policy.',
+    'education-health': 'Colorado schools, higher education, health care and public health.',
+    local: 'Community news from across Colorado, organized by region below.',
+    opinion: 'Editorials and satire from The Centennial Ledger.',
+  };
+  const latest = articles
+    .filter((a) => a.section !== 'opinion' && !isSatire(a))
+    .sort((x, y) => new Date(y.publishedAt) - new Date(x.publishedAt))
+    .slice(0, 25);
+  const episodes = [...briefPages]
+    .sort((x, y) => String(y.date).localeCompare(String(x.date)))
+    .slice(0, 10);
+  const lines = [];
+  lines.push('# The Centennial Ledger');
+  lines.push('');
+  lines.push('> Independent Colorado news covering the State Capitol and all 64 counties: politics, business and taxes, energy and environment, education and health, and local news across eight regions. The Ledger also publishes How Colorado Works, a plain-language explainer series on how the state actually runs, and Colorado Daily News Brief, a weekday news podcast with a Saturday Colorado history edition. Articles are produced with AI-assisted tools under human editorial review, with sources linked on every story.');
+  lines.push('');
+  lines.push('## Sections');
+  for (const s of SECTIONS) {
+    lines.push('- [' + s.name + '](' + base + '/section/' + s.slug + '): ' + (sectionDesc[s.slug] || ''));
+  }
+  lines.push('');
+  lines.push('## Local news by region');
+  for (const r of REGIONS) {
+    lines.push('- [' + r.name + '](' + base + '/local/' + r.slug + '): Local news from the ' + r.name + ' region of Colorado.');
+  }
+  lines.push('');
+  lines.push('## Key pages');
+  lines.push('- [How Colorado Works](' + base + '/explained): Plain-language explainers on TABOR, water rights, property taxes, school funding and the other systems that run Colorado.');
+  lines.push('- [Federal Lawsuit Tracker](' + base + '/politics/federal-lawsuit-tracker): The status of major federal lawsuits involving Colorado, tracked case by case.');
+  lines.push('- [Colorado Daily News Brief podcast](' + base + '/podcast): The weekday morning news podcast and Saturday Colorado history editions, with a page for every episode.');
+  lines.push('- [Subscribe](' + base + '/subscribe): Sign up for The Centennial Ledger email briefing.');
+  lines.push('- [About](' + base + '/about): About The Centennial Ledger.');
+  lines.push('- [Editorial standards](' + base + '/editorial-standards): How Ledger stories are reported, sourced and corrected.');
+  lines.push('');
+  lines.push('## Latest stories');
+  for (const a of latest) {
+    lines.push('- [' + clean(a.headline) + '](' + base + '/article/' + a.slug + ')' + (a.dek ? ': ' + clean(a.dek) : ''));
+  }
+  lines.push('');
+  lines.push('## Recent podcast episodes');
+  for (const p of episodes) {
+    lines.push('- [' + clean(p.episodeTitle || 'Colorado Daily News Brief') + '](' + base + '/podcast/' + p.date + '): Episode page for ' + p.date + ' with the full story list and sources.');
+  }
+  lines.push('');
+  lines.push('## Optional');
+  lines.push('- [Privacy policy](' + base + '/privacy)');
+  lines.push('- [Terms of use](' + base + '/terms)');
+  lines.push('- [Sitemap](' + base + '/sitemap.xml)');
+  lines.push('- [News sitemap](' + base + '/news-sitemap.xml)');
+  lines.push('');
+  res.type('text/plain').send(lines.join('\n'));
+});
+
 /* AdSense seller declaration: names Google as an authorized seller
    of this site's ad inventory under the owner's publisher ID. */
 app.get('/ads.txt', (req, res) => {
