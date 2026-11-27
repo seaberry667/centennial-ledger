@@ -940,9 +940,9 @@ function renderTrackerPage(h) {
     '<div class="breadcrumb"><a href="/">Home</a> &rsaquo; <a href="/section/politics">Politics</a> &rsaquo; Federal Lawsuit Tracker</div>' +
     '<div class="trk-hero-head"><div class="trk-hero-text">' +
     '<div class="trk-kicker">Special Reports · Colorado Legal Watch</div>' +
-    '<h1 class="headline trk-h1">Colorado Federal Lawsuit Tracker</h1>' +
+    '<div class="trk-h1-row"><h1 class="headline trk-h1">Colorado Federal Lawsuit Tracker</h1>' +
+    '<p class="trk-updated">Last updated: ' + UPDATED + '</p></div>' +
     '<p class="dek trk-dek">A running record of major federal lawsuits involving Colorado, from landmark Supreme Court cases to active challenges, with case status, key issues and what they are costing taxpayers.</p>' +
-    '<p class="trk-updated">Last updated: ' + UPDATED + '</p>' +
     '</div>' +
     '</div>' +
     '<div class="trk-prose">' +

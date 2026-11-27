@@ -1333,6 +1333,8 @@ ins.adsbygoogle[data-ad-status="unfilled"]{display:none}
 .trk-cora-body{font-size:1rem;line-height:1.62;margin:0 0 .85rem}
 .trk-cora-status{font:600 .87rem 'Archivo',sans-serif;line-height:1.5;color:#e8c987;margin:0;display:flex;gap:.55rem;align-items:flex-start}
 .trk-cora-status .trk-watch-dot{flex:none;margin-top:.42em}
+.trk-h1-row{display:flex;align-items:center;justify-content:space-between;gap:1.5rem;flex-wrap:wrap}
+.trk-h1-row .trk-updated{margin-top:0;flex:none}
 .trk-hero-court img{border:none}
 .trk-hero-court figcaption{font-family:inherit;font-style:italic;font-size:.8125rem;line-height:1.4;color:#444;text-align:center;padding:.45rem .3rem .15rem;margin-top:0}
 @media (max-width:640px){.trk-cora{padding:1.25rem 1.1rem 1.35rem}.trk-cora-title{font-size:1.42rem}}
