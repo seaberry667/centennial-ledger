@@ -1338,6 +1338,7 @@ ins.adsbygoogle[data-ad-status="unfilled"]{display:none}
 .trk-h1-row .trk-updated{margin-top:0;flex:none}
 .trk-hero-court img{border:none}
 .trk-hero-court figcaption{font-family:inherit;font-style:italic;font-size:.8125rem;line-height:1.4;color:#444;text-align:center;padding:.45rem .3rem .15rem;margin-top:0}
+.briefing-cta{margin-top:.6rem;text-align:center}
 button,input[type="submit"],.btn-read,.btn-save,.btn-share,.btn-signup,.btn-subscribe,.trk-filter,.briefing button,.share-menu button,.searchbox button,.footer-signup button,.nav-search-form button{font-family:var(--font-ui);font-weight:700;text-transform:uppercase;letter-spacing:.08em}
 .btn-read,.btn-save,.btn-share,.briefing button,.searchbox button{font-size:.9rem}
 .btn-signup{font-size:.85rem}
@@ -1966,9 +1967,7 @@ function briefingBox(thanks, source) {
     '<p class="briefing-tag">The day\'s top Colorado stories, in your inbox before the workday starts.</p>' +
     (thanks
       ? '<p><strong>Thank you. Please check your inbox to confirm your subscription.</strong></p>'
-      : '<form method="post" action="/briefing"><input type="hidden" name="source" value="' +
-        esc(source || 'briefing-box') +
-        '"><input type="email" name="email" required placeholder="Your email address" aria-label="Email address"><button type="submit">Subscribe</button></form>') +
+      : '<div class="briefing-cta"><a class="btn-read" href="/subscribe">Subscribe</a></div>') +
     '</section>'
   );
 }
