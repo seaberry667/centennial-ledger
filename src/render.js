@@ -1330,8 +1330,9 @@ ins.adsbygoogle[data-ad-status="unfilled"]{display:none}
 .trk-cora{background:#16283f;color:#f4eedf;padding:1.55rem 1.7rem 1.65rem;margin:0 0 1.7rem;border-top:4px solid #c05358}
 .trk-cora-kicker{font:700 .7rem 'Archivo',sans-serif;letter-spacing:.22em;text-transform:uppercase;color:#e8c987;margin-bottom:.55rem}
 .trk-cora-title{font-family:'Playfair Display',serif;font-size:1.68rem;font-weight:800;line-height:1.15;margin:0 0 .6rem;color:#fff}
-.trk-cora-body{font-size:1rem;line-height:1.62;margin:0 0 .85rem;max-width:64ch}
+.trk-cora-body{font-size:1rem;line-height:1.62;margin:0 0 .85rem}
 .trk-cora-status{font:600 .87rem 'Archivo',sans-serif;line-height:1.5;color:#e8c987;margin:0;display:flex;gap:.55rem;align-items:flex-start}
+.trk-cora-status .trk-watch-dot{flex:none;margin-top:.42em}
 @media (max-width:640px){.trk-cora{padding:1.25rem 1.1rem 1.35rem}.trk-cora-title{font-size:1.42rem}}
 
 /* Homepage feature grid (owner directive, 2026-11-21): eight more
