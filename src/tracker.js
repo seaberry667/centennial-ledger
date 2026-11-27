@@ -947,7 +947,7 @@ function renderTrackerPage(h) {
     '</div>' +
     '<div class="trk-prose">' +
     '<figure class="trk-hero trk-hero-court"><img src="/images/supreme-court-engraving.webp" alt="Engraving of the United States Supreme Court building in Washington, D.C.">' +
-    '<figcaption>The U.S. Supreme Court building in Washington, D.C.</figcaption></figure>' +
+    '<figcaption>The U.S. Supreme Court building in Washington, D.C. AI illustration.</figcaption></figure>' +
     paras(INTRO) + '</div>' +
     scoreboard +
     sectionHead('The Record', 'Case Timeline', esc) +
