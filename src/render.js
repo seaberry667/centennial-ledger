@@ -1267,6 +1267,7 @@ ins.adsbygoogle[data-ad-status="unfilled"]{display:none}
   .trk-chart-total strong{white-space:normal}
 }
 @media (max-width:767px){
+  .trk-kicker{font-size:.64rem;letter-spacing:.16em}
   .trk-h1{font-size:2rem}
   .trk-board{padding:1.2rem 1.1rem 1.1rem}
   .trk-stat-num{font-size:2.1rem}
